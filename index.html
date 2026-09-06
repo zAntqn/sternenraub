@@ -1936,10 +1936,12 @@ const CONFIG = {
     weissesLochKarten: 1,      // Karten, die man aus einem fremden Sternbild zieht
     kreuzMitJokerErlaubt: false, // Kreuz lässt sich nicht mit Joker abschließen
     // Wohin gehen Karten zerstörter Sternbilder (Schwarzes Loch, Urknall, Weißes Loch)?
-    //   'MITTE'  = Regel wie aufgeschrieben. ACHTUNG: die Mitte wächst dann unbegrenzt,
-    //              in der Simulation bis ~48 Karten, und der Nachziehstapel trocknet aus.
-    //   'ABLAGE' = Variante zum Ausprobieren, hält Mitte und Nachziehstapel stabil.
-    zerstoerteKartenNach: 'MITTE',
+    //   'MITTE'  = wie ursprünglich aufgeschrieben. Die Mitte wächst dann unbegrenzt,
+    //              gemessen bis 27 Karten in Runde 4 — der Tisch wird unübersichtlich.
+    //   'ABLAGE' = Antons Entscheidung vom 4. September 2026. Die Mitte gibt nie
+    //              Karten ab, der Ablagestapel wird zurückgemischt. Hält den Tisch
+    //              übersichtlich und wirkt gegen den Kartenmangel in späten Runden.
+    zerstoerteKartenNach: 'ABLAGE',
 
     // Nova
     novaZerstoertAuchSicher: true,
@@ -5627,6 +5629,8 @@ const S = {
   tutorial: null,               // läuft gerade das Tutorial?
   letzterSchritt: '',           // für das Aufleuchten beim Schrittwechsel
   aufgeklappt: new Set(),       // Gegnerplätze, die du von Hand aufgeklappt hast
+  zielSb: null,                 // angeklicktes Zielsternbild (eigenes = erweitern, fremdes = klauen)
+  zeigeTipps: false,            // Vorschlagsliste aufgeklappt?
 };
 
 const dom = {};
@@ -5802,6 +5806,7 @@ function weiterLaufen() {
 function auswahlLeeren() {
   S.auswahlHand.clear();
   S.auswahlMitte.clear();
+  S.zielSb = null;
   S.modus = null;
 }
 
@@ -5816,22 +5821,104 @@ function deckungsgleich(ids, menge) {
   return ids.length === menge.size && umfasst(ids, menge);
 }
 
-/** Aktionen, die zur aktuellen Auswahl passen könnten (Auswahl ⊆ Aktion). */
-function moeglicheAktionen() {
-  if (!S.optionen) return [];
-  return S.optionen.aktionen.filter((a) => {
-    if (a.art !== 'BAUEN' && a.art !== 'KLAUEN') return false;
-    return umfasst(a.handIds, S.auswahlHand) && umfasst(a.mitteIds, S.auswahlMitte);
-  });
-}
 
-/** Aktionen, die genau der Auswahl entsprechen — die sind sofort spielbar. */
-function passendeAktionen() {
-  if (!S.optionen) return [];
-  return S.optionen.aktionen.filter((a) => {
+/* ================================================================= */
+/*  Die Prüfung: geht dieser Zug — und wenn nicht, warum nicht?        */
+/* ================================================================= */
+
+/**
+ * Nimmt die vom Spieler gewählten Karten und das gewählte Zielsternbild und
+ * sagt, ob daraus ein legaler Zug wird.
+ *
+ * Die Wahrheit kommt aus der Engine: gesucht wird eine Aktion aus
+ * `generiereAktionen`, deren Karten genau der Auswahl entsprechen. Die
+ * Begründung dagegen wird hier gerechnet — die Engine sagt nur ja oder nein,
+ * nicht warum.
+ *
+ * @returns {{aktion:object}|{grund:string}}
+ */
+function pruefeAuswahl() {
+  const z = S.ablauf.zustand();
+  const ich = z.spieler[S.menschIdx];
+  const hand = S.auswahlHand.size;
+  const mitte = S.auswahlMitte.size;
+  const gesamt = hand + mitte;
+
+  if (gesamt === 0 && !S.zielSb) {
+    return { grund: 'Wähle Karten aus deiner Hand — und dazu bis zu ' +
+      `${CONFIG.zug.bauenMaxAusMitte} aus der Mitte.` };
+  }
+
+  // Wem gehört das Ziel?
+  let ziel = null;
+  let zielBesitzer = -1;
+  for (const sp of z.spieler) {
+    const t = sp.sternbilder.find((sb) => sb.id === S.zielSb);
+    if (t) { ziel = t; zielBesitzer = sp.idx; break; }
+  }
+  const klauen = ziel && zielBesitzer !== S.menschIdx;
+
+  /* --- die harten Grenzen zuerst, sie sind am leichtesten zu erklären --- */
+
+  if (mitte > CONFIG.zug.bauenMaxAusMitte) {
+    return { grund: `Höchstens ${CONFIG.zug.bauenMaxAusMitte} Karten aus der Mitte. ` +
+      `Du hast ${mitte} gewählt.` };
+  }
+
+  if (klauen && hand < CONFIG.zug.klauenMinHandkarten) {
+    return { grund: `Zum Klauen musst du mindestens ${CONFIG.zug.klauenMinHandkarten} eigene ` +
+      `Handkarten anlegen. Du hast ${hand}.` };
+  }
+  if (!klauen && hand < CONFIG.zug.bauenMinHandkarten) {
+    return { grund: `Mindestens ${CONFIG.zug.bauenMinHandkarten} eigene Handkarte muss dabei sein.` };
+  }
+
+  if (ziel && ziel.sicher) {
+    return { grund: ziel.versiegelt
+      ? 'Dieses Sternbild ist versiegelt — da kommt niemand mehr heran.'
+      : 'Dieses Sternbild ist fertig und kann nicht mehr wachsen.' };
+  }
+
+  /* --- was käme heraus? --- */
+
+  const karten = [];
+  if (ziel) karten.push(...ziel.karten);
+  for (const k of ich.hand || []) if (S.auswahlHand.has(k.id)) karten.push(k);
+  for (const k of z.mitte) if (S.auswahlMitte.has(k.id)) karten.push(k);
+
+  if (karten.length < CONFIG.sternbild.minKarten) {
+    return { grund: `Ein Sternbild braucht mindestens ${CONFIG.sternbild.minKarten} Karten. ` +
+      `Du kommst auf ${karten.length}.` };
+  }
+  if (karten.length > CONFIG.sternbild.maxKarten) {
+    return { grund: `Höchstens ${CONFIG.sternbild.maxKarten} Karten. Du kommst auf ${karten.length}.` };
+  }
+
+  const b = bewerte(karten);
+  if (!b.gueltig) {
+    const werte = karten.filter((k) => k.art === 'ZAHL').map((k) => k.wert).sort((x, y) => x - y);
+    return { grund: `Aus ${werte.join('-')} wird keine gültige Form. ` +
+      'Pfeil braucht Werte in Folge, Wagen gleiche Abstände, dazu Krone, Kreuz, ' +
+      'Zwilling und Doppelstier — siehe „Formen" oben.' };
+  }
+
+  if (klauen && b.punkte <= ziel.punkte) {
+    return { grund: `Klauen muss sich lohnen: ${typText(b.typ)} bringt ${b.punkte} Punkte, ` +
+      `das Sternbild hat aber schon ${ziel.punkte}.` };
+  }
+
+  /* --- die Engine hat das letzte Wort --- */
+
+  const treffer = (S.optionen ? S.optionen.aktionen : []).find((a) => {
     if (a.art !== 'BAUEN' && a.art !== 'KLAUEN') return false;
+    if ((a.sbId || null) !== (S.zielSb || null)) return false;
     return deckungsgleich(a.handIds, S.auswahlHand) && deckungsgleich(a.mitteIds, S.auswahlMitte);
   });
+  if (treffer) return { aktion: treffer };
+
+  // Hierher kommt man nur, wenn die Engine etwas verbietet, das oben nicht
+  // abgefangen wurde. Lieber ehrlich sagen als etwas erfinden.
+  return { grund: 'Dieser Zug ist nicht erlaubt. Sieh unter „Vorschläge" nach, was gerade geht.' };
 }
 
 /* ================================================================= */
@@ -5935,26 +6022,20 @@ function baueSicht() {
     return s;
   }
 
-  /* ---- normaler Auswahlmodus ---- */
-  const moeglich = moeglicheAktionen();
-  const passend = passendeAktionen();
-
-  for (const akt of moeglich) {
-    for (const id of akt.handIds) if (!S.auswahlHand.has(id)) s.spielbareHand.add(id);
-    for (const id of akt.mitteIds) if (!S.auswahlMitte.has(id)) s.spielbareMitte.add(id);
-  }
-  // Karten, die man auch allein noch abwerfen oder als kosmische Karte spielen kann
-  for (const k of ich.hand || []) {
-    if (AKTIONS_KOSMISCH.indexOf(k.art) >= 0 && !S.kosmischGespielt) s.spielbareHand.add(k.id);
-    if (S.auswahlHand.size === 0 && S.auswahlMitte.size === 0) s.spielbareHand.add(k.id);
+  /* ---- freie Auswahl ----
+     Nichts wird gesperrt. Jede Handkarte und jede nehmbare Mittelkarte bleibt
+     anklickbar, egal was schon gewählt ist. Ob die Kombination geht, sagt erst
+     die Prüfung beim Bestätigen — und wenn nicht, sagt sie warum.
+     Vorher hat die Oberfläche alles deaktiviert, was zu keinem legalen Zug
+     führte. Dann kommt man nicht weiter und erfährt auch nicht, warum. */
+  for (const k of ich.hand || []) s.spielbareHand.add(k.id);
+  for (const k of z.mitte) {
+    // Kosmische Karten außer der Sternschnuppe darf man nicht aus der Mitte nehmen.
+    if (k.art === 'ZAHL' || k.art === 'STERNSCHNUPPE') s.spielbareMitte.add(k.id);
   }
 
-  for (const akt of passend) {
-    if (akt.art === 'KLAUEN' || (akt.art === 'BAUEN' && akt.sbId)) {
-      const alt = s.zieleSb.get(akt.sbId);
-      if (!alt || akt.punkteNachher > alt.punkteNachher) s.zieleSb.set(akt.sbId, akt);
-    }
-  }
+  // Das gewählte Zielsternbild bekommt die Marke .ziel — eigenes wie fremdes.
+  if (S.zielSb) s.zieleSb.set(S.zielSb, { art: 'ZIEL' });
 
   // Passt eine Handkarte zu einem ausliegenden Joker? Dann das Sternbild markieren,
   // damit man die Gelegenheit nicht suchen muss.
@@ -5965,8 +6046,8 @@ function baueSicht() {
   s.novaMoeglich = !!z.nova && S.optionen.nova.length > 0;
   s.mitteHinweis = `höchstens ${CONFIG.zug.bauenMaxAusMitte} nehmen`;
 
-  baueTipps(s);
-  baueKnoepfe(s, passend);
+  if (S.zeigeTipps) baueTipps(s);
+  baueKnoepfe(s);
   return s;
 }
 
@@ -6022,19 +6103,29 @@ function tippWert(a) {
   }
 }
 
-function baueKnoepfe(s, passend) {
+function baueKnoepfe(s) {
   const knoepfe = [];
   const tun = [];
   const opt = S.optionen;
   const etwasGewaehlt = S.auswahlHand.size > 0 || S.auswahlMitte.size > 0;
 
-  const neu = passend.find((a) => a.art === 'BAUEN' && !a.sbId);
-  if (neu) {
-    knoepfe.push({
-      text: `${typText(neu.typ)} ${werteText(neu.werte)} bauen  (${plus(neu.gewinn)})`,
-      klasse: 'haupt',
-    });
-    tun.push(() => fuehreAus(neu));
+  // Der Hauptknopf: immer da, sobald Karten gewählt sind. Er prüft und führt
+  // aus — oder sagt, woran es liegt. Kein Menü fertiger Züge mehr.
+  if (etwasGewaehlt || S.zielSb) {
+    const p = pruefeAuswahl();
+    if (p.aktion) {
+      const a = p.aktion;
+      const was = a.art === 'KLAUEN'
+        ? `Klauen: ${typText(a.typ)} ${werteText(a.werte)}`
+        : a.sbId
+          ? `Erweitern zu ${typText(a.typ)} ${werteText(a.werte)}`
+          : `${typText(a.typ)} ${werteText(a.werte)} legen`;
+      knoepfe.push({ text: `${was}  (${plus(a.art === 'KLAUEN' ? a.punkteNachher - a.entschaedigung : a.gewinn)})`, klasse: 'haupt' });
+      tun.push(() => fuehreAus(a));
+    } else {
+      knoepfe.push({ text: 'Legen', klasse: 'haupt', aus: true, titel: p.grund });
+      tun.push(() => {});
+    }
   }
 
   if (S.auswahlHand.size === 1 && S.auswahlMitte.size === 0) {
@@ -6078,10 +6169,14 @@ function baueKnoepfe(s, passend) {
     }
   }
 
-  if (etwasGewaehlt) {
+  if (etwasGewaehlt || S.zielSb) {
     knoepfe.push({ text: 'Auswahl leeren' });
     tun.push(() => { auswahlLeeren(); zeichne(); });
   }
+
+  // Die Vorschläge sind eine Hilfe, kein Weg. Deshalb ein Knopf, keine Liste.
+  knoepfe.push({ text: S.zeigeTipps ? 'Vorschläge ausblenden' : 'Vorschläge' });
+  tun.push(() => { S.zeigeTipps = !S.zeigeTipps; zeichne(); });
 
   if (opt.aktionen.length === 0) {
     knoepfe.push({ text: 'Zug aussetzen', klasse: 'haupt' });
@@ -6092,15 +6187,16 @@ function baueKnoepfe(s, passend) {
   S.knopfTun = tun;
 
   if (S.modus) return;
-  if (!etwasGewaehlt) {
-    // Keine Ortsangabe: auf dem Handy steht die Zugliste unten, nicht rechts.
-    s.hinweis = 'Du bist dran. Wähle Handkarten — oder nimm einen Vorschlag aus der Liste.';
-  } else if (neu || s.zieleSb.size) {
-    s.hinweis = s.zieleSb.size
-      ? 'Klick ein hervorgehobenes Sternbild an, um dort anzulegen oder es zu klauen.'
-      : 'Fertig — unten bestätigen.';
+  if (!etwasGewaehlt && !S.zielSb) {
+    s.hinweis = 'Du bist dran. Wähle Karten aus deiner Hand und aus der Mitte. '
+      + 'Ein Sternbild anklicken heißt: dort anlegen oder es klauen.';
   } else {
-    s.hinweis = 'Aus dieser Auswahl wird noch kein Sternbild. Nimm weitere Karten dazu.';
+    // Hier steht entweder, was herauskommt, oder woran es scheitert.
+    const p = pruefeAuswahl();
+    s.hinweis = p.aktion
+      ? 'Das geht — unten bestätigen.'
+      : p.grund;
+    s.hinweisIstFehler = !p.aktion;
   }
 }
 
@@ -6193,7 +6289,8 @@ function karteGeklickt(ort, id, el) {
     if (AKTIONS_KOSMISCH.indexOf(karte.art) >= 0) { kosmischGeklickt(karte); return; }
     umschalten(S.auswahlHand, id);
   } else if (ort === 'mitte') {
-    if (!S.auswahlMitte.has(id) && S.auswahlMitte.size >= CONFIG.zug.bauenMaxAusMitte) return;
+    // Auch zu viele Mittelkarten darf man wählen — die Prüfung sagt dann,
+    // dass es zu viele sind. Stilles Ignorieren erklärt nichts.
     umschalten(S.auswahlMitte, id);
   }
   zeichne();
@@ -6262,10 +6359,11 @@ function sternbildGeklickt(sbId) {
     return;   // Weißes Loch: dort wird eine Karte geklickt, nicht das Sternbild
   }
 
-  const passend = passendeAktionen().filter((x) => x.sbId === sbId);
-  if (!passend.length) return;
-  passend.sort((x, y) => y.punkteNachher - x.punkteNachher);
-  fuehreAus(passend[0]);
+  // Ein Klick wählt das Ziel aus, er führt nichts aus. Eigenes Sternbild
+  // heißt erweitern, fremdes heißt klauen — beides dieselbe Geste.
+  if (!a.istMensch()) return;
+  S.zielSb = (S.zielSb === sbId) ? null : sbId;
+  zeichne();
 }
 
 function fuehreAus(aktion) {
@@ -6467,8 +6565,9 @@ function verdrahte() {
       return;
     }
 
+    // Jedes Sternbild ist anklickbar - es waehlt das Ziel, nicht den Zug.
     const sb = e.target.closest('.sternbild, .sb-zeile');
-    if (sb && sb.classList.contains('ziel')) { sternbildGeklickt(sb.dataset.sb); return; }
+    if (sb && sb.dataset.sb) { sternbildGeklickt(sb.dataset.sb); return; }
 
     const knopf = e.target.closest('[data-knopf]');
     if (knopf) { const f = S.knopfTun[Number(knopf.dataset.knopf)]; if (f) f(); return; }
@@ -6479,7 +6578,7 @@ function verdrahte() {
 
   dom.tisch.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const sb = e.target.closest && e.target.closest('.sternbild.ziel, .sb-zeile.ziel');
+    const sb = e.target.closest && e.target.closest('.sternbild[data-sb], .sb-zeile[data-sb]');
     if (sb) { e.preventDefault(); sternbildGeklickt(sb.dataset.sb); }
   });
 
