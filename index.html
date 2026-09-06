@@ -5153,7 +5153,7 @@ function baueStartschirm(rueckrufe) {
 
   /** Eine Reihe Umschaltknöpfe: genau einer trägt .gewaehlt. */
   function umschalten(gruppe, attribut, wert) {
-    for (const b of wahl.querySelectorAll(`[data-${attribut}]`)) {
+    for (const b of gruppe.querySelectorAll(`[data-${attribut}]`)) {
       b.classList.toggle('gewaehlt', b.dataset[attribut] === String(wert));
     }
   }
@@ -5165,7 +5165,12 @@ function baueStartschirm(rueckrufe) {
     else { stufe = b.dataset.stufe; umschalten(wahl, 'stufe', stufe); }
   });
 
-  const zeigeWahl = (an) => { knoepfe.hidden = an; wahl.hidden = !an; };
+  /** Genau eine Ebene ist offen: Hauptmenü oder „gegen wen?". */
+  function zeigeEbene(welche) {
+    knoepfe.hidden = welche !== 'menue';
+    wahl.hidden = welche !== 'bots';
+  }
+  const zeigeWahl = (an) => zeigeEbene(an ? 'bots' : 'menue');
 
   document.getElementById('btn-spielen').addEventListener('click', () => {
     // Beim allerersten Mal übernimmt start.js und führt ins Tutorial.
@@ -5186,10 +5191,11 @@ function baueStartschirm(rueckrufe) {
   document.getElementById('btn-tutorial').addEventListener('click', () => rueckrufe.tutorial());
   document.getElementById('btn-regeln-start').addEventListener('click', () => rueckrufe.regeln());
 
+
   return {
-    zeigen() { el.hidden = false; zeigeWahl(false); },
+    zeigen() { el.hidden = false; zeigeEbene('menue'); },
     /** Direkt bei der Frage „gegen wen?" aufmachen — nach dem Tutorial. */
-    zeigeWahl() { el.hidden = false; zeigeWahl(true); },
+    zeigeWahl() { el.hidden = false; zeigeEbene('bots'); },
     verstecken() { el.hidden = true; },
     name: () => (nameFeld.value || '').trim() || gemerkterName(),
   };
@@ -7526,7 +7532,7 @@ const startschirm = baueStartschirm({
   tutorial: () => starteTutorial(false),
   freunde: () => {
     zeigeModal(dom, 'Mit Freunden',
-      '<p>Die Lobby kommt zum Schluss — erst Startschirm und Tutorial, dann das Spiel gegen Bots, dann das Spiel zu mehreren.</p>',
+      '<p>Daran wird gerade gebaut.</p>',
       [{ text: 'Alles klar', klasse: 'haupt', tun: () => schliesseModal(dom) }]);
   },
   regeln: () => zeigeRegeln(),
