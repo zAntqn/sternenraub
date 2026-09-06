@@ -154,6 +154,78 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* ============================================================
+   Die Galaxie im Hintergrund
+   ------------------------------------------------------------
+   Ausnahme von der Regel „keine Farbverläufe als Hintergrund":
+   Sie gilt weiter für alle Flächen, auf denen etwas liegt oder
+   steht. Ganz hinten, hinter dem Tisch, ist der Verlauf das
+   Werkzeug der Wahl — er ist von Natur aus weich und kostet
+   nichts.
+
+   Bewusst OHNE filter: blur(). Ein Weichzeichner über eine
+   bildschirmfüllende Fläche kostet auf dem Handy bei jedem Bild
+   Rechenzeit. Weiche Radialverläufe sind schon unscharf.
+
+   Alles bleibt im Indigo der Referenz: die Nebelflecken sind
+   dieselben Marken mit wenig Deckkraft, kein neues Farbschema.
+   Und alles ist dunkel gehalten — die Karten sollen lesbar
+   bleiben, nicht mit dem Grund konkurrieren.
+   ============================================================ */
+
+#galaxie {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    /* der helle Kern, weit oben links, sehr schwach */
+    radial-gradient(58% 42% at 26% 18%,
+      color-mix(in srgb, var(--stern-warm) 13%, transparent) 0%,
+      color-mix(in srgb, var(--stern-warm) 5%, transparent) 38%,
+      transparent 72%),
+    /* der kalte Arm, unten rechts */
+    radial-gradient(64% 48% at 78% 76%,
+      color-mix(in srgb, var(--stern-kalt) 12%, transparent) 0%,
+      color-mix(in srgb, var(--stern-kalt) 4%, transparent) 42%,
+      transparent 76%),
+    /* ein dritter, roter Nebelfleck als Gegengewicht */
+    radial-gradient(40% 34% at 62% 24%,
+      color-mix(in srgb, var(--stern-heiss) 8%, transparent) 0%,
+      transparent 70%),
+    /* die Tiefe: nach außen läuft alles ins Schwarzblau */
+    radial-gradient(120% 90% at 45% 40%,
+      var(--tisch) 0%,
+      var(--tisch-tief) 62%,
+      #05070E 100%);
+}
+
+/* Die Sterne: ein kleines Muster, das sich wiederholt. Ein einziges
+   SVG in der Datei, kein Netzabruf, keine Ladezeit. */
+#galaxie::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .5;
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>\
+<g fill='%23E6E1D4'>\
+<circle cx='23' cy='41' r='.8' opacity='.55'/><circle cx='118' cy='17' r='.6' opacity='.4'/>\
+<circle cx='202' cy='63' r='.9' opacity='.5'/><circle cx='271' cy='29' r='.6' opacity='.35'/>\
+<circle cx='57' cy='122' r='.7' opacity='.45'/><circle cx='149' cy='97' r='1' opacity='.6'/>\
+<circle cx='233' cy='141' r='.6' opacity='.35'/><circle cx='14' cy='187' r='.8' opacity='.5'/>\
+<circle cx='96' cy='214' r='.6' opacity='.4'/><circle cx='176' cy='189' r='.7' opacity='.45'/>\
+<circle cx='262' cy='223' r='.9' opacity='.5'/><circle cx='41' cy='268' r='.6' opacity='.35'/>\
+<circle cx='131' cy='283' r='.8' opacity='.5'/><circle cx='214' cy='291' r='.6' opacity='.4'/>\
+<circle cx='288' cy='166' r='.7' opacity='.45'/><circle cx='79' cy='58' r='.5' opacity='.3'/>\
+</g></svg>");
+  background-repeat: repeat;
+  background-size: 300px 300px;
+}
+
+/* Wer Bewegung abgeschaltet hat, bekommt trotzdem den Hintergrund —
+   er bewegt sich ohnehin nicht. */
+
 html, body {
   margin: 0;
   height: 100%;
@@ -190,7 +262,9 @@ html, body {
   height: 100vh;
   height: 100dvh;
   padding: var(--raum);
-  background: var(--tisch);
+  /* Kein eigener Grund mehr - der Tisch IST die Galaxie darunter.
+     Die Mitte bleibt die einzige abgesetzte Flaeche (Abschnitt 8). */
+  background: transparent;
   overflow: hidden;
 }
 
@@ -482,10 +556,23 @@ button.karte { cursor: pointer; }
 
 /* Zustände: die Ränder tragen die Information allein —
    kein Schloss, kein Häkchen. */
-.sternbild.sicher     { border: 1px solid var(--gold); padding: calc(var(--raum-halb) + 1px); }
+/* Zwei verschiedene Dinge, zwei verschiedene Bilder:
+   „nicht klaubar" (fertig) ist nur eine Feststellung — gestrichelter Rand.
+   „versiegelt" ist eine Entscheidung, die einen Zug gekostet hat — voller
+   Goldrand, goldene Schrift. Nur das Siegel schützt vor den kosmischen Karten. */
+.sternbild.sicher     { border: 1px dashed var(--gold); padding: calc(var(--raum-halb) + 1px); }
 .sternbild.versiegelt { border: 2px solid var(--gold); padding: var(--raum-halb); }
 .sternbild.versiegelt .sb-typ,
 .sternbild.versiegelt .sb-punkte { color: var(--gold); }
+
+.sb-marke {
+  font-family: var(--grotesk);
+  font-size: calc(var(--t-neben) - 2px);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.sb-marke.versiegelt { color: var(--gold); }
+.sb-marke.fertig     { color: var(--schrift-leise); }
 
 /* Anfassbar, aber noch nicht gewählt: nur der Zeiger und eine Spur Papier
    beim Überfahren. Kein Rand — sonst stünde der halbe Tisch in Kästen. */
@@ -527,7 +614,8 @@ button.karte { cursor: pointer; }
   align-items: center;
   justify-content: center;
   padding: var(--raum3);
-  background: var(--tisch-tief);
+  /* Durchsichtig: darunter liegt die Galaxie (Abschnitt 1). */
+  background: transparent;
   overflow: auto;
 }
 #startschirm[hidden] { display: none; }
@@ -1851,16 +1939,23 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
   position: fixed;
   inset: 0;
   z-index: 60;
-  pointer-events: none;
+  /* Nimmt Klicks an: ein Tippen bricht die Bewegung ab. Nebenbei verhindert
+     das Fehlklicks auf einen Tisch, der sich gerade noch verändert. */
+  pointer-events: auto;
+  cursor: pointer;
   overflow: hidden;
 }
 
 .karte.fliegt {
   position: absolute;
   margin: 0;
-  transition-property: left, top, width, height, opacity, transform;
+  /* Nur transform und opacity: beides läuft ohne neue Layoutrechnung.
+     will-change hebt die Karte vorher auf eine eigene Ebene. */
+  transition-property: transform, opacity;
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
   transition-duration: 700ms;   /* die Oberfläche setzt die Dauer selbst */
+  transform-origin: 0 0;
+  will-change: transform, opacity;
 }
 
 /* Ein Klau und eine Zerstörung sind die lauten Momente: die Karte bekommt
@@ -1868,6 +1963,73 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
    unterscheidet sich das Wegnehmen nicht vom bloßen Legen. */
 .karte.flug-klau      { outline: 2px solid var(--gold); }
 .karte.flug-zerstoert { outline: 2px solid var(--stern-heiss); }
+
+/* Die Vorwarnung: bevor etwas verschwindet, liegt es noch kurz da und ist
+   deutlich markiert. Ohne das weiß man hinterher nicht, was man verloren hat.
+   Die Karte bewegt sich dabei nicht — sie hebt sich nur ab. */
+.karte.warnung {
+  outline: 3px solid var(--stern-heiss);
+  transform: translate(0, -4px);
+  transition-duration: 120ms;
+}
+.karte.flug-klau.warnung { outline-color: var(--gold); }
+
+/* Der Schlund des Schwarzen Lochs. Ein Verlauf ist hier das richtige
+   Werkzeug — es soll ja keine Kante haben. Er liegt auf der Flugbühne,
+   also über dem Tisch und unter nichts anderem. */
+.schlund {
+  position: absolute;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%,
+      #000 0%,
+      #05070E 42%,
+      color-mix(in srgb, var(--stern-heiss) 55%, transparent) 62%,
+      color-mix(in srgb, var(--stern-heiss) 12%, transparent) 78%,
+      transparent 100%);
+  transform: scale(.05);
+  opacity: 0;
+  transition: transform 320ms cubic-bezier(.2,.8,.3,1), opacity 240ms linear;
+}
+.schlund.offen { transform: scale(1); opacity: 1; }
+/* Die Nova ist der stärkste Effekt im Spiel — einmal pro Partie darf sie groß. */
+.schlund.nova {
+  background:
+    radial-gradient(circle at 50% 50%,
+      var(--signal) 0%,
+      color-mix(in srgb, var(--stern-warm) 80%, transparent) 26%,
+      color-mix(in srgb, var(--stern-heiss) 45%, transparent) 52%,
+      color-mix(in srgb, var(--stern-heiss) 10%, transparent) 74%,
+      transparent 100%);
+  transition: transform 420ms cubic-bezier(.2,.8,.3,1), opacity 300ms linear;
+}
+.schlund.nova.offen { transform: scale(1.25); }
+
+.knall-blitz.nova { animation-duration: 900ms; }
+
+/* Die Trostpunkte des Bestohlenen: eine Zahl, die kurz aufsteigt. */
+@keyframes trost-auf {
+  0%   { opacity: 0; transform: translate(-50%, 6px) scale(.9); }
+  18%  { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(1); }
+}
+.trost-marke {
+  position: absolute;
+  font-family: var(--grotesk);
+  font-size: var(--t-abschnitt);
+  font-weight: 500;
+  color: var(--tisch-tief);
+  background: var(--gold);
+  border-radius: var(--r-flaeche);
+  padding: 2px var(--raum);
+  white-space: nowrap;
+  animation: trost-auf 1300ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .schlund, .trost-marke, .karte.warnung { display: none; }
+}
 
 /* Kosmische Karten erzählen selbst, was sie tun.
    Schwarzes Loch und Nova saugen ein: alles läuft zusammen und wird kleiner.
@@ -1885,6 +2047,8 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
   outline: 2px solid var(--signal);
   transition-timing-function: cubic-bezier(.5, 0, .2, 1);
 }
+/* Nachgezogen: kommt vom Stapel, ohne Aufhebens. */
+.karte.flug-ziehen { transition-timing-function: cubic-bezier(.3, 0, .2, 1); }
 
 /* Der Urknall blendet den Tisch kurz auf — ein einzelner heller Anschlag,
    kein Leuchten und keine Farbe, die es sonst nicht gibt. */
@@ -1910,6 +2074,10 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
 </style>
 </head>
 <body>
+
+<!-- Die Galaxie ganz hinten. Reine CSS-Verläufe plus ein kleines Sternmuster —
+     keine Bilddatei, kein Weichzeichner, keine Bewegung. -->
+<div id="galaxie" aria-hidden="true"></div>
 
 <div id="startschirm">
   <div id="start-mitte">
@@ -2115,6 +2283,10 @@ const CONFIG = {
   /* ---------- Wagen ---------- */
   wagen: {
     minSchrittweite: 2,       // Pfeil hat 1, Wagen mindestens das hier
+    // Groesste erlaubte Schrittweite. 12 heisst: keine Grenze (bisheriger Stand).
+    // Zum Ausprobieren: 3. Dann faellt 4-8-12 weg - ein Dreier, der mit
+    // Schrittweite 4 sofort unerweiterbar und damit gratis sicher ist.
+    maxSchrittweite: 12,
   },
 
   /* ---------- Der Drache ---------- */
@@ -2154,6 +2326,16 @@ const CONFIG = {
     //              Karten ab, der Ablagestapel wird zurückgemischt. Hält den Tisch
     //              übersichtlich und wirkt gegen den Kartenmangel in späten Runden.
     zerstoerteKartenNach: 'ABLAGE',
+
+    // Kosmische Karten (außer der Sternschnuppe), die beim Auffüllen in die
+    // Mitte gezogen werden: sofort auf die Ablage (true) oder bis zum
+    // Rundenende liegen lassen (false).
+    //   Antons Entscheidung vom 6. September 2026: sofort. Solange
+    //   kosmischeAusMitteNehmbar false ist, kann niemand etwas mit ihnen
+    //   anfangen — sie machen die Mitte nur unübersichtlich.
+    // Nebenwirkung: Über die zurückgemischte Ablage kommen sie schneller
+    // wieder ins Spiel. Gemessene Auswirkung siehe berichte/Balance-Befunde.md.
+    mitteKosmischSofortAblegen: true,
 
     // Nova
     novaZerstoertAuchSicher: true,
@@ -2359,7 +2541,11 @@ function klassifiziereSchluessel(key, n) {
     const d = werte[1] - werte[0];
     for (let i = 2; i < n; i++) if (werte[i] - werte[i - 1] !== d) return UNGUELTIG;
     if (d === 1) { const p = P.PFEIL[n]; return p == null ? UNGUELTIG : { gueltig: true, typ: 'PFEIL', punkte: p, groesse: n, werte }; }
-    if (d >= CONFIG.wagen.minSchrittweite) { const p = P.WAGEN[n]; return p == null ? UNGUELTIG : { gueltig: true, typ: 'WAGEN', punkte: p, groesse: n, werte }; }
+    const maxD = CONFIG.wagen.maxSchrittweite ?? HI;
+    if (d >= CONFIG.wagen.minSchrittweite && d <= maxD) {
+      const p = P.WAGEN[n];
+      return p == null ? UNGUELTIG : { gueltig: true, typ: 'WAGEN', punkte: p, groesse: n, werte };
+    }
   }
   return UNGUELTIG;
 }
@@ -2794,6 +2980,8 @@ class Spiel {
     // Welche kosmische Karte zuletzt gewirkt hat. Nur für die Oberfläche, die
     // daran ihr Bild wählt; sie setzt das Feld nach dem Lesen selbst zurück.
     this.letzteKosmisch = null;
+    /** { opferIdx, punkte } des letzten Klaus — ebenfalls nur fürs Bild. */
+    this.letzteEntschaedigung = null;
 
     // Spieler, die das Schwarze Loch aus dem Himmel selbst ausrichten dürfen.
     // Alle anderen (die Bots) bekommen automatisch das stärkste Ziel.
@@ -2852,12 +3040,29 @@ class Spiel {
     return this.mitte.reduce((n, k) => n + (istZahl(k) || k.art === 'STERNSCHNUPPE' ? 1 : 0), 0);
   }
 
+  /**
+   * Ist das eine kosmische Karte, mit der in der Mitte niemand etwas anfangen
+   * kann? Die Sternschnuppe zählt nicht dazu: sie ist Teil eines Sternbilds
+   * und wird ganz normal mitgenommen.
+   */
+  liegtNutzlosInMitte(k) {
+    return k.art !== 'ZAHL' && k.art !== 'STERNSCHNUPPE'
+      && !CONFIG.zug.kosmischeAusMitteNehmbar;
+  }
+
   fuelleMitte() {
     const ziel = mitteGroesse(this.runde);
     let schutz = 200;
     while (this.zahlenInMitte() < ziel && schutz-- > 0) {
       const k = this.zieheKarte();
       if (!k) break;
+      // Nicht nehmbare kosmische Karten sofort auf die Ablage: sie lägen sonst
+      // bis zum Rundenende in der Mitte herum, ohne dass jemand sie benutzen
+      // kann. Sie kommen über die zurückgemischte Ablage wieder ins Spiel.
+      if (CONFIG.kosmisch.mitteKosmischSofortAblegen && this.liegtNutzlosInMitte(k)) {
+        this.ablage.push(k);
+        continue;
+      }
       this.mitte.push(k);
     }
   }
@@ -3104,6 +3309,10 @@ class Spiel {
         sb.karten.push(...karten);
         sp.sternbilder.push(sb);
         opfer.punkte += entschaedigung;
+        // Nur für die Oberfläche, damit sie die Trostpunkte beim Bestohlenen
+        // aufblitzen lassen kann. Keine Regel hängt daran; sie liest das Feld
+        // und setzt es selbst zurück.
+        this.letzteEntschaedigung = { opferIdx: a.opferIdx, punkte: entschaedigung };
         this.stats.klaus++;
         this.stats.entschaedigung += entschaedigung;
         const t = bewerte(sb.karten).typ;
@@ -4583,9 +4792,17 @@ function sternbildEl(sb, opt = {}) {
   if (opt.jokerChance) e.classList.add('joker-chance');
   if (opt.frisch) e.classList.add('frisch');
 
-  // Kein Schloss, kein Häkchen: versiegelt und sicher tragen die Goldränder.
   const kopf = el('div', 'sb-kopf');
   kopf.appendChild(el('span', 'sb-typ', typText(sb.typ)));
+  /*
+     „Fertig" und „versiegelt" sahen sich zu ähnlich — beide nur ein Goldrand,
+     einmal dünn, einmal dick. Der Unterschied ist aber wichtig: fertig heißt
+     nur, dass niemand es klauen kann, weil nichts mehr dazupasst. Gegen
+     Schwarzes Loch, Urknall und Nova schützt allein das Siegel.
+     Deshalb steht es jetzt als Wort da.
+  */
+  if (sb.versiegelt) kopf.appendChild(el('span', 'sb-marke versiegelt', 'versiegelt'));
+  else if (sb.sicher) kopf.appendChild(el('span', 'sb-marke fertig', 'nicht klaubar'));
   kopf.appendChild(el('span', 'sb-punkte', String(sb.punkte)));
   e.appendChild(kopf);
 
@@ -4930,6 +5147,15 @@ function handQuelle(ort, wie) {
   };
 }
 
+/** Der Nachziehstapel — von dort kommen frisch gezogene Karten. */
+function deckQuelle(wie) {
+  const d = document.getElementById('stapel-deck');
+  if (!d) return null;
+  const b = d.getBoundingClientRect();
+  if (!b.width) return null;
+  return { left: b.left, top: b.top, width: wie.width, height: wie.height };
+}
+
 /** Der Ablagestapel — dorthin verschwinden zerstörte Karten. */
 function ablageZiel(wie) {
   const a = document.getElementById('stapel-ablage');
@@ -4940,27 +5166,21 @@ function ablageZiel(wie) {
 }
 
 /**
- * Lässt Karten sichtbar von einem Platz zum anderen wandern.
- *
- * Bewusst nur zwei Fälle, sonst zappelt der Tisch bei jedem Zug:
- *   - von einem Spieler zu einem anderen  → geklaut
- *   - von einem Spieler in die Mitte      → zerstört
- * Bauen (Mitte → eigener Platz) bewegt sich nicht.
- *
- * @param {Map} vorher Ergebnis von kartenLage() VOR dem Zug
- * @returns {Promise<void>}
- */
-/**
  * @param {Map} vorher  Ergebnis von kartenLage() VOR dem Zug
- * @param {{kosmisch?:string, dauer?:number}} [opt]
+ * @param {object} [opt]
  *   kosmisch: 'SCHWARZES_LOCH' | 'URKNALL' | 'WEISSES_LOCH' | 'NOVA'
- *   Dann erzählt die Bewegung, was die Karte getan hat: das Schwarze Loch
- *   saugt ein, der Urknall schleudert auseinander, das Weiße Loch zieht eine
- *   einzelne Karte heraus. Vorher waren die Karten einfach weg und man musste
- *   im Protokoll nachlesen, was passiert war.
+ *   trost:    { opferIdx, punkte } — Trostpunkte, die beim Bestohlenen
+ *             aufblitzen sollen
+ *
+ * Die Bewegung erzählt, was passiert ist; das Protokoll bestätigt es nur.
+ * Deshalb in drei Abschnitten:
+ *   1. Vorwarnung — die betroffenen Karten liegen noch da und leuchten kurz
+ *      auf. Ohne das weiß man hinterher nicht, was man verloren hat.
+ *   2. Der Vorgang selbst — einsaugen, auseinanderfliegen, herausziehen.
+ *   3. Aufräumen.
+ * Zusammen höchstens rund anderthalb Sekunden. Ein Tippen bricht ab.
  */
 function fliegeUm(vorher, opt = {}) {
-  const dauer = opt.dauer || 700;
   const kosmisch = opt.kosmisch || null;
   const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (ruhig || !vorher || vorher.size === 0) return Promise.resolve();
@@ -4972,20 +5192,27 @@ function fliegeUm(vorher, opt = {}) {
   for (const [id, neu] of jetzt) {
     const alt = vorher.get(id);
     if (!alt) {
-      // Vorher nirgends zu sehen und jetzt in einer Auslage: aus der Hand gelegt.
+      // Frisch auf der eigenen Hand: nachgezogen, kommt vom Nachziehstapel.
+      if (neu.ort === 'hand0') {
+        const her = deckQuelle(neu.r);
+        if (her) fluege.push({ id, von: her, nach: neu.r, art: 'ziehen' });
+        continue;
+      }
       if (!istSp(neu.ort)) continue;
-      const von = handQuelle(neu.ort, neu.r);
-      if (von) fluege.push({ id, von, nach: neu.r, art: 'legen' });
+      const her = handQuelle(neu.ort, neu.r);
+      if (her) fluege.push({ id, von: her, nach: neu.r, art: 'legen' });
       continue;
     }
     if (alt.ort === neu.ort) continue;
-    if (istSp(alt.ort) && istSp(neu.ort)) fluege.push({ id, von: alt.r, nach: neu.r, art: 'klau', quelle: alt.el });
-    else if ((alt.ort === 'mitte' || alt.ort === 'hand0') && istSp(neu.ort)) {
+    if (istSp(alt.ort) && istSp(neu.ort)) {
+      fluege.push({ id, von: alt.r, nach: neu.r, art: 'klau', quelle: alt.el });
+    } else if ((alt.ort === 'mitte' || alt.ort === 'hand0') && istSp(neu.ort)) {
       fluege.push({ id, von: alt.r, nach: neu.r, art: 'legen' });
+    } else if (istSp(alt.ort) && neu.ort === 'mitte') {
+      fluege.push({ id, von: alt.r, nach: neu.r, art: 'zerstoert', quelle: alt.el });
+    } else if (istSp(alt.ort) && neu.ort === 'hand0') {
+      fluege.push({ id, von: alt.r, nach: neu.r, art: 'zug', quelle: alt.el });
     }
-    else if (istSp(alt.ort) && neu.ort === 'mitte') fluege.push({ id, von: alt.r, nach: neu.r, art: 'zerstoert', quelle: alt.el });
-    // Aus einer Auslage auf die eigene Hand — das tut das Weiße Loch.
-    else if (istSp(alt.ort) && neu.ort === 'hand0') fluege.push({ id, von: alt.r, nach: neu.r, art: 'zug', quelle: alt.el });
   }
 
   // Karten, die der Zug ganz vom Tisch genommen hat (zerstört, auf die Ablage).
@@ -4995,63 +5222,80 @@ function fliegeUm(vorher, opt = {}) {
     if (ziel) fluege.push({ id, von: alt.r, nach: ziel, art: 'zerstoert', quelle: alt.el, weg: true });
   }
 
-  if (!fluege.length) return Promise.resolve();
+  if (!fluege.length && !opt.trost) return Promise.resolve();
 
-  /* ---- Kosmische Karten bekommen ihr eigenes Bild ---- */
+  /* ---------------- Was für ein Vorgang ist das? ---------------- */
+
   const zerstoerte = fluege.filter((f) => f.art === 'zerstoert');
-  if (kosmisch === 'SCHWARZES_LOCH' || kosmisch === 'NOVA') {
-    // Einsaugen: alles läuft im Schwerpunkt der zerfallenden Auslage zusammen
-    // und schrumpft dabei auf nichts.
-    const m = schwerpunkt(zerstoerte);
+  const geklaute = fluege.filter((f) => f.art === 'klau');
+  const einsaugend = kosmisch === 'SCHWARZES_LOCH' || kosmisch === 'NOVA';
+  const nova = kosmisch === 'NOVA';
+  const tischMitte = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  const herd = schwerpunkt(zerstoerte.length ? zerstoerte : geklaute);
+
+  // Zeiten. Alles zusammen bleibt unter zwei Sekunden.
+  const warnZeit = (zerstoerte.length || geklaute.length) ? 280 : 0;
+  let zugZeit = 620;
+  if (geklaute.length) zugZeit = 780;
+  if (kosmisch === 'WEISSES_LOCH') zugZeit = 820;
+  if (einsaugend) zugZeit = nova ? 1050 : 880;
+  if (kosmisch === 'URKNALL') zugZeit = 900;
+
+  if (einsaugend) {
+    // Alles läuft im Schlund zusammen und schrumpft dabei auf nichts.
     for (const f of zerstoerte) {
-      f.nach = { left: m.x - 3, top: m.y - 4, width: 6, height: 8 };
+      f.nach = { left: herd.x - 4, top: herd.y - 5, width: 8, height: 10 };
       f.weg = true;
-      f.dreh = (f.von.left - m.x) / 6;
+      f.dreh = (f.von.left - herd.x) / 5;
       f.art = 'loch';
     }
   } else if (kosmisch === 'URKNALL') {
-    // Auseinanderfliegen: jede Karte weg von der Mitte des Geschehens.
-    const m = schwerpunkt(zerstoerte);
+    // Vom Zentrum des Tisches nach außen — auch bei vielen Auslagen zugleich.
     for (const f of zerstoerte) {
-      const dx = (f.von.left + f.von.width / 2) - m.x;
-      const dy = (f.von.top + f.von.height / 2) - m.y;
+      const dx = (f.von.left + f.von.width / 2) - tischMitte.x;
+      const dy = (f.von.top + f.von.height / 2) - tischMitte.y;
       const laenge = Math.max(1, Math.hypot(dx, dy));
-      const weite = 340 + Math.random() * 220;
+      const weite = 380 + Math.random() * 260;
       f.nach = {
         left: f.von.left + (dx / laenge) * weite,
         top: f.von.top + (dy / laenge) * weite,
-        width: f.von.width,
-        height: f.von.height,
+        width: f.von.width, height: f.von.height,
       };
       f.weg = true;
-      f.dreh = (Math.random() * 2 - 1) * 90;
+      f.dreh = (Math.random() * 2 - 1) * 110;
       f.art = 'knall';
     }
   } else if (kosmisch === 'WEISSES_LOCH') {
-    // Herausziehen: die eine Karte wandert langsam und deutlich.
     for (const f of fluege) if (f.art === 'legen') f.art = 'zug';
   }
 
-  // Klauen und Zerstören sind die großen Momente — sie dauern länger.
-  const langsam = fluege.some((f) => f.art !== 'legen');
-  let zeit = langsam ? Math.round(dauer * 1.7) : dauer;
-  if (kosmisch === 'URKNALL') zeit = 1250;
-  if (kosmisch === 'SCHWARZES_LOCH' || kosmisch === 'NOVA') zeit = 1150;
-  if (kosmisch === 'WEISSES_LOCH') zeit = 1100;
+  /* ---------------- Bühne aufbauen ---------------- */
 
   const buehne = el('div', 'flug-buehne');
+  buehne.title = 'Antippen: überspringen';
   document.body.appendChild(buehne);
   const versteckt = [];
+  const zeitgeber = [];
+  const teile = [];
 
-  // Der Urknall macht einen Knall: ein kurzer heller Anschlag über allem.
-  if (kosmisch === 'URKNALL') {
-    const blitz = el('div', 'knall-blitz');
-    document.body.appendChild(blitz);
-    setTimeout(() => blitz.remove(), 700);
+  if (kosmisch === 'URKNALL' || nova) {
+    buehne.appendChild(el('div', nova ? 'knall-blitz nova' : 'knall-blitz'));
+  }
+
+  // Der Schlund: er wächst vor dem Sternbild, saugt und schließt sich wieder.
+  let schlund = null;
+  if (einsaugend && zerstoerte.length) {
+    const gr = Math.max(120, Math.min(420, spannweite(zerstoerte) * (nova ? 1.5 : 1.1)));
+    schlund = el('div', nova ? 'schlund nova' : 'schlund');
+    schlund.style.left = (herd.x - gr / 2) + 'px';
+    schlund.style.top = (herd.y - gr / 2) + 'px';
+    schlund.style.width = gr + 'px';
+    schlund.style.height = gr + 'px';
+    buehne.appendChild(schlund);
   }
 
   for (const f of fluege) {
-    const echt = document.querySelector(`.karte[data-id="${f.id}"]`);
+    const echt = document.querySelector('.karte[data-id="' + f.id + '"]');
     const muster = echt || f.quelle;
     if (!muster) continue;
     const klon = muster.cloneNode(true);
@@ -5060,31 +5304,87 @@ function fliegeUm(vorher, opt = {}) {
     klon.style.top = f.von.top + 'px';
     klon.style.width = f.von.width + 'px';
     klon.style.height = f.von.height + 'px';
+    // Vorwarnung nur für das, was gleich verschwindet oder den Besitzer wechselt.
+    if (warnZeit && f.art !== 'legen' && f.art !== 'ziehen') klon.classList.add('warnung');
     buehne.appendChild(klon);
     if (echt) { echt.style.visibility = 'hidden'; versteckt.push(f.id); }
-    if (f.weg) klon.style.opacity = '1';
-
-    setTimeout(() => {
-      klon.style.transitionDuration = zeit + 'ms';
-      klon.style.left = f.nach.left + 'px';
-      klon.style.top = f.nach.top + 'px';
-      klon.style.width = f.nach.width + 'px';
-      klon.style.height = f.nach.height + 'px';
-      if (f.dreh) klon.style.transform = `rotate(${Math.round(f.dreh)}deg)`;
-      if (f.weg) klon.style.opacity = '0';
-    }, 20);
+    teile.push({ f, klon });
   }
 
+  // Trostpunkte beim Bestohlenen: eine kurze Zahl, die aufsteigt.
+  if (opt.trost && opt.trost.punkte > 0) {
+    const platz = document.querySelector('.gegner[data-idx="' + opt.trost.opferIdx + '"]')
+      || (opt.trost.opferIdx === 0 ? document.getElementById('ich-bereich') : null);
+    if (platz) {
+      const b = platz.getBoundingClientRect();
+      const marke = el('div', 'trost-marke', '+' + opt.trost.punkte);
+      marke.style.left = Math.round(b.left + b.width / 2) + 'px';
+      marke.style.top = Math.round(b.top + Math.min(40, b.height / 2)) + 'px';
+      buehne.appendChild(marke);
+    }
+  }
+
+  /* ---------------- Ablauf ---------------- */
+
   return new Promise((fertig) => {
-    setTimeout(() => {
+    let beendet = false;
+    const aufraeumen = () => {
+      if (beendet) return;
+      beendet = true;
+      for (const t of zeitgeber) clearTimeout(t);
       buehne.remove();
       for (const id of versteckt) {
-        const echt = document.querySelector(`.karte[data-id="${id}"]`);
-        if (echt) echt.style.visibility = '';
+        const e = document.querySelector('.karte[data-id="' + id + '"]');
+        if (e) e.style.visibility = '';
       }
       fertig();
-    }, zeit + 60);
+    };
+    // Antippen bricht ab — man sieht diese Bilder oft.
+    buehne.addEventListener('pointerdown', aufraeumen);
+
+    const nach = (ms, fn) => zeitgeber.push(setTimeout(fn, ms));
+
+    // 1. Vorwarnung stehen lassen, dann 2. den Vorgang starten.
+    nach(warnZeit + 20, () => {
+      if (schlund) schlund.classList.add('offen');
+      for (const { f, klon } of teile) {
+        klon.classList.remove('warnung');
+        klon.style.transitionDuration = zugZeit + 'ms';
+        /*
+           Bewegt wird ausschließlich über transform und opacity. Beides kann
+           der Browser auf der Grafikkarte erledigen, ohne das Layout neu zu
+           rechnen. Über left/top/width/height zu animieren sah genauso aus,
+           kostete aber bei jedem Bild eine neue Layoutrechnung — beim Urknall
+           mit einem Dutzend Karten gleichzeitig merkt man das auf dem Handy.
+           Der Ursprung liegt oben links, damit sich Verschieben und Verkleinern
+           sauber zusammensetzen.
+        */
+        const dx = f.nach.left - f.von.left;
+        const dy = f.nach.top - f.von.top;
+        const skal = f.von.width ? f.nach.width / f.von.width : 1;
+        klon.style.transform = 'translate(' + Math.round(dx) + 'px,' + Math.round(dy) + 'px)'
+          + (skal !== 1 ? ' scale(' + skal.toFixed(3) + ')' : '')
+          + (f.dreh ? ' rotate(' + Math.round(f.dreh) + 'deg)' : '');
+        if (f.weg) klon.style.opacity = '0';
+      }
+    });
+
+    // Der Schlund schließt sich, kurz bevor alles vorbei ist.
+    if (schlund) nach(warnZeit + zugZeit - 140, () => schlund.classList.remove('offen'));
+
+    nach(warnZeit + zugZeit + 120, aufraeumen);
   });
+}
+
+/** Wie weit ist die Gruppe auseinander? Bestimmt, wie groß der Schlund wird. */
+function spannweite(fluege) {
+  if (!fluege.length) return 0;
+  let l = Infinity, r = -Infinity, o = Infinity, u = -Infinity;
+  for (const f of fluege) {
+    l = Math.min(l, f.von.left); r = Math.max(r, f.von.left + f.von.width);
+    o = Math.min(o, f.von.top);  u = Math.max(u, f.von.top + f.von.height);
+  }
+  return Math.max(r - l, u - o);
 }
 
 /** Mittelpunkt einer Gruppe von Flügen — der Ort, an dem etwas passiert. */
@@ -6474,7 +6774,7 @@ async function laufeTutorial(lauf) {
       if (s.ereignis) s.ereignis();
       zeichne();
       tonZumZug(vorher);
-      await fliegeUm(vorher, { kosmisch: nimmKosmisch() });
+      await fliegeUm(vorher, bildDaten());
       if (!gilt()) return;
 
       await fuehrer.sag(text(s.danach));
@@ -6587,7 +6887,7 @@ function weiterLaufen() {
 
     zeichne();
     tonZumZug(vorher);
-    fliegeUm(vorher, { kosmisch: nimmKosmisch() }).then(() => {
+    fliegeUm(vorher, bildDaten()).then(() => {
       if (S.ablauf !== a) return;
       // Kurz stehen lassen, damit das Ergebnis ankommt, bevor der Nächste zieht.
       S.botTimer = setTimeout(() => {
@@ -7118,11 +7418,15 @@ function baueKnoepfe(s) {
   if (S.auswahlHand.size === 1 && !S.tutorial) {
     const id = [...S.auswahlHand][0];
     const mit = S.auswahlMitte.size;
+    // „Abwerfen" klang nach Verlust. Tatsächlich wird am Zugende wieder auf
+    // vier Handkarten aufgefüllt — man tauscht die Karte also.
     knoepfe.push({
-      text: 'Abwerfen',
+      text: 'Karte tauschen (abwerfen und nachziehen)',
       titel: mit
-        ? 'Nur die Handkarte wandert auf die Ablage; die Mittelkarten bleiben liegen.'
-        : 'Eine Handkarte auf den Ablagestapel. Kostet den Zug.',
+        ? 'Nur die Handkarte wandert auf die Ablage; die Mittelkarten bleiben liegen. '
+          + 'Am Zugende ziehst du wieder auf ' + CONFIG.spiel.handkarten + ' Karten auf.'
+        : 'Die Karte geht auf den Ablagestapel, am Zugende ziehst du wieder auf '
+          + CONFIG.spiel.handkarten + ' Karten auf. Kostet den ganzen Zug.',
     });
     tun.push(() => fuehreAus({ art: 'ABWERFEN', handIds: [id], gewinn: 0, punkteNachher: 0 }));
   }
@@ -7332,6 +7636,18 @@ function nimmKosmisch() {
   return art;
 }
 
+/**
+ * Alles, was die Bewegung über den letzten Zug wissen muss: welche kosmische
+ * Karte gewirkt hat und ob jemand Trostpunkte bekommen hat. Wird einmal
+ * gelesen und dabei zurückgesetzt.
+ */
+function bildDaten() {
+  const sp = S.ablauf && S.ablauf.spiel;
+  const trost = sp ? sp.letzteEntschaedigung : null;
+  if (sp) sp.letzteEntschaedigung = null;
+  return { kosmisch: nimmKosmisch(), trost };
+}
+
 function spieleKosmisch(wahl) {
   const vorher = kartenLage();
   S.ablauf.spiel.spieleKosmisch(S.menschIdx, wahl);
@@ -7339,7 +7655,7 @@ function spieleKosmisch(wahl) {
   auswahlLeeren();
   zeichne();
   // Erst die Bewegung, dann das Protokoll: man soll sehen, was passiert ist.
-  fliegeUm(vorher, { kosmisch: nimmKosmisch() });
+  fliegeUm(vorher, bildDaten());
 }
 
 function sternbildGeklickt(sbId) {
@@ -7359,7 +7675,7 @@ function sternbildGeklickt(sbId) {
         a.spiel.spieleNova(S.menschIdx, wahl);
         S.modus = null;
         zeichne();
-        fliegeUm(vorher, { kosmisch: nimmKosmisch() });
+        fliegeUm(vorher, bildDaten());
       }
       return;
     }
@@ -7390,7 +7706,7 @@ function fuehreAus(aktion) {
     tonZumZug(vorher);
     const weiter = S.tutorialZugFertig;
     S.tutorialZugFertig = null;
-    fliegeUm(vorher, { kosmisch: nimmKosmisch() }).then(() => { if (weiter) weiter(); });
+    fliegeUm(vorher, bildDaten()).then(() => { if (weiter) weiter(); });
     return;
   }
   // Vorher merken, wo die Karten liegen — beim Klauen sieht man sie danach wandern.
@@ -7400,7 +7716,7 @@ function fuehreAus(aktion) {
   S.kosmischGespielt = false;
   zeichne();
   tonZumZug(vorher);
-  fliegeUm(vorher, { kosmisch: nimmKosmisch() }).then(() => weiterLaufen());
+  fliegeUm(vorher, bildDaten()).then(() => weiterLaufen());
 }
 
 function nachZug() {

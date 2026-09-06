@@ -97,6 +97,10 @@ const CONFIG = {
   /* ---------- Wagen ---------- */
   wagen: {
     minSchrittweite: 2,       // Pfeil hat 1, Wagen mindestens das hier
+    // Groesste erlaubte Schrittweite. 12 heisst: keine Grenze (bisheriger Stand).
+    // Zum Ausprobieren: 3. Dann faellt 4-8-12 weg - ein Dreier, der mit
+    // Schrittweite 4 sofort unerweiterbar und damit gratis sicher ist.
+    maxSchrittweite: 12,
   },
 
   /* ---------- Der Drache ---------- */
@@ -136,6 +140,16 @@ const CONFIG = {
     //              Karten ab, der Ablagestapel wird zurückgemischt. Hält den Tisch
     //              übersichtlich und wirkt gegen den Kartenmangel in späten Runden.
     zerstoerteKartenNach: 'ABLAGE',
+
+    // Kosmische Karten (außer der Sternschnuppe), die beim Auffüllen in die
+    // Mitte gezogen werden: sofort auf die Ablage (true) oder bis zum
+    // Rundenende liegen lassen (false).
+    //   Antons Entscheidung vom 6. September 2026: sofort. Solange
+    //   kosmischeAusMitteNehmbar false ist, kann niemand etwas mit ihnen
+    //   anfangen — sie machen die Mitte nur unübersichtlich.
+    // Nebenwirkung: Über die zurückgemischte Ablage kommen sie schneller
+    // wieder ins Spiel. Gemessene Auswirkung siehe berichte/Balance-Befunde.md.
+    mitteKosmischSofortAblegen: true,
 
     // Nova
     novaZerstoertAuchSicher: true,
@@ -341,7 +355,11 @@ function klassifiziereSchluessel(key, n) {
     const d = werte[1] - werte[0];
     for (let i = 2; i < n; i++) if (werte[i] - werte[i - 1] !== d) return UNGUELTIG;
     if (d === 1) { const p = P.PFEIL[n]; return p == null ? UNGUELTIG : { gueltig: true, typ: 'PFEIL', punkte: p, groesse: n, werte }; }
-    if (d >= CONFIG.wagen.minSchrittweite) { const p = P.WAGEN[n]; return p == null ? UNGUELTIG : { gueltig: true, typ: 'WAGEN', punkte: p, groesse: n, werte }; }
+    const maxD = CONFIG.wagen.maxSchrittweite ?? HI;
+    if (d >= CONFIG.wagen.minSchrittweite && d <= maxD) {
+      const p = P.WAGEN[n];
+      return p == null ? UNGUELTIG : { gueltig: true, typ: 'WAGEN', punkte: p, groesse: n, werte };
+    }
   }
   return UNGUELTIG;
 }
@@ -776,6 +794,8 @@ class Spiel {
     // Welche kosmische Karte zuletzt gewirkt hat. Nur für die Oberfläche, die
     // daran ihr Bild wählt; sie setzt das Feld nach dem Lesen selbst zurück.
     this.letzteKosmisch = null;
+    /** { opferIdx, punkte } des letzten Klaus — ebenfalls nur fürs Bild. */
+    this.letzteEntschaedigung = null;
 
     // Spieler, die das Schwarze Loch aus dem Himmel selbst ausrichten dürfen.
     // Alle anderen (die Bots) bekommen automatisch das stärkste Ziel.
@@ -834,12 +854,29 @@ class Spiel {
     return this.mitte.reduce((n, k) => n + (istZahl(k) || k.art === 'STERNSCHNUPPE' ? 1 : 0), 0);
   }
 
+  /**
+   * Ist das eine kosmische Karte, mit der in der Mitte niemand etwas anfangen
+   * kann? Die Sternschnuppe zählt nicht dazu: sie ist Teil eines Sternbilds
+   * und wird ganz normal mitgenommen.
+   */
+  liegtNutzlosInMitte(k) {
+    return k.art !== 'ZAHL' && k.art !== 'STERNSCHNUPPE'
+      && !CONFIG.zug.kosmischeAusMitteNehmbar;
+  }
+
   fuelleMitte() {
     const ziel = mitteGroesse(this.runde);
     let schutz = 200;
     while (this.zahlenInMitte() < ziel && schutz-- > 0) {
       const k = this.zieheKarte();
       if (!k) break;
+      // Nicht nehmbare kosmische Karten sofort auf die Ablage: sie lägen sonst
+      // bis zum Rundenende in der Mitte herum, ohne dass jemand sie benutzen
+      // kann. Sie kommen über die zurückgemischte Ablage wieder ins Spiel.
+      if (CONFIG.kosmisch.mitteKosmischSofortAblegen && this.liegtNutzlosInMitte(k)) {
+        this.ablage.push(k);
+        continue;
+      }
       this.mitte.push(k);
     }
   }
@@ -1086,6 +1123,10 @@ class Spiel {
         sb.karten.push(...karten);
         sp.sternbilder.push(sb);
         opfer.punkte += entschaedigung;
+        // Nur für die Oberfläche, damit sie die Trostpunkte beim Bestohlenen
+        // aufblitzen lassen kann. Keine Regel hängt daran; sie liest das Feld
+        // und setzt es selbst zurück.
+        this.letzteEntschaedigung = { opferIdx: a.opferIdx, punkte: entschaedigung };
         this.stats.klaus++;
         this.stats.entschaedigung += entschaedigung;
         const t = bewerte(sb.karten).typ;
