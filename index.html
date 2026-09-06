@@ -797,10 +797,10 @@ button.karte { cursor: pointer; }
   gap: var(--raum-halb);
   min-width: 0;
   min-height: 0;
-  /* Links Platz für den Balken des aktiven Platzes — sonst springt alles,
-     sobald der Zug weitergeht. */
-  padding: var(--raum-halb) var(--raum-halb) var(--raum-halb) var(--raum);
-  border-left: 3px solid transparent;
+  /* Platz für den Rahmen des aktiven Platzes — sonst springt alles, sobald
+     der Zug weitergeht. */
+  padding: var(--raum-halb);
+  border: 2px solid transparent;
   border-radius: var(--r-flaeche);
 }
 
@@ -859,10 +859,11 @@ button.karte { cursor: pointer; }
   color: var(--schrift);
 }
 
-/* Wer am Zug ist: Balken an der Kante, hellerer Grund, das Wort dazu.
-   Es blinkt nichts — der Platz ist einfach heller als die anderen. */
+/* Wer am Zug ist, muss auf einen Blick zu sehen sein: der ganze Platz bekommt
+   einen Rahmen in Signalfarbe und einen helleren Grund. Ein Balken an der
+   linken Kante allein hat man übersehen. Es blinkt nichts. */
 .gegner.aktiv {
-  border-left-color: var(--signal);
+  border-color: var(--signal);
   background: var(--tisch-hoch);
 }
 .gegner.aktiv .gegner-name { color: var(--signal); }
@@ -1027,11 +1028,67 @@ button.karte { cursor: pointer; }
    Zwei Zonen, getrennt durch eine Haarlinie. Kein Kasten.
    ============================================================ */
 
-/* Bist du dran, trägt dein Bereich denselben Balken wie ein aktiver
-   Gegnerplatz — die Hervorhebung wandert sichtbar um den Tisch. */
-#ich-bereich.aktiv,
-#hand-bereich.aktiv { border-left: 3px solid var(--signal); padding-left: var(--raum); }
-#ich-bereich, #hand-bereich { border-left: 3px solid transparent; padding-left: var(--raum); }
+/* Bist du dran, bekommt dein Bereich denselben Rahmen wie ein aktiver
+   Gegnerplatz — die Hervorhebung wandert sichtbar um den Tisch. Deine beiden
+   Zonen gehören zusammen: oben gerahmt, unten offen, damit sie als ein Feld
+   gelesen werden. */
+#ich-bereich, #hand-bereich {
+  border: 2px solid transparent;
+  padding-left: var(--raum);
+  padding-right: var(--raum);
+  border-radius: var(--r-flaeche);
+}
+#ich-bereich.aktiv {
+  border-color: var(--signal);
+  border-bottom-color: transparent;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--tisch-hoch);
+}
+#hand-bereich.aktiv {
+  border-color: var(--signal);
+  border-top-color: transparent;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  background: var(--tisch-hoch);
+}
+
+/* „Du bist am Zug" — steht in der Überschrift deiner Auslage, in derselben
+   Signalfarbe wie der Rahmen. */
+.dran-marke {
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: var(--tisch-tief);
+  background: var(--signal);
+  border-radius: var(--r-flaeche);
+  padding: 2px var(--raum);
+  white-space: nowrap;
+}
+.dran-marke[hidden] { display: none; }
+
+/* ---------- Karten in den Regeln ----------
+   Jede erklärte Karte steht daneben, wie sie im Spiel aussieht. Kleiner als
+   auf dem Tisch, aber dieselbe Zeichnung — sonst lernt man ein Bild und sieht
+   im Spiel ein anderes. */
+.regel-karte {
+  --karte-b: 40px;
+  --karte-h: 56px;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: var(--raum);
+}
+.regel-karte-zelle { white-space: nowrap; }
+.regel-formen { margin-top: var(--raum2); }
+
+/* Die beiden Nebenwege unter dem Startschirm, untereinander und ruhig. */
+#start-fuss {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
 
 #ich-bereich {
   display: flex;
@@ -1885,7 +1942,10 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
       </div>
     </div>
 
-    <button class="knopf link" id="btn-regeln-start" type="button">Regeln nachlesen</button>
+    <div id="start-fuss">
+      <button class="knopf link" id="btn-regeln-start" type="button">Regeln nachlesen</button>
+      <button class="knopf link" id="btn-tutorial-neu" type="button">Tutorial beim Start wieder zeigen</button>
+    </div>
   </div>
 </div>
 
@@ -1916,7 +1976,9 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
     </section>
 
     <section id="ich-bereich">
-      <h2 class="bereich-titel">Vor dir <span class="hinweis" id="ich-punkte"></span></h2>
+      <h2 class="bereich-titel">Vor dir
+        <span class="dran-marke" id="dran-marke" hidden>Du bist am Zug</span>
+        <span class="hinweis" id="ich-punkte"></span></h2>
       <div class="sternbilder" id="meine-sternbilder"></div>
     </section>
 
@@ -3925,6 +3987,9 @@ was noch vor dir liegt — deshalb ist Halten so wichtig wie Bauen.</p>
 </table>
 <p>${CONFIG.sternbild.minKarten} bis ${CONFIG.sternbild.maxKarten} Karten. Die Punktzahlen
 bei Pfeil und Wagen gelten für 3 / 4 / 5 / 6 Karten.</p>
+<!-- Die Formentafel wird beim Öffnen eingesetzt (start.js, bebildereRegeln).
+     Sie zeigt jede Form mit echten Karten, so wie sie auf dem Tisch liegen. -->
+<div class="regel-formen"></div>
 
 <h3>Klauen</h3>
 <p>Ein fremdes, offenes Sternbild übernehmen: mindestens
@@ -3958,27 +4023,27 @@ Höchstens ${CONFIG.zug.kosmischeProZug} pro Zug. Das Ziel suchst du dir selbst 
 Angreifen kannst du damit nur <b>offene</b> Sternbilder; versiegelte und fertige sind
 tabu. Nur die Nova bricht auch die auf.</p>
 <table class="regel-tabelle">
-  <tr><td>${ART_ZEICHEN.SCHWARZES_LOCH} Schwarzes Loch</td>
+  <tr><td class="regel-karte-zelle"><span data-karte="SCHWARZES_LOCH"></span> Schwarzes Loch</td>
       <td>Ein offenes Sternbild eines Gegners zerfällt, die Karten gehen in die Mitte.</td>
       <td>${CONFIG.deck.kosmisch.SCHWARZES_LOCH}×</td></tr>
-  <tr><td>${ART_ZEICHEN.WEISSES_LOCH} Weißes Loch</td>
+  <tr><td class="regel-karte-zelle"><span data-karte="WEISSES_LOCH"></span> Weißes Loch</td>
       <td>Nimm eine Karte deiner Wahl aus einem offenen fremden Sternbild auf die Hand.
           Was übrig bleibt, wird oft zum Wrack.</td>
       <td>${CONFIG.deck.kosmisch.WEISSES_LOCH}×</td></tr>
-  <tr><td>${ART_ZEICHEN.URKNALL} Urknall</td>
+  <tr><td class="regel-karte-zelle"><span data-karte="URKNALL"></span> Urknall</td>
       <td>Alle offenen Sternbilder zerfallen — auch deine. Sichere und versiegelte bleiben.</td>
       <td>${CONFIG.deck.kosmisch.URKNALL}×</td></tr>
-  <tr><td>${ART_ZEICHEN.MILCHSTRASSE} Milchstraße</td>
+  <tr><td class="regel-karte-zelle"><span data-karte="MILCHSTRASSE"></span> Milchstraße</td>
       <td>Zieh ${CONFIG.kosmisch.milchstrasseKarten} Karten. Deine Hand darf dabei über
           ${CONFIG.spiel.handkarten} Karten gehen.</td>
       <td>${CONFIG.deck.kosmisch.MILCHSTRASSE}×</td></tr>
-  <tr><td>${ART_ZEICHEN.STERNSCHNUPPE} Sternschnuppe</td>
+  <tr><td class="regel-karte-zelle"><span data-karte="STERNSCHNUPPE"></span> Sternschnuppe</td>
       <td>Der Joker. Keine eigene Aktion — du legst ihn als Teil eines Sternbilds und er
           vertritt jeden Wert. Kreuz und Drache lassen sich damit nicht abschließen.
           Ein verbauter Joker kann herausgeklaut werden, und du wirst ihn nie wieder
           los — wer das nicht will, muss versiegeln.</td>
       <td>${CONFIG.deck.kosmisch.STERNSCHNUPPE}×</td></tr>
-  <tr><td>${ART_ZEICHEN.NOVA} Nova</td>
+  <tr><td class="regel-karte-zelle"><span data-karte="NOVA"></span> Nova</td>
       <td>Liegt von Anfang an offen neben der Mitte und wird <b>einmal pro Partie</b>
           benutzt. Zerstört ein beliebiges Sternbild — auch ein sicheres oder
           versiegeltes. Danach ist sie aus dem Spiel.</td>
@@ -4720,9 +4785,10 @@ function zeichneStapel(dom, s) {
 function zeichneIch(dom, s) {
   const ich = s.z.spieler[s.menschIdx];
 
-  // Derselbe Balken wie bei einem aktiven Gegnerplatz.
+  // Dieselbe Hervorhebung wie bei einem aktiven Gegnerplatz, dazu die Marke.
   if (dom.ichBereich) dom.ichBereich.classList.toggle('aktiv', !!s.dranMensch);
   if (dom.handBereich) dom.handBereich.classList.toggle('aktiv', !!s.dranMensch);
+  if (dom.dranMarke) dom.dranMarke.hidden = !s.dranMensch;
 
   leere(dom.meineSternbilder);
   if (ich.sternbilder.length === 0) {
@@ -5133,6 +5199,11 @@ function tutorialSchonGesehen() {
   catch { return true; }
 }
 const merkeTutorialGesehen = () => schreib(SPEICHER_TUTORIAL, 'ja');
+
+/** Zum Prüfen: wieder in den Zustand eines neuen Spielers versetzen. */
+function vergissTutorial() {
+  try { localStorage.removeItem(SPEICHER_TUTORIAL); } catch { /* egal */ }
+}
 const gemerkterName = () => lies(SPEICHER_NAME, 'Anton');
 const merkeName = (name) => schreib(SPEICHER_NAME, name);
 
@@ -5190,6 +5261,14 @@ function baueStartschirm(rueckrufe) {
   document.getElementById('btn-freunde').addEventListener('click', () => rueckrufe.freunde());
   document.getElementById('btn-tutorial').addEventListener('click', () => rueckrufe.tutorial());
   document.getElementById('btn-regeln-start').addEventListener('click', () => rueckrufe.regeln());
+
+  // Zum Prüfen: den Merker löschen, damit „Spielen" wieder ins Tutorial führt.
+  const btnNeu = document.getElementById('btn-tutorial-neu');
+  btnNeu.addEventListener('click', () => {
+    vergissTutorial();
+    btnNeu.textContent = 'Erledigt — „Spielen" führt wieder ins Tutorial';
+    setTimeout(() => { btnNeu.textContent = 'Tutorial beim Start wieder zeigen'; }, 3000);
+  });
 
 
   return {
@@ -5306,13 +5385,23 @@ class Tutorial {
 
   /* ---------------- Ablauf ---------------- */
 
-  /** Baut den Spielzustand für den aktuellen Schritt auf, falls er einen braucht. */
+  /**
+   * Baut den Spielzustand für den aktuellen Schritt auf.
+   *
+   * `aufbau` räumt den Tisch ab und stellt ihn neu — das ist ein Szenenwechsel
+   * und muss im Text angekündigt sein. `vorbereiten` lässt liegen, was liegt,
+   * und ändert nur eine Kleinigkeit; damit geht ein Schritt nahtlos in den
+   * nächsten über.
+   */
   starteSchritt() {
     const s = this.schritte[this.pos];
-    if (s && s.aufbau) {
+    if (!s) return this;
+    if (s.aufbau) {
       this._tischLeeren();
       s.aufbau();
       this._gegnerHaendeFuellen();
+    } else if (s.vorbereiten) {
+      s.vorbereiten();
     }
     return this;
   }
@@ -5338,11 +5427,17 @@ class Tutorial {
     return this;
   }
 
-  /** Einen Schritt weiter. Setzt `fertig`, wenn nichts mehr kommt. */
+  /**
+   * Einen Schritt weiter. Setzt `fertig`, wenn nichts mehr kommt.
+   *
+   * Der Tisch wird hier NICHT aufgebaut. Sonst änderte er sich schon beim
+   * Druck auf „Weiter", während der alte Text noch stand — es sah aus, als
+   * hätte jemand einen Zug gemacht, der nirgends erklärt wird. Den Aufbau
+   * macht die Oberfläche, unmittelbar bevor der neue Text anfängt.
+   */
   weiter() {
     if (this.pos >= this.schritte.length - 1) { this.fertig = true; return this; }
     this.pos++;
-    this.starteSchritt();
     return this;
   }
 
@@ -5543,20 +5638,26 @@ class Tutorial {
         art: 'zeigen',
         titel: 'Kosmische Karten',
         text: () => 'Zwischendurch tauchen kosmische Karten auf. Eine davon musst du kennen: '
-            + `das Schwarze Loch. ${t._gegnerName()} hat gerade eins auf der Hand — und du `
-            + 'hast einen schönen Wagen liegen. Sieh zu.',
+            + `das Schwarze Loch. ${t._gegnerName()} hat gerade eins gezogen — und dein Pfeil `
+            + 'liegt offen da. Sieh zu.',
         danach: () => 'Weg. Das Schwarze Loch löscht ein fremdes Sternbild aus, ohne dass '
             + 'der Gegner eine einzige Karte dafür hergibt. Keine Trostpunkte, nichts. '
             + 'Es kostet ihn nicht einmal seinen Zug — die kosmische Karte ist der Vorspann, '
             + 'danach darf er noch ganz normal bauen.',
-        aufbau() {
-          t._sbZiel = t._sternbild(t.ich, [3, 6, 9, 12]);   // Wagen, 4 Punkte
-          t._hand(t.ich, [1, 5, 8, 11]);
+        /**
+         * Kein Szenenwechsel: Der Pfeil, den du eben zurückgeholt hast, bleibt
+         * liegen. Es kommt nur das Schwarze Loch auf die Hand des Gegners.
+         * Vorher wurde hier der Tisch neu aufgebaut — dann stand plötzlich ein
+         * Wagen da, den niemand gelegt hatte.
+         */
+        vorbereiten() {
           t._hand(t.gegner, ['SCHWARZES_LOCH', 2, 7, 10]);
-          t._mitte([1, 2, 4, 5, 11], 1);
+          const meins = t.spiel.spieler[t.ich].sternbilder[0];
+          t._sbZiel = meins ? meins.id : null;
         },
         /** Der Gegner zündet es auf genau dieses Sternbild. */
         ereignis() {
+          if (t._sbZiel == null) return;
           const bot = t.spiel.spieler[t.gegner];
           const karte = bot.hand.find((k) => k.art === 'SCHWARZES_LOCH');
           if (!karte) return;
@@ -5571,7 +5672,8 @@ class Tutorial {
       {
         art: 'aufgabe',
         titel: 'Mach es sicher',
-        text: 'Unten steht „Pfeil versiegeln". Drück drauf.',
+        text: 'Neue Lage, neuer Pfeil: fünf Karten, sechs Punkte. Diesmal soll ihn dir '
+            + 'niemand mehr nehmen können. Unten steht „Pfeil versiegeln" — drück drauf.',
         warum: 'Das ist die Antwort auf beides — auf den Klau und auf das Schwarze Loch. '
              + 'Ein versiegeltes Sternbild kann niemand mehr nehmen und keine kosmische '
              + 'Karte mehr zerstören. Dafür kostet es dich einen ganzen Zug, es kann nicht '
@@ -5598,8 +5700,10 @@ class Tutorial {
       },
       {
         art: 'ende',
-        text: 'Jetzt weißt du, wie es geht — probier dich selbst. '
-            + 'Ich mische neu, und ab hier spielst du frei.',
+        titel: 'Fertig',
+        text: 'Jetzt weißt du, wie es geht — probier dich selbst aus. '
+            + 'Ab hier redet dir niemand mehr rein: freie Züge, echte Gegner. '
+            + 'Viel Glück.',
       },
     ];
   }
@@ -6167,10 +6271,13 @@ const MAX_TIPPS = 8;
  * Denkpause der Bots vor dem Zug, in Millisekunden. Über sternenraub.tempo(ms)
  * umstellbar. Danach läuft die Kartenbewegung (700 ms, beim Klauen und
  * Zerstören 1190 ms), dann bleibt das Bild BOT_NACHLAUF stehen. Zusammen
- * knapp anderthalb Sekunden je Botzug — genug, um mitzubekommen, was passiert.
+ * gut zwei Sekunden je Botzug, beim Klauen knapp drei.
+ *
+ * Bewusst eher zu langsam: Kürzen kann man immer noch, aber wer nicht
+ * mitbekommt, was der Gegner getan hat, kann auch nicht darauf reagieren.
  */
-let botTempo = 420;
-const BOT_NACHLAUF = 280;
+let botTempo = 900;
+const BOT_NACHLAUF = 650;
 
 /* ================================================================= */
 /*  Zustand der Oberfläche                                            */
@@ -6215,7 +6322,7 @@ function holeDom() {
     tipps: 'tipps', protokoll: 'protokoll',
     leisteText: 'leiste-text', leisteKnoepfe: 'leiste-knoepfe',
     stapelDeck: 'stapel-deck', stapelAblage: 'stapel-ablage', ichPunkte: 'ich-punkte',
-    ichBereich: 'ich-bereich', handBereich: 'hand-bereich',
+    ichBereich: 'ich-bereich', handBereich: 'hand-bereich', dranMarke: 'dran-marke',
     erz: 'erzaehler', erzKarte: null, erzText: 'erz-text', erzWarum: 'erz-warum',
     erzSchritt: 'erz-schritt', erzWeiter: 'erz-weiter', erzEnde: 'erz-ende',
     modal: 'modal', modalInhalt: 'modal-inhalt',
@@ -6303,10 +6410,12 @@ function beendeTutorial() {
   S.tutorialZugFertig = null;
   fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
-  merkeTutorialGesehen();
-  // Übersprungen heißt: ich wollte spielen. Dann nicht ins Menü zurück,
-  // sondern gleich zur Frage, gegen wen.
-  if (S.tutorialAufgedraengt) { S.tutorialAufgedraengt = false; startschirm.zeigeWahl(); return; }
+  const aufgedraengt = S.tutorialAufgedraengt;
+  S.tutorialAufgedraengt = false;
+  // Als „gesehen" zählt nur der Weg über „Spielen". Wer freiwillig über
+  // „Wie es geht" hineinschaut, bleibt ein neuer Spieler — sonst nimmt man
+  // sich mit einem Blick ins Tutorial die Führung beim ersten echten Start.
+  if (aufgedraengt) { merkeTutorialGesehen(); startschirm.zeigeWahl(); return; }
   zeigeStart();
 }
 
@@ -6330,10 +6439,14 @@ async function laufeTutorial(lauf) {
 
   while (gilt() && !t.fertig) {
     const s = t.schritt();
+    // Der Tisch wird JETZT gestellt, unmittelbar bevor die Karte zu sprechen
+    // anfaengt. Frueher geschah das schon beim Druck auf "Weiter" - dann
+    // aenderte sich die Auslage, waehrend noch der alte Text stand.
+    t.starteSchritt();
 
     if (s.art === 'reden' || s.art === 'ende') {
       fuehrer.lage('buehne');
-      zeigeErzKopf('', '');
+      zeigeErzKopf('', s.titel || '');
       await fuehrer.sag(text(s.text));
       if (!gilt()) return;
       await fuehrer.warteAufWeiter(s.art === 'ende' ? 'Losspielen' : 'Weiter');
@@ -6408,7 +6521,8 @@ function tutorialFertig() {
   S.tutorialZugFertig = null;
   fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
-  merkeTutorialGesehen();
+  // Siehe beendeTutorial(): nur der Weg über „Spielen" setzt den Merker.
+  if (S.tutorialAufgedraengt) merkeTutorialGesehen();
   S.tutorialAufgedraengt = false;
   zeigeModal(dom, 'Die Formen auf einen Blick', `<p>${formenUebersichtText()}</p>`,
     [{ text: 'Losspielen', klasse: 'haupt', tun: () => {
@@ -7432,6 +7546,33 @@ function zeigeEnde() {
 function zeigeRegeln() {
   zeigeModal(dom, 'Sternenraub — die Regeln in Kürze', REGELN_KURZ,
     [{ text: 'Alles klar', klasse: 'haupt', tun: () => schliesseModal(dom) }]);
+  bebildereRegeln();
+}
+
+/**
+ * Die Regeln bekommen Bilder: jede kosmische Karte so, wie sie im Spiel
+ * aussieht, und unter den Sternbildern die Formentafel mit echten Karten.
+ *
+ * Der Regeltext selbst bleibt reiner Text (texte.js) — er enthält nur leere
+ * Platzhalter. Gezeichnet wird hier, mit demselben karteEl() wie auf dem Tisch;
+ * so kann das Bild in den Regeln nie von dem auf dem Tisch abweichen.
+ */
+function bebildereRegeln() {
+  const wurzel = dom.modalInhalt;
+  if (!wurzel) return;
+
+  for (const platz of wurzel.querySelectorAll('[data-karte]')) {
+    const art = platz.dataset.karte;
+    const karte = art === 'ZAHL'
+      ? { id: -1, art: 'ZAHL', wert: Number(platz.dataset.wert) || 1 }
+      : { id: -1, art, wert: null };
+    const el = karteEl(karte, 'regel', { klickbar: false, titel: '' });
+    el.classList.add('regel-karte');
+    platz.replaceWith(el);
+  }
+
+  const formen = wurzel.querySelector('.regel-formen');
+  if (formen) formen.appendChild(formenTafel());
 }
 
 /** Zurück zum Startschirm. */
