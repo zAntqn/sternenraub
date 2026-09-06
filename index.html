@@ -177,10 +177,14 @@ html, body {
 #tisch {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--seite-b);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  /* Die Erzählerzeile ist im Normalfall leer und fällt dann auf 0 zusammen.
+     Im Tutorial steht dort die Anweisung — ÜBER der Fußleiste, nicht statt
+     ihrer: bestätigt wird auch im Tutorial mit dem Knopf unten. */
   grid-template-areas:
     "kopf   kopf"
     "feld   seite"
+    "erz    erz"
     "leiste leiste";
   gap: var(--raum);
   height: 100vh;
@@ -193,8 +197,8 @@ html, body {
 #kopf        { grid-area: kopf; }
 #feld        { grid-area: feld;  min-width: 0; min-height: 0; }
 #seitenleiste{ grid-area: seite; min-width: 0; min-height: 0; }
-#leiste,
-#tutor       { grid-area: leiste; }
+#leiste      { grid-area: leiste; }
+#erzaehler   { grid-area: erz; }
 
 /* Es gibt keine Kästen um die Bereiche: Kopf, Plätze, Auslage, Hand
    und Seitenleiste bekommen nirgends einen Grund oder einen Rahmen.
@@ -357,8 +361,11 @@ button.karte { cursor: pointer; }
 .karte.kosmisch .karte-zeichen { display: none; }
 .karte .karte-name {
   font-family: var(--grotesk);
-  font-size: var(--t-neben);
-  line-height: 1.05;
+  /* „Sternschnuppe" ist das längste Wort auf einer Karte. Bei --t-neben brach
+     es in „Ster nschnup pe" um. Die Schrift skaliert deshalb mit der Karte
+     und bleibt klein genug, dass die Silben stimmen. */
+  font-size: clamp(8px, calc(var(--karte-b) * .135), var(--t-neben));
+  line-height: 1.1;
   text-align: center;
   color: var(--tinte-leise);
   max-width: 100%;
@@ -1179,50 +1186,119 @@ button.karte { cursor: pointer; }
   justify-content: flex-end;
 }
 
-/* Die Tutorleiste liegt an derselben Stelle und ersetzt die Fußleiste. */
-#tutor {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--raum-halb) var(--raum2);
-  align-items: center;
-  padding-top: var(--raum);
-  border-top: 1px solid var(--tisch-linie);
-}
-#tutor[hidden] { display: none; }
-#tisch.tutorial #leiste { display: none; }
 
-#tutor-kopf {
-  grid-column: 1;
-  display: flex;
-  align-items: baseline;
-  gap: var(--raum);
+/* ---------- Der Erzähler ----------
+   Eine Kartenrückseite führt durch das Tutorial. Zwei Lagen:
+   „buehne" mittig auf abgedunkeltem Grund, solange nur erzählt
+   wird; „dock" unten an der Stelle der Fußleiste, sobald der
+   Tisch dran ist. In beiden Lagen ist die Anweisung groß —
+   klein am Rand hat man sie überlesen. */
+
+/* Versteckt schlägt jede Lage. Ohne !important gewinnt die spätere Regel
+   #erzaehler[data-modus="buehne"] (gleiche Spezifität) und der Erzähler
+   stünde auch außerhalb des Tutorials auf dem Tisch. */
+#erzaehler[hidden] { display: none !important; }
+/* Die Fußleiste bleibt im Tutorial sichtbar — dort steht der Bestätigen-Knopf.
+   Nur solange der Erzähler mittig auf der Bühne steht, hat sie nichts zu
+   sagen: dann liegt der Tisch still. */
+#tisch:has(#erzaehler[data-modus="buehne"]:not([hidden])) #leiste { display: none; }
+
+.erz-kasten {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--raum2);
 }
-#tutor-schritt {
+
+.erz-karte {
+  /* Die Rückseite selbst: dieselbe Karte wie im Spiel, nur größer.
+     Die Maße stehen hier, damit der Erzähler unabhängig vom Tisch bleibt. */
+  --karte-b: 62px;
+  --karte-h: 87px;
+  flex: 0 0 auto;
+  transform-origin: 50% 100%;
+}
+
+/* Wippen, während gesprochen wird. Zwei Grad, anderthalb Sekunden —
+   es soll leben, nicht zappeln. */
+@keyframes erz-wippen {
+  0%   { transform: rotate(-1.6deg) translateY(0); }
+  50%  { transform: rotate(1.6deg) translateY(-3px); }
+  100% { transform: rotate(-1.6deg) translateY(0); }
+}
+.erz-karte.spricht { animation: erz-wippen 1.6s ease-in-out infinite; }
+
+.erz-inhalt { min-width: 0; }
+
+.erz-schritt {
   font-family: var(--grotesk);
   font-size: var(--t-neben);
   color: var(--schrift-leise);
+  margin-bottom: var(--raum-halb);
 }
-#tutor-titel {
-  font-family: var(--serif);
-  font-size: var(--t-abschnitt);
-  color: var(--schrift);
-}
-#tutor-text {
-  grid-column: 1;
+.erz-schritt:empty { display: none; }
+
+/* Die Anweisung. Groß, in der Serife, in Signalfarbe. */
+.erz-text {
   margin: 0;
   font-family: var(--serif);
-  font-size: var(--t-text);
+  font-size: clamp(18px, 2.2vw, 26px);
+  line-height: 1.4;
+  color: var(--signal);
+  /* Der Text wächst beim Tippen. Ohne Mindesthöhe springt der Kasten. */
+  min-height: 2.8em;
+}
+
+/* Das Warum steht kleiner darunter — es erklärt, es fordert nicht. */
+.erz-warum {
+  margin: var(--raum) 0 0;
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  line-height: 1.5;
   color: var(--schrift-leise);
+  max-width: 68ch;
 }
-#tutor.auftrag #tutor-text { color: var(--signal); }
-#tutor-knoepfe {
-  grid-column: 2;
-  grid-row: 1 / span 2;
+.erz-warum:empty { display: none; }
+
+.erz-knoepfe {
   display: flex;
+  flex-direction: column;
   gap: var(--raum);
-  align-items: center;
+  align-items: stretch;
 }
-#tutor.auftrag #tutor-weiter { display: none; }
+.erz-knoepfe .knopf[hidden] { display: none; }
+
+/* ---- Lage „buehne": mittig, der Tisch tritt zurück ---- */
+#erzaehler[data-modus="buehne"] {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--raum3);
+  background: var(--schleier);
+}
+#erzaehler[data-modus="buehne"] .erz-kasten {
+  width: min(760px, 100%);
+  padding: var(--raum3);
+  background: var(--tisch);
+  border: 1px solid var(--tisch-linie);
+  border-radius: var(--r-flaeche);
+}
+#erzaehler[data-modus="buehne"] .erz-text { min-height: 4.2em; }
+
+/* ---- Lage „dock": unten über der Fußleiste ---- */
+#erzaehler[data-modus="dock"] {
+  grid-area: erz;
+  position: static;
+  background: none;
+  padding: var(--raum) 0 0;
+  border-top: 1px solid var(--tisch-linie);
+}
+/* Im Tutorial ist die Erzählerzeile das Wichtigste — die Mitte gibt Platz ab.
+   Die Vorschlagsliste bleibt aus (sie würde die Aufgabe beantworten). */
+#tisch.tutorial #feld { min-height: 0; }
 
 
 /* ============================================================
@@ -1632,7 +1708,7 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
      Text darunter durch — ein Kasten wird sie dadurch nicht,
      getrennt wird weiter durch die Haarlinie. */
   #leiste,
-  #tutor {
+  #erzaehler[data-modus="dock"] {
     position: sticky;
     bottom: 0;
     z-index: 5;
@@ -1645,11 +1721,25 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
   #leiste-knoepfe { width: 100%; justify-content: stretch; }
   #leiste-knoepfe .knopf { flex: 1 1 auto; min-width: 0; }
 
-  /* Die Tutorleiste in eine Spalte: neben dem Knopf blieben für
-     Schritt, Titel und Text sonst 190 px. */
-  #tutor { grid-template-columns: minmax(0, 1fr); }
-  #tutor-kopf { flex-wrap: wrap; gap: 0 var(--raum); }
-  #tutor-knoepfe { grid-column: 1; grid-row: auto; justify-content: flex-end; }
+  /* Der Erzähler in eine Spalte: neben Karte und Knopf blieben für die
+     Anweisung sonst 190 px, und sie stünde in einer Schlucht. */
+  .erz-kasten {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--raum) var(--raum2);
+    align-items: start;
+  }
+  .erz-karte { --karte-b: 42px; --karte-h: 59px; }
+  .erz-inhalt { grid-column: 2; }
+  .erz-knoepfe {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .erz-text { font-size: 19px; min-height: 0; }
+  #erzaehler[data-modus="buehne"] .erz-text { min-height: 0; }
+  #erzaehler[data-modus="buehne"] { padding: var(--raum2); }
+  #erzaehler[data-modus="buehne"] .erz-kasten { padding: var(--raum2); }
 
   /* Fingerflächen: 44 px. Karten sind mit 46 × 64 px ohnehin
      darüber; eine Zeile wird es, sobald man sie antippen kann. */
@@ -1799,15 +1889,19 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
     <div id="leiste-knoepfe"></div>
   </footer>
 
-  <div id="tutor" hidden>
-    <div id="tutor-kopf">
-      <span id="tutor-schritt"></span>
-      <span id="tutor-titel"></span>
-    </div>
-    <p id="tutor-text"></p>
-    <div id="tutor-knoepfe">
-      <button class="knopf haupt" id="tutor-weiter" type="button">Weiter</button>
-      <button class="knopf klein" id="tutor-ende" type="button">Tutorial beenden</button>
+  <!-- Der Erzähler: eine Kartenrückseite, die durch das Tutorial führt. -->
+  <div id="erzaehler" hidden data-modus="buehne">
+    <div class="erz-kasten">
+      <div class="karte rueckseite erz-karte" aria-hidden="true"></div>
+      <div class="erz-inhalt">
+        <div class="erz-schritt" id="erz-schritt"></div>
+        <p class="erz-text" id="erz-text" aria-live="polite"></p>
+        <p class="erz-warum" id="erz-warum"></p>
+      </div>
+      <div class="erz-knoepfe">
+        <button class="knopf haupt" id="erz-weiter" type="button" hidden>Weiter</button>
+        <button class="knopf klein" id="erz-ende" type="button">Tutorial beenden</button>
+      </div>
     </div>
   </div>
 
@@ -4372,12 +4466,38 @@ function sternbildEl(sb, opt = {}) {
   kopf.appendChild(el('span', 'sb-punkte', String(sb.punkte)));
   e.appendChild(kopf);
 
+  /*
+     Aufsteigend nach dem Wert, den eine Karte im Sternbild vertritt — beim
+     Joker also nach dem vertretenen Wert, nicht nach seiner Kartenart.
+     Damit steht der Pfeil in Folge, der Wagen in gleichen Schritten, und
+     bei Krone, Kreuz, Zwilling und Doppelstier liegen die gleichen Werte
+     beieinander. In der Reihenfolge der Engine erkennt man den Typ nicht.
+     Sortiert wird nur die Anzeige; die Karten im Spiel bleiben, wie sie sind.
+  */
+  const wertVon = (k) => {
+    if (k.art === 'ZAHL') return k.wert;
+    const j = opt.jokerWerte ? opt.jokerWerte.get(k.id) : undefined;
+    return j == null ? 99 : j;   // unaufgelöster Joker ganz nach hinten
+  };
+  const sortiert = sb.karten.slice().sort((a, b) => wertVon(a) - wertVon(b));
+
   const reihe = el('div', 'kartenreihe');
-  for (const k of sb.karten) {
-    reihe.appendChild(karteEl(k, 'sb', {
-      klickbar: false,
+  for (const k of sortiert) {
+    // Eine Sternschnuppe in einem fremden Sternbild ist selbst anklickbar,
+    // wenn man die passende Karte auf der Hand hat: Antippen heißt „diese
+    // hier will ich haben". Alle anderen Karten im Sternbild sind es nicht.
+    const jokerHolbar = opt.jokerHolbar && k.art === 'STERNSCHNUPPE';
+    const kk = karteEl(k, jokerHolbar ? 'joker' : 'sb', {
+      klickbar: !!jokerHolbar,
+      spielbar: !!jokerHolbar,
+      gewaehlt: opt.jokerGewaehlt === k.id,
       jokerWert: opt.jokerWerte ? opt.jokerWerte.get(k.id) : undefined,
-    }));
+      titel: jokerHolbar
+        ? 'Antippen: diese Sternschnuppe gegen deine passende Karte tauschen'
+        : undefined,
+    });
+    if (jokerHolbar) kk.dataset.sb = sb.id;
+    reihe.appendChild(kk);
   }
   e.appendChild(reihe);
 
@@ -4468,6 +4588,8 @@ function zeichneGegner(dom, s) {
         anklickbar: s.dranMensch && !sb.sicher,
         anklickText: 'Antippen: hier klauen. Dazu mindestens zwei eigene Handkarten wählen.',
         jokerChance: s.jokerSb.has(sb.id),
+        jokerHolbar: s.dranMensch && s.jokerSb.has(sb.id),
+        jokerGewaehlt: s.jokerZiel,
         frisch: s.frisch.has(sb.id),
         jokerWerte: s.jokerWerte.get(sb.id),
       }));
@@ -4873,7 +4995,7 @@ function schreib(schluessel, wert) {
   try { localStorage.setItem(schluessel, wert); } catch { /* egal */ }
 }
 
-const tutorialSchonGesehen = () => lies(SPEICHER_TUTORIAL, '') === 'ja';
+// (tutorialSchonGesehen() gibt es nicht mehr: das Tutorial startet nie von selbst.)
 const merkeTutorialGesehen = () => schreib(SPEICHER_TUTORIAL, 'ja');
 const gemerkterName = () => lies(SPEICHER_NAME, 'Anton');
 const merkeName = (name) => schreib(SPEICHER_NAME, name);
@@ -4936,13 +5058,15 @@ function baueStartschirm(rueckrufe) {
 /**
  * Sternenraub — Tutorial.
  *
- * Kein Text zum Wegklicken: sieben Schritte auf dem echten Spieltisch, mit einer
- * echten `Spiel`-Instanz. Vor jedem Schritt werden Hand, Mitte und Sternbilder von
- * Hand hingelegt; `erlaubt()` lässt danach genau den einen gesuchten Zug durch.
+ * Geführt wird von einer Kartenrückseite (siehe erzaehler.js). Sie erklärt
+ * erst, worum es geht, und stellt dann ein paar Aufgaben auf dem echten
+ * Spieltisch mit einer echten `Spiel`-Instanz. Vor jeder Aufgabe werden Hand,
+ * Mitte und Sternbilder von Hand hingelegt; `erlaubt()` lässt danach genau den
+ * einen gesuchten Zug durch. Am Ende endet die Führung und man spielt frei
+ * weiter.
  *
- * Reihenfolge, in der die Oberfläche ruft:
- *   starteSchritt() → zeichnen → generiereAktionen durch erlaubt() filtern →
- *   Klick → spiel.fuehreAktion(0, aktion) → nachZug() → text zeigen → weiter()
+ * Diese Datei enthält die Reihenfolge und die Texte. Das Abspielen steht in
+ * start.js (laufeTutorial), die Darstellung in erzaehler.js.
  *
  * Regelzahlen stehen hier keine drin — alles kommt aus CONFIG.
  */
@@ -4953,8 +5077,8 @@ function baueStartschirm(rueckrufe) {
 
 /**
  * Eigener ID-Bereich, weit weg von den echten Karten (die zählen ab 0 hoch).
- * Jeder Schrittaufbau vergibt frische IDs, damit keine alte Auswahl der
- * Oberfläche versehentlich noch passt.
+ * Jeder Aufbau vergibt frische IDs, damit keine alte Auswahl der Oberfläche
+ * versehentlich noch passt.
  */
 let naechsteId = 90000;
 
@@ -4992,9 +5116,8 @@ const BAU_MAX_MITTE = CONFIG.zug.bauenMaxAusMitte;
 const KLAU_MIN_HAND = CONFIG.zug.klauenMinHandkarten;
 const TROST_PRO_KARTE = CONFIG.klauen.entschaedigungProKarte;
 const VERSIEGELN_PRO_RUNDE = CONFIG.zug.versiegelnProRunde;
-const KOSMISCH_PRO_ZUG = CONFIG.zug.kosmischeProZug;
-const HIMMEL_MIN = CONFIG.himmel.minKartenProSternbild;
-const HIMMEL_BONUS = CONFIG.himmel.bonus;
+const RUNDEN = CONFIG.spiel.runden;
+const WAGEN_SCHRITT = CONFIG.wagen.minSchrittweite;
 
 /* ------------------------------------------------------------------ */
 /*  Das Tutorial                                                       */
@@ -5007,80 +5130,70 @@ class Tutorial {
     this.ich = 0;
     this.gegner = spiel.spieler.length > 1 ? 1 : 0;
 
-    this.pos = 0;                 // Index in this.schritte (Teilschritte)
-    this._phase = 'AUFTRAG';      // 'AUFTRAG' | 'ERKLAERUNG' | 'ENDE'
+    this.pos = 0;
+    this.fertig = false;
 
     // Merker, die zwischen Aufbau, erlaubt() und Text gebraucht werden
-    this._sbPfeil = null;         // eigenes Sternbild, an dem gerade gearbeitet wird
-    this._sbBeute = null;         // was der Bot in Schritt 3 klaut
-    this._sbZiel = null;          // was das Schwarze Loch in Schritt 6 trifft
-    this._geklaut = 0;            // Kartenzahl der Beute, für den Erklärungstext
-    this._trost = 0;              // Trostpunkte, die der Bestohlene bekommt
+    this._sbPfeil = null;
+    this._sbBeute = null;
+    this._geklaut = 0;
 
     this.schritte = this._baueSchritte();
-    this.anzahl = this.schritte[this.schritte.length - 1].nr;
+    // Nur die Aufgaben werden gezählt — „Schritt 2 von 5" soll sich auf das
+    // beziehen, was man selbst tut, nicht auf die Erzählabschnitte.
+    this.aufgabenGesamt = this.schritte.filter((s) => s.art === 'aufgabe').length;
   }
 
   /* ---------------- Auskunft ---------------- */
 
-  get schrittNr() { return this.schritte[this.pos].nr; }
-  get anzahlSchritte() { return this.anzahl; }
-  get fertig() { return this._phase === 'ENDE'; }
-  get phase() { return this._phase; }
+  schritt() { return this.schritte[this.pos]; }
 
-  /** { titel, auftrag, text, nurZeigen } des aktuellen Schritts. */
-  schritt() {
-    const s = this.schritte[this.pos];
-    return {
-      titel: s.titel,
-      auftrag: typeof s.auftrag === 'function' ? s.auftrag() : s.auftrag,
-      text: typeof s.text === 'function' ? s.text() : s.text,
-      nurZeigen: !!s.nurZeigen,
-    };
+  /** Die wievielte Aufgabe ist die aktuelle? 0, wenn gerade nur erzählt wird. */
+  get aufgabeNr() {
+    let n = 0;
+    for (let i = 0; i <= this.pos && i < this.schritte.length; i++) {
+      if (this.schritte[i].art === 'aufgabe') n++;
+    }
+    return this.schritte[this.pos] && this.schritte[this.pos].art === 'aufgabe' ? n : 0;
   }
 
   /* ---------------- Ablauf ---------------- */
 
-  /** Baut den Spielzustand für den aktuellen Schritt komplett neu auf. */
+  /** Baut den Spielzustand für den aktuellen Schritt auf, falls er einen braucht. */
   starteSchritt() {
     const s = this.schritte[this.pos];
-    this._tischLeeren();
-    s.aufbau();
-    this._gegnerHaendeFuellen();
-    // Ein Schritt ohne Zug hat nichts zu erledigen — direkt zur Erklärung.
-    this._phase = s.nurZeigen ? 'ERKLAERUNG' : 'AUFTRAG';
+    if (s && s.aufbau) {
+      this._tischLeeren();
+      s.aufbau();
+      this._gegnerHaendeFuellen();
+    }
     return this;
   }
 
   /** Darf diese Aktion aus generiereAktionen jetzt gespielt werden? */
   erlaubt(aktion) {
-    if (this._phase !== 'AUFTRAG' || !aktion) return false;
     const s = this.schritte[this.pos];
-    return !s.nurZeigen && !!s.erlaubt && s.erlaubt(aktion);
+    if (!s || s.art !== 'aufgabe' || !aktion) return false;
+    return !!s.erlaubt && s.erlaubt(aktion);
   }
 
   /** Dito für eine kosmische Karte aus generiereKosmische. */
   erlaubtKosmisch(wahl) {
-    if (this._phase !== 'AUFTRAG' || !wahl) return false;
     const s = this.schritte[this.pos];
+    if (!s || s.art !== 'aufgabe' || !wahl) return false;
     return !!s.erlaubtKosmisch && s.erlaubtKosmisch(wahl);
   }
 
-  /** Nach dem Zug des Spielers: geskriptete Antwort, dann Erklärung zeigen. */
+  /** Die geskriptete Antwort des Gegners, direkt nach deinem Zug. */
   nachZug() {
     const s = this.schritte[this.pos];
-    if (s.nachZug) s.nachZug();
-    this._phase = 'ERKLAERUNG';
+    if (s && s.nachZug) s.nachZug();
     return this;
   }
 
-  /** Vom Erklärungstext zum nächsten Schritt. */
+  /** Einen Schritt weiter. Setzt `fertig`, wenn nichts mehr kommt. */
   weiter() {
-    if (this._phase === 'ENDE') return this;
-    if (this.pos >= this.schritte.length - 1) {
-      this._phase = 'ENDE';
-      return this;
-    }
+    if (this.pos >= this.schritte.length - 1) { this.fertig = true; return this; }
     this.pos++;
     this.starteSchritt();
     return this;
@@ -5138,29 +5251,51 @@ class Tutorial {
     return this.spiel.spieler[this.gegner].name;
   }
 
-  /** Liegt die kosmische Karte noch auf meiner Hand? */
-  _hatArt(art) {
-    return this.spiel.spieler[this.ich].hand.some((k) => k.art === art);
-  }
+  /* ---------------- Die Abfolge ---------------- */
 
-  /* ---------------- Die sieben Schritte ---------------- */
-
-  /**
-   * Schritt 4 besteht aus zwei Zügen und darum aus zwei Teilschritten, die beide
-   * `nr: 4` tragen — die Oberfläche zeigt durchgehend „Schritt 4 von 7".
-   */
   _baueSchritte() {
     const t = this;
 
     return [
-      /* ---------- 1: Was ist ein Sternbild ---------- */
+      /* ================= Vorspann: worum geht es ================= */
       {
-        nr: 1,
-        titel: 'Was ist ein Sternbild',
-        auftrag: 'Leg die 5 aus deiner Hand zu der 6 und der 7 in der Mitte.',
-        text: `Drei Karten in Folge sind ein Pfeil, ${P.PFEIL[MIN_KARTEN]} Punkte. `
-            + `Jedes Sternbild braucht mindestens ${MIN_KARTEN} Karten: mindestens `
-            + `${BAU_MIN_HAND} davon aus deiner Hand, höchstens ${BAU_MAX_MITTE} aus der Mitte.`,
+        art: 'reden',
+        text: 'Hallo. Ich bin eine ganz gewöhnliche Karte — und ich zeige dir, '
+            + 'wie Sternenraub geht. Das dauert zwei Minuten.',
+      },
+      {
+        art: 'reden',
+        text: `Es geht um Punkte. ${RUNDEN} Runden lang legst du Karten zu Sternbildern `
+            + 'zusammen. Am Ende jeder Runde zählt nur, was dann noch vor dir liegt. '
+            + 'Deshalb ist Behalten genauso wichtig wie Bauen.',
+      },
+      {
+        art: 'reden',
+        text: `Ein Sternbild sind ${MIN_KARTEN} bis ${MAX_KARTEN} Karten, die eine Form ergeben. `
+            + 'Ein Pfeil sind Zahlen in Folge, zum Beispiel 5, 6, 7. Ein Wagen sind Zahlen '
+            + `in gleichen Schritten von mindestens ${WAGEN_SCHRITT}, zum Beispiel 2, 5, 8. `
+            + 'Dazu gibt es vier Formen aus gleichen Zahlen. Die kannst du oben unter '
+            + '„Formen" jederzeit nachschlagen.',
+      },
+      {
+        art: 'reden',
+        text: 'Und jetzt der Haken: Was vor dir liegt, ist nicht sicher. '
+            + 'Jeder darf dir ein Sternbild wegnehmen, wenn er etwas Größeres daraus macht. '
+            + 'Deshalb heißt das Spiel Sternenraub. Fangen wir an.',
+      },
+
+      /* ================= Aufgabe 1: bauen ================= */
+      {
+        art: 'aufgabe',
+        titel: 'Bau dein erstes Sternbild',
+        text: 'Vor dir liegen deine vier Handkarten, darüber die Mitte. '
+            + 'Tipp die 5 in deiner Hand an, dann die 6 und die 7 in der Mitte — '
+            + 'und bestätige unten.',
+        warum: `Ein Sternbild braucht mindestens ${MIN_KARTEN} Karten. Mindestens `
+             + `${BAU_MIN_HAND} davon muss aus deiner Hand kommen, höchstens ${BAU_MAX_MITTE} `
+             + 'aus der Mitte. Sonst könnte man sich die Mitte einfach leerräumen.',
+        danach: `Fertig — ein Pfeil, ${P.PFEIL[MIN_KARTEN]} Punkte. `
+              + 'Du wählst immer selbst, welche Karten du nimmst. Ich sage dir nur, was geht.',
         aufbau() {
           t._hand(t.ich, [5, 11, 3, 8]);
           t._mitte([6, 7, 1, 10, 12], 1);
@@ -5170,14 +5305,16 @@ class Tutorial {
         },
       },
 
-      /* ---------- 2: Sternbilder wachsen ---------- */
+      /* ================= Aufgabe 2: erweitern ================= */
       {
-        nr: 2,
-        titel: 'Sternbilder wachsen',
-        auftrag: 'Häng die 8 aus deiner Hand an deinen Pfeil.',
-        text: `Vier Karten statt ${MIN_KARTEN}: derselbe Pfeil bringt jetzt `
-            + `${P.PFEIL[4]} statt ${P.PFEIL[MIN_KARTEN]} Punkte. `
-            + `Ein Sternbild darf bis auf ${MAX_KARTEN} Karten wachsen.`,
+        art: 'aufgabe',
+        titel: 'Mach es größer',
+        text: 'Tipp die 8 in deiner Hand an und dann deinen Pfeil. Bestätigen.',
+        warum: `Je mehr Karten, desto mehr Punkte: aus ${P.PFEIL[MIN_KARTEN]} werden `
+             + `${P.PFEIL[4]}. Ein Sternbild darf bis auf ${MAX_KARTEN} Karten wachsen. `
+             + 'Ein eigenes Sternbild antippen heißt immer: hier anlegen.',
+        danach: `${P.PFEIL[4]} Punkte statt ${P.PFEIL[MIN_KARTEN]}. `
+              + 'Und je größer es wird, desto lohnender ist es für die anderen.',
         aufbau() {
           t._sbPfeil = t._sternbild(t.ich, [5, 6, 7]);
           t._hand(t.ich, [8, 3, 11, 2]);
@@ -5188,15 +5325,18 @@ class Tutorial {
         },
       },
 
-      /* ---------- 3: Alles liegt offen ---------- */
+      /* ================= Aufgabe 3: du wirst bestohlen ================= */
       {
-        nr: 3,
-        titel: 'Alles liegt offen',
-        auftrag: 'Bau einen zweiten Pfeil: die 11 aus deiner Hand, die 10 und die 12 aus der Mitte.',
-        text: () => `${t._gegnerName()} nimmt dir den ersten Pfeil weg: `
-            + `${KLAU_MIN_HAND} eigene Handkarten dazu, eine größere gültige Form — `
-            + `und das ganze Sternbild gehört dem Dieb. `
-            + `Du bekommst sofort ${TROST_PRO_KARTE} Punkt pro geklauter Karte, hier ${t._geklaut}.`,
+        art: 'aufgabe',
+        titel: 'Bau noch eins',
+        text: 'Bau einen zweiten Pfeil: die 11 aus deiner Hand, dazu die 10 und die 12 '
+            + 'aus der Mitte. Bestätigen.',
+        warum: 'Zwei Sternbilder sind besser als eins — aber pass auf, was gleich passiert.',
+        danach: () => `Weg. ${t._gegnerName()} hat deinen ersten Pfeil genommen: `
+              + `${KLAU_MIN_HAND} eigene Handkarten drangelegt, eine größere gültige Form `
+              + 'daraus gemacht — und das ganze Sternbild gehört jetzt ihm. '
+              + `Du bekommst dafür ${TROST_PRO_KARTE} Punkt je geklauter Karte, hier `
+              + `${t._geklaut}. Ein schwacher Trost.`,
         aufbau() {
           t._sbBeute = t._sternbild(t.ich, [5, 6, 7, 8]);
           t._geklaut = 4;
@@ -5225,141 +5365,68 @@ class Tutorial {
         },
       },
 
-      /* ---------- 3b: und jetzt klaust du ---------- */
+      /* ================= Aufgabe 4: du klaust zurück ================= */
       {
-        nr: 3,
-        titel: 'Und jetzt du',
-        auftrag: () => `Klau ${t._gegnerName()} den Pfeil: leg die 7 und die 8 aus deiner Hand an.`,
-        text: () => `So geht Klauen: mindestens ${KLAU_MIN_HAND} eigene Handkarten anlegen `
-            + `(höchstens ${BAU_MAX_MITTE} aus der Mitte dazu), und es muss eine gültige Form `
-            + `mit MEHR Punkten werden — aus ${P.PFEIL[3]} wurden ${P.PFEIL[5]}. `
-            + `Das ganze Sternbild gehört jetzt dir. `
-            + `${t._gegnerName()} bekommt dafür ${t._trost} Trostpunkte — `
-            + `klauen lohnt sich also nur, wenn du deutlich mehr herausholst.`,
+        art: 'aufgabe',
+        titel: 'Hol es dir zurück',
+        text: () => `Jetzt du: Tipp die 7 und die 8 in deiner Hand an und dann `
+            + `${t._gegnerName()}s Pfeil. Unten steht dann, was der Klau bringt — bestätigen.`,
+        warum: `Klauen geht so: mindestens ${KLAU_MIN_HAND} eigene Handkarten anlegen `
+             + `(höchstens ${BAU_MAX_MITTE} aus der Mitte dazu), und es muss eine gültige `
+             + 'Form mit mehr Punkten herauskommen als vorher. Dann wandert das ganze '
+             + 'Sternbild zu dir — nicht nur die Karten, die du angelegt hast.',
+        danach: 'Genau so. Merk dir: Ein Sternbild, das noch wachsen kann, kann dir '
+              + 'auch weggenommen werden.',
         aufbau() {
           t._sbBeute = t._sternbild(t.gegner, [4, 5, 6]);
-          t._trost = 3 * TROST_PRO_KARTE;
-          t._hand(t.ich, [7, 8, 1, 2]);
-          t._mitte([1, 2, 3], 1);
+          t._hand(t.ich, [7, 8, 2, 11]);
+          t._mitte([1, 2, 10, 11, 12], 1);
         },
         erlaubt(a) {
-          return a.art === 'KLAUEN' && a.opferIdx === t.gegner && werteSind(a, [4, 5, 6, 7, 8]);
+          return a.art === 'KLAUEN' && a.sbId === t._sbBeute && werteSind(a, [4, 5, 6, 7, 8]);
         },
       },
 
-      /* ---------- 4a: erst bauen ---------- */
+      /* ================= Aufgabe 5: versiegeln ================= */
       {
-        nr: 4,
-        titel: 'Versiegeln',
-        auftrag: 'Leg die 7 aus deiner Hand und die 8 aus der Mitte an deinen Pfeil.',
-        text: `Fünf Karten, ${P.PFEIL[5]} Punkte — und immer noch klaubar, `
-            + 'solange er offen liegt. Sichere ihn im nächsten Zug.',
-        aufbau() {
-          t._sbPfeil = t._sternbild(t.ich, [4, 5, 6]);
-          t._hand(t.ich, [7, 1, 11, 2]);
-          t._mitte([8, 1, 10, 12, 3], 1);
-        },
-        erlaubt(a) {
-          return a.art === 'BAUEN' && a.sbId === t._sbPfeil && werteSind(a, [4, 5, 6, 7, 8]);
-        },
-      },
-
-      /* ---------- 4b: dann versiegeln ---------- */
-      {
-        nr: 4,
-        titel: 'Versiegeln',
-        auftrag: 'Versiegle deinen Pfeil.',
-        text: 'Versiegeln kostet einen ganzen Zug. Danach kann dir das Sternbild niemand '
-            + `mehr nehmen — es wächst aber auch nie wieder. Höchstens `
-            + `${VERSIEGELN_PRO_RUNDE} Versiegelungen pro Runde.`,
+        art: 'aufgabe',
+        titel: 'Mach es sicher',
+        text: 'Unten steht „Pfeil versiegeln". Drück drauf.',
+        warum: 'Ein versiegeltes Sternbild kann niemand mehr klauen und keine kosmische '
+             + 'Karte mehr zerstören. Dafür kostet es dich einen ganzen Zug, es kann nicht '
+             + `mehr wachsen, und du hast nur ${VERSIEGELN_PRO_RUNDE} Siegel pro Runde. `
+             + 'Zu früh versiegeln verschenkt Punkte, zu spät verliert alles.',
+        danach: 'Der Goldrand heißt: unantastbar. Diese Punkte hast du sicher.',
         aufbau() {
           t._sbPfeil = t._sternbild(t.ich, [4, 5, 6, 7, 8]);
-          t._hand(t.ich, [1, 11, 2, 12]);
-          t._mitte([3, 9, 10, 1, 2], 1);
+          t._hand(t.ich, [1, 3, 10, 12]);
+          t._mitte([2, 6, 9, 11, 1], 1);
         },
         erlaubt(a) {
           return a.art === 'VERSIEGELN' && a.sbId === t._sbPfeil;
         },
       },
 
-      /* ---------- 5: Was von allein sicher ist ---------- */
+      /* ================= Schluss ================= */
       {
-        nr: 5,
-        titel: 'Was von allein sicher ist',
-        auftrag: 'Bau ein Kreuz: deine beiden 7en und die beiden 7en aus der Mitte.',
-        text: `Vier gleiche Karten sind ein Kreuz, ${P.KREUZ} Punkte. `
-            + 'Aus vier gleichen kann nichts mehr werden — was nicht mehr wachsen kann, '
-            + 'ist fertig und sicher, ganz ohne Versiegeln. '
-            + `Dasselbe gilt für jedes Sternbild mit ${MAX_KARTEN} Karten.`,
-        aufbau() {
-          t._hand(t.ich, [7, 7, 2, 11]);
-          t._mitte([7, 7, 1, 5, 12], 1);
-        },
-        erlaubt(a) {
-          return a.art === 'BAUEN' && !a.sbId && a.typ === 'KREUZ';
-        },
+        art: 'reden',
+        text: 'Das war das Wichtigste. Es gibt noch kosmische Karten — die ziehen '
+            + 'Karten nach, reißen Sternbilder auseinander oder vertreten als Sternschnuppe '
+            + 'jeden Wert. Die erklären sich, wenn du mit der Maus darüber gehst.',
       },
-
-      /* ---------- 6: Kosmische Karten ---------- */
       {
-        nr: 6,
-        titel: 'Kosmische Karten',
-        auftrag: () => (t._hatArt('SCHWARZES_LOCH')
-          ? `Spiel das Schwarze Loch auf den Pfeil von ${t._gegnerName()}. Danach bist du noch am Zug.`
-          : 'Und jetzt der Pflichtteil: leg die 9 zu der 10 und der 11 aus der Mitte.'),
-        text: 'Kosmische Karten kosten keinen Zug — du spielst sie zusätzlich zu deiner '
-            + `Aktion. Aber höchstens ${KOSMISCH_PRO_ZUG} pro Zug.`,
-        aufbau() {
-          t._sbZiel = t._sternbild(t.gegner, [2, 3, 4]);
-          t._hand(t.ich, ['SCHWARZES_LOCH', 9, 2, 5]);
-          t._hand(t.gegner, [1, 5, 8, 12]);
-          t._mitte([10, 11, 1, 6, 12], 1);
-        },
-        // Solange das Schwarze Loch noch auf der Hand liegt, ist keine Aktion frei:
-        // erst die kosmische Karte, dann der Pflichtzug.
-        erlaubt(a) {
-          if (t._hatArt('SCHWARZES_LOCH')) return false;
-          return a.art === 'BAUEN' && !a.sbId && a.typ === 'PFEIL' && werteSind(a, [9, 10, 11]);
-        },
-        erlaubtKosmisch(w) {
-          return w.art === 'SCHWARZES_LOCH' && w.sbId === t._sbZiel;
-        },
-      },
-
-      /* ---------- 7: Die zwei großen Ziele ---------- */
-      {
-        nr: 7,
-        titel: 'Die zwei großen Ziele',
-        nurZeigen: true,
-        auftrag: () => `Nur schauen: bei dir liegt ein Drache, bei ${t._gegnerName()} ein vollständiger Himmel.`,
-        text: 'Der Drache sind zwei fertige Sechser-Pfeile, die zusammen 1 bis 12 ergeben — '
-            + `${P.DRACHE} Punkte. Der Himmel sind alle sechs Formen gleichzeitig vor einem `
-            + `Spieler, jede mit mindestens ${HIMMEL_MIN} Karten — ${HIMMEL_BONUS} Punkte, `
-            + 'und alles wird sofort versiegelt.',
-        aufbau() {
-          t._sternbild(t.ich, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-          if (t.gegner !== t.ich) {
-            t._sternbild(t.gegner, [1, 2, 3, 4]);              // Pfeil
-            t._sternbild(t.gegner, [2, 4, 6, 8]);              // Wagen
-            t._sternbild(t.gegner, [5, 5, 5, 9, 9]);           // Krone
-            t._sternbild(t.gegner, [7, 7, 7, 7]);              // Kreuz
-            t._sternbild(t.gegner, [10, 10, 11, 11, 12, 12]);  // Zwilling
-            t._sternbild(t.gegner, [3, 3, 3, 6, 6, 6]);        // Doppelstier
-          }
-          t._hand(t.ich, [2, 5, 9, 11]);
-          t._mitte([1, 4, 7, 10, 12], 1);
-        },
-        erlaubt() { return false; },
+        art: 'ende',
+        text: 'Jetzt weißt du, wie es geht — probier dich selbst. '
+            + 'Ich mische neu, und ab hier spielst du frei.',
       },
     ];
   }
 }
 
-/** Einleitungssatz über der Formentafel am Ende des Tutorials. */
+/** Kurzer Merktext für den Abschluss (wird neben der Formentafel gezeigt). */
 function formenUebersichtText() {
-  return `Das sind die sechs Formen. Ein Sternbild hat mindestens ${MIN_KARTEN} und `
-       + `höchstens ${MAX_KARTEN} Karten; bei Pfeil und Wagen steigen die Punkte mit `
-       + 'jeder Karte, die anderen zählen fest.';
+  return `Ein Sternbild sind ${MIN_KARTEN} bis ${MAX_KARTEN} Karten in einer dieser Formen. `
+    + 'Du findest die Übersicht jederzeit oben unter „Formen".';
 }
 
 /* ===== app\ton.js ===== */
@@ -5646,6 +5713,175 @@ function probeTon(welcher) {
   spieleTon(welcher);
 }
 
+/* ===== app\erzaehler.js ===== */
+/**
+ * Sternenraub — der Erzähler.
+ *
+ * Eine Kartenrückseite fliegt in die Mitte und übernimmt die Führung durch das
+ * Tutorial. Sie wippt leicht, während sie spricht, und der Text erscheint im
+ * Sprechtempo. Ein Tippen überspringt das Tippen und zeigt sofort alles.
+ *
+ * Zwei Lagen:
+ *   'buehne' — mittig auf abgedunkeltem Grund. Für die Erklärungen am Anfang,
+ *              wo der Tisch noch nichts zu sagen hat.
+ *   'dock'   — unten über der Fußleiste, ohne Verdunkelung. Für die Aufgaben:
+ *              der Tisch bleibt bedienbar, die Anweisung bleibt groß.
+ *
+ * Enthält keine Spiellogik und keine Texte — beides kommt aus tutorial.js.
+ */
+
+/** Millisekunden je Zeichen. Etwa Vorlesetempo. */
+const ERZ_TAKT = 26;
+/** Nach einem Satzzeichen wird kurz Luft geholt. */
+const ERZ_PAUSE = { '.': 260, '!': 260, '?': 260, ',': 110, ';': 140, '—': 160 };
+
+class Erzaehler {
+  /** @param {object} dom  Elemente aus start.js: erz, erzKarte, erzText, erzWeiter, erzEnde */
+  constructor(dom) {
+    this.dom = dom;
+    this._timer = null;
+    this._fertig = null;      // löst auf, wenn der Text zu Ende getippt ist
+    this._ganzerText = '';
+    this._weiterAuf = null;   // löst auf, wenn „Weiter" gedrückt wurde
+
+    // Ein Tippen auf den Kasten überspringt das Tippen des Textes.
+    dom.erz.addEventListener('click', (e) => {
+      if (e.target.closest('.knopf')) return;
+      this.sofortFertig();
+    });
+    dom.erzWeiter.addEventListener('click', () => {
+      if (this._timer) { this.sofortFertig(); return; }
+      const f = this._weiterAuf;
+      this._weiterAuf = null;
+      if (f) f();
+    });
+  }
+
+  /* ---------------- Auftritt und Abgang ---------------- */
+
+  /**
+   * Die Rückseite fliegt von `vonEl` (dem Nachziehstapel) in die Mitte.
+   * @returns {Promise<void>}
+   */
+  einfliegen(vonEl) {
+    const d = this.dom;
+    d.erz.hidden = false;
+    d.erz.dataset.modus = 'buehne';
+    d.erzText.textContent = '';
+    d.erzWeiter.hidden = true;
+    d.erzKarte.classList.remove('spricht');
+
+    const ruhig = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (ruhig || !vonEl) return Promise.resolve();
+
+    const von = vonEl.getBoundingClientRect();
+    const nach = d.erzKarte.getBoundingClientRect();
+    if (!von.width || !nach.width) return Promise.resolve();
+
+    // Verschieben statt umbauen: die Karte startet dort, wo der Stapel liegt,
+    // und rutscht in ihre eigentliche Lage.
+    const dx = von.left - nach.left;
+    const dy = von.top - nach.top;
+    d.erzKarte.style.transition = 'none';
+    d.erzKarte.style.transform = `translate(${dx}px, ${dy}px) scale(.7)`;
+    // Bewusst setTimeout statt requestAnimationFrame: in einem Hintergrund-Tab
+    // ruft der Browser rAF gar nicht auf. Das Tutorial bliebe dann für immer
+    // an dieser Stelle stehen.
+    return new Promise((fertig) => {
+      setTimeout(() => {
+        d.erzKarte.style.transition = 'transform 620ms cubic-bezier(.4,0,.2,1)';
+        d.erzKarte.style.transform = 'translate(0, 0) scale(1)';
+      }, 30);
+      setTimeout(() => {
+        d.erzKarte.style.transition = '';
+        d.erzKarte.style.transform = '';
+        fertig();
+      }, 700);
+    });
+  }
+
+  /** Lage wechseln: 'buehne' (mittig, abgedunkelt) oder 'dock' (unten). */
+  lage(modus) {
+    this.dom.erz.dataset.modus = modus;
+  }
+
+  verstecken() {
+    this._stoppen();
+    this.dom.erz.hidden = true;
+    this.dom.erzKarte.classList.remove('spricht');
+  }
+
+  /* ---------------- Sprechen ---------------- */
+
+  /**
+   * Text im Sprechtempo ausgeben.
+   * @param {string} text
+   * @returns {Promise<void>} löst auf, wenn alles steht (auch beim Überspringen)
+   */
+  sag(text) {
+    this._stoppen();
+    const d = this.dom;
+    this._ganzerText = text;
+    d.erzText.textContent = '';
+    d.erzKarte.classList.add('spricht');
+
+    let i = 0;
+    return new Promise((fertig) => {
+      this._fertig = fertig;
+      const schreib = () => {
+        if (i >= text.length) { this._abschluss(); return; }
+        const z = text[i++];
+        d.erzText.textContent += z;
+        this._timer = setTimeout(schreib, ERZ_TAKT + (ERZ_PAUSE[z] || 0));
+      };
+      this._timer = setTimeout(schreib, 160);
+    });
+  }
+
+  /** Tippen überspringen: sofort der ganze Text. */
+  sofortFertig() {
+    if (!this._timer) return;
+    this.dom.erzText.textContent = this._ganzerText;
+    this._abschluss();
+  }
+
+  _abschluss() {
+    clearTimeout(this._timer);
+    this._timer = null;
+    this.dom.erzKarte.classList.remove('spricht');
+    const f = this._fertig;
+    this._fertig = null;
+    if (f) f();
+  }
+
+  _stoppen() {
+    clearTimeout(this._timer);
+    this._timer = null;
+    this._fertig = null;
+  }
+
+  /* ---------------- Warten ---------------- */
+
+  /**
+   * Zeigt den Weiter-Knopf und wartet, bis er gedrückt wird.
+   * @param {string} [beschriftung]
+   * @returns {Promise<void>}
+   */
+  warteAufWeiter(beschriftung) {
+    const d = this.dom;
+    d.erzWeiter.textContent = beschriftung || 'Weiter';
+    d.erzWeiter.hidden = false;
+    return new Promise((weiter) => { this._weiterAuf = weiter; });
+  }
+
+  /** Knopf wieder weg — jetzt ist der Tisch dran. */
+  knopfWeg() {
+    this.dom.erzWeiter.hidden = true;
+    this._weiterAuf = null;
+  }
+}
+
 /* ===== app\start.js ===== */
 /**
  * Sternenraub — Oberfläche, Schritt 2: ein Mensch gegen Bots.
@@ -5690,10 +5926,12 @@ const S = {
   frischeKarten: new Set(),
   punkteRundenStart: [],        // für die Rundenbilanz inklusive Trost- und Himmelspunkten
   tutorial: null,               // läuft gerade das Tutorial?
+  tutorialZugFertig: null,      // Rückruf, sobald der geforderte Zug gemacht ist
   letzterSchritt: '',           // für das Aufleuchten beim Schrittwechsel
   // (Gegnerplaetze klappen nicht mehr auf und zu - sie liegen immer offen.)
   zugMeldung: '',               // was der Bot gerade getan hat, für die Leiste
   zielSb: null,                 // angeklicktes Zielsternbild (eigenes = erweitern, fremdes = klauen)
+  jokerZiel: null,              // angeklickte fremde Sternschnuppe (Karten-Id), die du holen willst
   zeigeTipps: false,            // Vorschlagsliste aufgeklappt?
 };
 
@@ -5708,12 +5946,13 @@ function holeDom() {
     leisteText: 'leiste-text', leisteKnoepfe: 'leiste-knoepfe',
     stapelDeck: 'stapel-deck', stapelAblage: 'stapel-ablage', ichPunkte: 'ich-punkte',
     ichBereich: 'ich-bereich', handBereich: 'hand-bereich',
-    tutor: 'tutor', tutorSchritt: 'tutor-schritt', tutorTitel: 'tutor-titel',
-    tutorText: 'tutor-text', tutorWeiter: 'tutor-weiter', tutorEnde: 'tutor-ende',
+    erz: 'erzaehler', erzKarte: null, erzText: 'erz-text', erzWarum: 'erz-warum',
+    erzSchritt: 'erz-schritt', erzWeiter: 'erz-weiter', erzEnde: 'erz-ende',
     modal: 'modal', modalInhalt: 'modal-inhalt',
     btnRegeln: 'btn-regeln', btnNeu: 'btn-neu', btnFormen: 'btn-formen', ichName: 'ich-name',
   };
-  for (const [k, id] of Object.entries(ids)) dom[k] = document.getElementById(id);
+  for (const [k, id] of Object.entries(ids)) dom[k] = id ? document.getElementById(id) : null;
+  dom.erzKarte = dom.erz ? dom.erz.querySelector('.erz-karte') : null;
 }
 
 /* ================================================================= */
@@ -5745,10 +5984,17 @@ const botFn = () => (S.schwer ? botNormal : botEinfach);
 
 /**
  * Das Tutorial läuft auf demselben Tisch, aber ohne Zugschleife: die Karten
- * werden je Schritt hingelegt, und nur der eine gesuchte Zug ist erlaubt.
- * Deshalb wird hier `spiel.fuehreAktion` gerufen und nicht `ablauf.spieleZug` —
- * sonst würde Teil 3 eine Zufallskarte nachziehen und den Schritt aufweichen.
+ * werden je Aufgabe hingelegt, und nur der eine gesuchte Zug ist erlaubt.
+ * Deshalb wird in fuehreAus() `spiel.fuehreAktion` gerufen und nicht
+ * `ablauf.spieleZug` — sonst würde Teil 3 nachziehen und den Aufbau aufweichen.
+ *
+ * Gesteuert wird es als eine durchlaufende Folge (laufeTutorial): der Erzähler
+ * spricht, wartet auf „Weiter" oder auf deinen Zug, und geht dann weiter.
+ * Abbrechen ist jederzeit möglich — dafür bekommt jeder Lauf eine Nummer, und
+ * ein abgebrochener Lauf hört auf, sich einzumischen.
  */
+let tutorialLauf = 0;
+
 function starteTutorial() {
   clearTimeout(S.botTimer);
   startschirm.verstecken();
@@ -5762,57 +6008,102 @@ function starteTutorial() {
   S.tutorial.starteSchritt();
 
   dom.tisch.classList.add('tutorial');
-  dom.tutor.hidden = false;
   S.letzteSb = new Map();
   S.letzteHand = new Set();
   auswahlLeeren();
   zeichne();
+
+  laufeTutorial(++tutorialLauf);
 }
 
+/** Bricht das Tutorial ab und geht zurück ins Menü. */
 function beendeTutorial() {
+  tutorialLauf++;                    // laufende Folge stilllegen
   S.tutorial = null;
+  S.tutorialZugFertig = null;
+  fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
-  dom.tutor.hidden = true;
   merkeTutorialGesehen();
   zeigeStart();
 }
 
-/** Die Leiste unten: entweder Auftrag oder Erklärung. */
-function zeichneTutor() {
-  const t = S.tutorial;
-  if (!t) return;
-  const s = t.schritt();
-  dom.tutorSchritt.textContent = `Schritt ${t.schrittNr} von ${t.anzahlSchritte}`;
-  dom.tutorTitel.textContent = s.titel;
-  const auftrag = t.phase === 'AUFTRAG';
-  dom.tutorText.textContent = auftrag ? s.auftrag : s.text;
-  dom.tutor.classList.toggle('auftrag', auftrag);
-  dom.tutor.classList.toggle('erklaerung', !auftrag);
+/** Wartet, bis der Spieler den gesuchten Zug gemacht hat. */
+function warteAufZug() {
+  return new Promise((fertig) => { S.tutorialZugFertig = fertig; });
+}
 
-  // Beim Wechsel auf einen neuen Schritt einmal aufleuchten.
-  const marke = t.schrittNr + ':' + s.titel;
-  if (marke !== S.letzterSchritt) {
-    S.letzterSchritt = marke;
-    dom.tutor.classList.remove('wechsel');
-    void dom.tutor.offsetWidth;          // Animation neu anstoßen
-    dom.tutor.classList.add('wechsel');
+/**
+ * Die Folge: erzählen, Aufgabe stellen, auf den Zug warten, erklären, weiter.
+ * @param {number} lauf Nummer dieses Laufs; bricht ab, sobald eine neue beginnt
+ */
+async function laufeTutorial(lauf) {
+  const t = S.tutorial;
+  const gilt = () => lauf === tutorialLauf && S.tutorial === t;
+  const text = (x) => (typeof x === 'function' ? x() : x);
+
+  // Auftritt: die Rückseite fliegt vom Nachziehstapel in die Mitte.
+  await fuehrer.einfliegen(dom.stapelDeck);
+  if (!gilt()) return;
+
+  while (gilt() && !t.fertig) {
+    const s = t.schritt();
+
+    if (s.art === 'reden' || s.art === 'ende') {
+      fuehrer.lage('buehne');
+      zeigeErzKopf('', '');
+      await fuehrer.sag(text(s.text));
+      if (!gilt()) return;
+      await fuehrer.warteAufWeiter(s.art === 'ende' ? 'Losspielen' : 'Weiter');
+      if (!gilt()) return;
+      if (s.art === 'ende') { tutorialFertig(); return; }
+      t.weiter();
+      zeichne();
+      continue;
+    }
+
+    /* ---- Aufgabe ---- */
+    fuehrer.lage('dock');
+    auswahlLeeren();
+    zeichne();
+    zeigeErzKopf(`Schritt ${t.aufgabeNr} von ${t.aufgabenGesamt}`, s.titel);
+    fuehrer.knopfWeg();
+    dom.erzWarum.textContent = '';
+    await fuehrer.sag(text(s.text));
+    if (!gilt()) return;
+    // Das Warum steht unter der Anweisung — es erklärt, nicht es fordert.
+    dom.erzWarum.textContent = text(s.warum) || '';
+
+    await warteAufZug();
+    if (!gilt()) return;
+
+    dom.erzWarum.textContent = '';
+    await fuehrer.sag(text(s.danach));
+    if (!gilt()) return;
+    await fuehrer.warteAufWeiter('Weiter');
+    if (!gilt()) return;
+    t.weiter();
+    zeichne();
   }
 }
 
-/** Weiter — und am Ende die Formentafel als Merkhilfe. */
-function tutorWeiter() {
-  const t = S.tutorial;
-  if (!t) return;
-  t.weiter();
-  if (t.fertig) {
-    zeigeModal(dom, 'Das war es', `<p>${formenUebersichtText()}</p>`,
-      [{ text: 'Los geht’s', klasse: 'haupt', tun: () => beendeTutorial() }], true);
-    const text = dom.modalInhalt.querySelector('.modal-text');
-    if (text) text.appendChild(formenTafel());
-    return;
-  }
-  auswahlLeeren();
-  zeichne();
+function zeigeErzKopf(schritt, titel) {
+  dom.erzSchritt.textContent = [schritt, titel].filter(Boolean).join(' · ');
+}
+
+/** Ende der Führung: ab hier eine ganz normale Partie. */
+function tutorialFertig() {
+  S.tutorial = null;
+  S.tutorialZugFertig = null;
+  fuehrer.verstecken();
+  dom.tisch.classList.remove('tutorial');
+  merkeTutorialGesehen();
+  zeigeModal(dom, 'Die Formen auf einen Blick', `<p>${formenUebersichtText()}</p>`,
+    [{ text: 'Losspielen', klasse: 'haupt', tun: () => {
+      schliesseModal(dom);
+      neuesSpiel(3, true, (Math.random() * 2 ** 32) >>> 0, S.meinName);
+    } }], true);
+  const kasten = dom.modalInhalt.querySelector('.modal-text');
+  if (kasten) kasten.appendChild(formenTafel());
 }
 
 /**
@@ -5888,6 +6179,7 @@ function auswahlLeeren() {
   S.auswahlHand.clear();
   S.auswahlMitte.clear();
   S.zielSb = null;
+  S.jokerZiel = null;
   S.modus = null;
 }
 
@@ -5923,6 +6215,103 @@ function musterVonIds(ids, nachId) {
 /* ================================================================= */
 
 /**
+ * Der Jokertausch, sobald eine fremde Sternschnuppe angewählt ist.
+ *
+ * Regel: Du gibst die Karte her, die die Sternschnuppe gerade vertritt, und
+ * musst mit der erbeuteten Sternschnuppe im selben Zug ein NEUES Sternbild
+ * bauen — aus deinen übrigen gewählten Handkarten und höchstens zwei
+ * Mittelkarten. Ein bestehendes eigenes Sternbild damit zu ergänzen ist nicht
+ * erlaubt.
+ *
+ * Auch hier wählst du: welche Karte du hergibst, ergibt sich aus dem Wert,
+ * und woraus das neue Sternbild besteht, bestimmst du. Früher bot die Leiste
+ * drei fertige Jokerklau-Züge an — die Entscheidung lag bei der App.
+ */
+function pruefeJoker(z, ich) {
+  // Welches Sternbild, welcher Wert?
+  let sb = null;
+  let besitzer = -1;
+  for (const sp of z.spieler) {
+    const t = sp.sternbilder.find((x) => x.karten.some((k) => k.id === S.jokerZiel));
+    if (t) { sb = t; besitzer = sp.idx; break; }
+  }
+  if (!sb) { S.jokerZiel = null; return { grund: 'Diese Sternschnuppe liegt nicht mehr da.' };  }
+
+  const jw = jokerKarteWerte(sb);
+  const wert = jw ? jw.get(S.jokerZiel) : null;
+  const opfer = z.spieler[besitzer].name;
+  const kopf = `Sternschnuppe aus ${opfer}s ${typText(sb.typ)} holen: `;
+
+  if (sb.versiegelt) return { grund: kopf + 'Das Sternbild ist versiegelt — da kommt niemand heran.' };
+  if (wert == null) return { grund: kopf + 'Diese Sternschnuppe vertritt gerade keinen festen Wert.' };
+
+  // Die hergegebene Karte: eine gewählte Handkarte mit genau diesem Wert.
+  const gewaehlteHand = (ich.hand || []).filter((k) => S.auswahlHand.has(k.id));
+  const tausch = gewaehlteHand.find((k) => k.art === 'ZAHL' && k.wert === wert);
+  if (!tausch) {
+    const habe = (ich.hand || []).some((k) => k.art === 'ZAHL' && k.wert === wert);
+    return { grund: kopf + (habe
+      ? `Wähle deine ${wert} aus der Hand — sie nimmt den Platz der Sternschnuppe ein.`
+      : `Dafür brauchst du eine ${wert} auf der Hand. Du hast keine.`) };
+  }
+
+  // Was entsteht aus der Sternschnuppe und dem Rest der Auswahl?
+  const joker = sb.karten.find((k) => k.id === S.jokerZiel);
+  const rest = gewaehlteHand.filter((k) => k.id !== tausch.id);
+  const ausMitte = z.mitte.filter((k) => S.auswahlMitte.has(k.id));
+  if (ausMitte.length > CONFIG.zug.bauenMaxAusMitte) {
+    return { grund: kopf + `Höchstens ${CONFIG.zug.bauenMaxAusMitte} Karten aus der Mitte. ` +
+      `Du hast ${ausMitte.length} gewählt.` };
+  }
+
+  const neu = [joker, ...rest, ...ausMitte];
+  if (neu.length < CONFIG.sternbild.minKarten) {
+    return { grund: kopf + `Mit der Sternschnuppe musst du sofort ein NEUES Sternbild bauen. ` +
+      `Dafür fehlen dir noch Karten — bisher wären es ${neu.length} von ${CONFIG.sternbild.minKarten}.` };
+  }
+  if (neu.length > CONFIG.sternbild.maxKarten) {
+    return { grund: kopf + `Höchstens ${CONFIG.sternbild.maxKarten} Karten. Du kommst auf ${neu.length}.` };
+  }
+
+  const b = bewerte(neu);
+  if (!b.gueltig) {
+    const werte = rest.concat(ausMitte).filter((k) => k.art === 'ZAHL')
+      .map((k) => k.wert).sort((x, y) => x - y);
+    return { grund: kopf + `Aus der Sternschnuppe und ${werte.join('-')} wird kein gültiges ` +
+      'Sternbild. Die Sternschnuppe darf jeden Wert vertreten — aber die Form muss stimmen.' };
+  }
+
+  // Die Engine hat das letzte Wort: gesucht ist eine JOKERKLAU-Aktion mit
+  // demselben Wertmuster. Danach wird sie auf die angeklickten Karten
+  // umgeschrieben (wertgleiche Karten werden in der Zuggenerierung zusammengefasst).
+  const nachId = new Map();
+  for (const k of ich.hand || []) nachId.set(k.id, k);
+  for (const k of z.mitte) nachId.set(k.id, k);
+  const mRest = muster(rest);
+  const mMitte = muster(ausMitte);
+
+  const treffer = (S.optionen ? S.optionen.aktionen : []).find((a) => (
+    a.art === 'JOKERKLAU' && a.sbId === sb.id && a.wert === wert
+    && (a.handIds || []).length === rest.length
+    && (a.mitteIds || []).length === ausMitte.length
+    && musterVonIds(a.handIds, nachId) === mRest
+    && musterVonIds(a.mitteIds, nachId) === mMitte
+  ));
+  if (!treffer) {
+    return { grund: kopf + 'Dieser Tausch ist nicht erlaubt. Sieh unter „Vorschläge" nach.' };
+  }
+  return {
+    aktion: {
+      ...treffer,
+      tauschHandId: tausch.id,
+      handIds: rest.map((k) => k.id),
+      mitteIds: ausMitte.map((k) => k.id),
+    },
+    jokerKopf: kopf,
+  };
+}
+
+/**
  * Nimmt die vom Spieler gewählten Karten und das gewählte Zielsternbild und
  * sagt, ob daraus ein legaler Zug wird.
  *
@@ -5940,6 +6329,8 @@ function pruefeAuswahl() {
   const mitte = S.auswahlMitte.size;
   const gesamt = hand + mitte;
 
+  if (S.jokerZiel) return pruefeJoker(z, ich);
+
   if (gesamt === 0 && !S.zielSb) {
     return { grund: 'Wähle Karten aus deiner Hand — und dazu bis zu ' +
       `${CONFIG.zug.bauenMaxAusMitte} aus der Mitte.` };
@@ -5954,10 +6345,13 @@ function pruefeAuswahl() {
   }
   const klauen = ziel && zielBesitzer !== S.menschIdx;
   const opfer = klauen ? z.spieler[zielBesitzer].name : '';
-  // Vorspann für jede Klau-Meldung, damit immer klar ist, worum es geht.
+  // Vorspann für jede Meldung mit Ziel, damit immer klar ist, worum es geht —
+  // beim Klauen wie beim Erweitern des eigenen Sternbilds.
   const klauKopf = klauen
     ? `${opfer}s ${typText(ziel.typ)} (${ziel.punkte} P., ${ziel.karten.length} Karten) klauen: `
-    : '';
+    : ziel
+      ? `Dein ${typText(ziel.typ)} (${ziel.punkte} P.) erweitern: `
+      : '';
 
   /* --- die harten Grenzen zuerst, sie sind am leichtesten zu erklären --- */
 
@@ -5971,7 +6365,8 @@ function pruefeAuswahl() {
       `Handkarten dazulegen — gewählt hast du ${hand}.` };
   }
   if (!klauen && hand < CONFIG.zug.bauenMinHandkarten) {
-    return { grund: `Mindestens ${CONFIG.zug.bauenMinHandkarten} eigene Handkarte muss dabei sein.` };
+    return { grund: klauKopf + `Mindestens ${CONFIG.zug.bauenMinHandkarten} eigene Handkarte ` +
+      'muss dabei sein. Wähle sie unten in deiner Hand.' };
   }
 
   if (ziel && ziel.sicher) {
@@ -6032,6 +6427,13 @@ function pruefeAuswahl() {
     return { aktion: { ...treffer, handIds: [...S.auswahlHand], mitteIds: [...S.auswahlMitte] } };
   }
 
+  // Im Tutorial ist die Aktionsliste absichtlich auf den einen gesuchten Zug
+  // beschnitten — dann liegt es nicht an den Regeln, sondern an der Aufgabe.
+  if (S.tutorial) {
+    return { grund: 'Das wäre im Spiel erlaubt — hier geht es gerade nur um den einen Zug, '
+      + 'den die Karte oben nennt.' };
+  }
+
   // Hierher kommt man nur, wenn die Engine etwas verbietet, das oben nicht
   // abgefangen wurde. Lieber ehrlich sagen als etwas erfinden.
   return { grund: 'Dieser Zug ist nicht erlaubt. Sieh unter „Vorschläge" nach, was gerade geht.' };
@@ -6086,6 +6488,7 @@ function baueSicht() {
     novaMoeglich: false,
     wlKarten: new Set(),
     jokerSb: new Set(),      // fremde Sternbilder, aus denen du gerade einen Joker holen kannst
+    jokerZiel: S.jokerZiel,  // die angewählte fremde Sternschnuppe
     dranMensch,
   };
 
@@ -6217,6 +6620,12 @@ function tippWert(a) {
  */
 function erfolgText(a, z) {
   const form = `${typText(a.typ)} ${werteText(a.werte)}`;
+  if (a.art === 'JOKERKLAU') {
+    const opfer = z.spieler[a.opferIdx] ? z.spieler[a.opferIdx].name : 'Der Gegner';
+    return `Das geht: Du gibst deine ${a.wert} her, nimmst die Sternschnuppe und baust `
+      + `daraus ${form} — ${a.punkteNachher} Punkte. ${opfer}s Sternbild bleibt liegen. `
+      + 'Unten bestätigen.';
+  }
   if (a.art === 'KLAUEN') {
     const opfer = z.spieler[a.opferIdx] ? z.spieler[a.opferIdx].name : 'Der Gegner';
     return `Klauen geht: ${form} — ${a.punkteNachher} Punkte für dich. `
@@ -6238,11 +6647,17 @@ function baueKnoepfe(s) {
 
   // Der Hauptknopf: immer da, sobald Karten gewählt sind. Er prüft und führt
   // aus — oder sagt, woran es liegt. Kein Menü fertiger Züge mehr.
-  if (etwasGewaehlt || S.zielSb) {
+  if (etwasGewaehlt || S.zielSb || S.jokerZiel) {
     const p = pruefeAuswahl();
     if (p.aktion) {
       const a = p.aktion;
-      if (a.art === 'KLAUEN') {
+      if (a.art === 'JOKERKLAU') {
+        knoepfe.push({
+          text: `Sternschnuppe holen: ${typText(a.typ)} ${werteText(a.werte)}  (${a.punkteNachher} P.)`,
+          klasse: 'haupt gefahr',
+          titel: `Du gibst deine ${a.wert} her und baust sofort ein neues Sternbild.`,
+        });
+      } else if (a.art === 'KLAUEN') {
         knoepfe.push({
           text: `Klauen: ${typText(a.typ)} ${werteText(a.werte)}  (${a.punkteNachher} P.)`,
           klasse: 'haupt gefahr',
@@ -6284,25 +6699,16 @@ function baueKnoepfe(s) {
         tun.push(() => fuehreAus(a));
       }
     }
-    // Jokerklau: es können viele Varianten legal sein (verschiedene neue Sternbilder).
-    // Die drei besten reichen, sonst quillt die Leiste über.
-    const jk = opt.aktionen.filter((a) => a.art === 'JOKERKLAU')
-      .sort((x, y) => y.gewinn - x.gewinn).slice(0, 3);
-    for (const a of jk) {
-      knoepfe.push({
-        text: aktionText(a, s.z),
-        klasse: 'gefahr',
-        titel: 'Kostet den ganzen Zug. Das fremde Sternbild bleibt liegen — nur die Karte wird getauscht.',
-      });
-      tun.push(() => fuehreAus(a));
-    }
+    // Fertige Jokerklau-Züge stehen hier NICHT mehr. Sie nahmen die
+    // Entscheidung ab: welche Karte hergeben, was daraus bauen. Stattdessen
+    // tippt man die Sternschnuppe im fremden Sternbild an und wählt selbst.
     for (const w of opt.jokerTausch) {
       knoepfe.push({ text: `Sternschnuppe gegen deine ${w.wert} tauschen`, titel: 'Freie Aktion' });
       tun.push(() => { S.ablauf.spiel.jokerTauschen(S.menschIdx, w); zeichne(); });
     }
   }
 
-  if (etwasGewaehlt || S.zielSb) {
+  if (etwasGewaehlt || S.zielSb || S.jokerZiel) {
     knoepfe.push({ text: 'Auswahl leeren' });
     tun.push(() => { auswahlLeeren(); zeichne(); });
   }
@@ -6320,7 +6726,7 @@ function baueKnoepfe(s) {
   S.knopfTun = tun;
 
   if (S.modus) return;
-  if (!etwasGewaehlt && !S.zielSb) {
+  if (!etwasGewaehlt && !S.zielSb && !S.jokerZiel) {
     s.hinweis = 'Du bist dran. Wähle Karten aus deiner Hand und aus der Mitte. '
       + 'Ein Sternbild anklicken heißt: dort anlegen oder es klauen.';
   } else {
@@ -6371,7 +6777,7 @@ function zeichne() {
   zeichneLeiste(dom, s);
   zeichneProtokoll(dom, S.ablauf.spiel.protokoll.slice(-250));
   markiereWlKarten(s);
-  zeichneTutor();
+  // (Der Erzaehler zeichnet sich selbst - siehe erzaehler.js.)
   dom.ichName.textContent = s.z.spieler[S.menschIdx].name;
   const meine = s.z.spieler[S.menschIdx].sternbilder;
   const offen = meine.filter((sb) => !sb.sicher).length;
@@ -6413,6 +6819,15 @@ function karteGeklickt(ort, id, el) {
     return;
   }
   if (S.modus) return;
+
+  if (ort === 'joker') {
+    // Eine fremde Sternschnuppe anwählen. Sie schließt das Klauziel aus:
+    // beides zusammen wäre kein Zug.
+    S.jokerZiel = (S.jokerZiel === id) ? null : id;
+    if (S.jokerZiel) S.zielSb = null;
+    zeichne();
+    return;
+  }
 
   if (ort === 'hand') {
     const karte = (z.spieler[S.menschIdx].hand || []).find((k) => k.id === id);
@@ -6494,16 +6909,22 @@ function sternbildGeklickt(sbId) {
   // heißt erweitern, fremdes heißt klauen — beides dieselbe Geste.
   if (!a.istMensch()) return;
   S.zielSb = (S.zielSb === sbId) ? null : sbId;
+  if (S.zielSb) S.jokerZiel = null;
   zeichne();
 }
 
 function fuehreAus(aktion) {
   if (S.tutorial) {
     // Kein spieleZug: Teil 3 würde nachziehen und den vorbereiteten Schritt aufweichen.
+    const vorher = kartenLage();
     S.ablauf.spiel.fuehreAktion(S.menschIdx, aktion);
-    S.tutorial.nachZug();
+    S.tutorial.nachZug();               // geskriptete Antwort des Gegners
     auswahlLeeren();
     zeichne();
+    tonZumZug(vorher);
+    const weiter = S.tutorialZugFertig;
+    S.tutorialZugFertig = null;
+    fliegeUm(vorher).then(() => { if (weiter) weiter(); });
     return;
   }
   // Vorher merken, wo die Karten liegen — beim Klauen sieht man sie danach wandern.
@@ -6707,8 +7128,7 @@ function verdrahte() {
   dom.btnRegeln.addEventListener('click', zeigeRegeln);
   dom.btnNeu.addEventListener('click', zeigeStart);
   dom.btnFormen.addEventListener('click', zeigeFormen);
-  dom.tutorWeiter.addEventListener('click', tutorWeiter);
-  dom.tutorEnde.addEventListener('click', beendeTutorial);
+  dom.erzEnde.addEventListener('click', beendeTutorial);
   verdrahteSchweber();
   /** Pflichtfenster (Start, Rundenende, Spielende) lassen sich nicht wegklicken. */
   const darfSchliessen = () => !dom.modal.classList.contains('pflicht');
@@ -6733,6 +7153,7 @@ function tippGeklickt(nr) {
 /* ================================================================= */
 
 holeDom();
+const fuehrer = new Erzaehler(dom);
 verdrahte();
 tonVorbereiten();
 
@@ -6740,7 +7161,7 @@ const startschirm = baueStartschirm({
   spielen: ({ bots, stufe, name }) => {
     S.tutorial = null;
     dom.tisch.classList.remove('tutorial');
-    dom.tutor.hidden = true;
+    fuehrer.verstecken();
     startschirm.verstecken();
     neuesSpiel(bots + 1, stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, name);
   },
@@ -6754,10 +7175,11 @@ const startschirm = baueStartschirm({
 });
 
 S.meinName = gemerkterName();
+// Beim Öffnen kommt IMMER der Startschirm. Das Tutorial startete hier
+// früher von selbst, wenn man es noch nie gesehen hatte — wer den Link
+// zum ersten Mal öffnet, landete dann ungefragt in der Führung.
+// „Wie es geht" ist dort ein Knopf unter anderen.
 startschirm.zeigen();
-
-// Beim allerersten Start kommt das Tutorial, nicht das Spiel.
-if (!tutorialSchonGesehen()) starteTutorial();
 
 /* Kleiner Griff für Tests in der Browser-Konsole: sternenraub.tempo(0) */
 window.sternenraub = {
