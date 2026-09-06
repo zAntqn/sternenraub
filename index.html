@@ -150,6 +150,10 @@
   --seite-b:    200px;                          /* Breite der Seitenleiste */
   --sitz-b:     clamp(176px, 15vw, 232px);      /* Breite der Seitenplaetze: sechs kleine Karten passen quer */
   --schleier:   color-mix(in srgb, var(--tisch-tief) 84%, transparent);
+  /* Abgesetzte Spielflaechen (Mitte, aktiver Platz): nicht deckend, damit
+     die Galaxie dahinter durchscheint. Etwa drei Viertel Deckung reicht,
+     um die Flaeche abzusetzen und laesst die Sterne gerade eben ahnen. */
+  --flaeche:    color-mix(in srgb, var(--tisch-hoch) 76%, transparent);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -201,26 +205,44 @@
 }
 
 /* Die Sterne: ein kleines Muster, das sich wiederholt. Ein einziges
-   SVG in der Datei, kein Netzabruf, keine Ladezeit. */
+   SVG in der Datei, kein Netzabruf, keine Ladezeit.
+
+   Jeder Stern besteht aus zwei Kreisen: einem winzigen hellen Kern und
+   einem größeren, sehr schwachen Hof darum. Das ergibt die weiche Kante,
+   für die man sonst einen Weichzeichner bräuchte — der aber auf dem Handy
+   bei jedem Bild Rechenzeit kostet. Hier wird die Kachel einmal gerastert
+   und danach nur noch wiederholt.
+
+   Klein, schwach, viele. Sie sollen Tiefe geben, nicht auffallen. */
 #galaxie::after {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: .5;
+  opacity: .62;
   background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>\
+<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'>\
 <g fill='%23E6E1D4'>\
-<circle cx='23' cy='41' r='.8' opacity='.55'/><circle cx='118' cy='17' r='.6' opacity='.4'/>\
-<circle cx='202' cy='63' r='.9' opacity='.5'/><circle cx='271' cy='29' r='.6' opacity='.35'/>\
-<circle cx='57' cy='122' r='.7' opacity='.45'/><circle cx='149' cy='97' r='1' opacity='.6'/>\
-<circle cx='233' cy='141' r='.6' opacity='.35'/><circle cx='14' cy='187' r='.8' opacity='.5'/>\
-<circle cx='96' cy='214' r='.6' opacity='.4'/><circle cx='176' cy='189' r='.7' opacity='.45'/>\
-<circle cx='262' cy='223' r='.9' opacity='.5'/><circle cx='41' cy='268' r='.6' opacity='.35'/>\
-<circle cx='131' cy='283' r='.8' opacity='.5'/><circle cx='214' cy='291' r='.6' opacity='.4'/>\
-<circle cx='288' cy='166' r='.7' opacity='.45'/><circle cx='79' cy='58' r='.5' opacity='.3'/>\
+<circle cx='19' cy='33' r='2.4' opacity='.05'/><circle cx='19' cy='33' r='.55' opacity='.34'/>\
+<circle cx='94' cy='14' r='2' opacity='.04'/><circle cx='94' cy='14' r='.45' opacity='.26'/>\
+<circle cx='162' cy='51' r='2.6' opacity='.055'/><circle cx='162' cy='51' r='.6' opacity='.32'/>\
+<circle cx='217' cy='23' r='1.8' opacity='.04'/><circle cx='217' cy='23' r='.4' opacity='.22'/>\
+<circle cx='46' cy='98' r='2.2' opacity='.05'/><circle cx='46' cy='98' r='.5' opacity='.3'/>\
+<circle cx='119' cy='78' r='3' opacity='.06'/><circle cx='119' cy='78' r='.7' opacity='.38'/>\
+<circle cx='187' cy='113' r='1.8' opacity='.04'/><circle cx='187' cy='113' r='.4' opacity='.22'/>\
+<circle cx='11' cy='150' r='2.4' opacity='.05'/><circle cx='11' cy='150' r='.55' opacity='.32'/>\
+<circle cx='77' cy='171' r='2' opacity='.04'/><circle cx='77' cy='171' r='.45' opacity='.26'/>\
+<circle cx='141' cy='151' r='2.2' opacity='.05'/><circle cx='141' cy='151' r='.5' opacity='.3'/>\
+<circle cx='210' cy='178' r='2.6' opacity='.055'/><circle cx='210' cy='178' r='.6' opacity='.32'/>\
+<circle cx='33' cy='214' r='1.8' opacity='.04'/><circle cx='33' cy='214' r='.4' opacity='.22'/>\
+<circle cx='105' cy='227' r='2.4' opacity='.05'/><circle cx='105' cy='227' r='.55' opacity='.3'/>\
+<circle cx='171' cy='233' r='1.8' opacity='.04'/><circle cx='171' cy='233' r='.4' opacity='.24'/>\
+<circle cx='231' cy='133' r='2.2' opacity='.05'/><circle cx='231' cy='133' r='.5' opacity='.28'/>\
+<circle cx='63' cy='47' r='1.6' opacity='.035'/><circle cx='63' cy='47' r='.35' opacity='.2'/>\
+<circle cx='134' cy='196' r='1.6' opacity='.035'/><circle cx='134' cy='196' r='.35' opacity='.2'/>\
+<circle cx='196' cy='87' r='1.6' opacity='.035'/><circle cx='196' cy='87' r='.35' opacity='.2'/>\
 </g></svg>");
   background-repeat: repeat;
-  background-size: 300px 300px;
+  background-size: 240px 240px;
 }
 
 /* Wer Bewegung abgeschaltet hat, bekommt trotzdem den Hintergrund —
@@ -246,6 +268,10 @@ html, body {
 
 /* Der Tisch füllt das Fenster. Nichts scrollt als Ganzes; was nicht
    passt, scrollt in seiner eigenen Zone (Abschnitt 15). */
+/* Im Menü ist der Tisch weg, nicht nur verdeckt — sonst schien er hindurch.
+   `display: grid` würde [hidden] sonst überstimmen. */
+#tisch[hidden] { display: none !important; }
+
 #tisch {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--seite-b);
@@ -952,7 +978,7 @@ button.karte { cursor: pointer; }
    linken Kante allein hat man übersehen. Es blinkt nichts. */
 .gegner.aktiv {
   border-color: var(--signal);
-  background: var(--tisch-hoch);
+  background: var(--flaeche);
 }
 .gegner.aktiv .gegner-name { color: var(--signal); }
 .gegner-dran {
@@ -1012,7 +1038,7 @@ button.karte { cursor: pointer; }
   flex-direction: column;
   min-height: 0;
   padding: var(--raum);
-  background: var(--tisch-hoch);
+  background: var(--flaeche);
   border-radius: var(--r-flaeche);
 }
 
@@ -1131,14 +1157,14 @@ button.karte { cursor: pointer; }
   border-bottom-color: transparent;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  background: var(--tisch-hoch);
+  background: var(--flaeche);
 }
 #hand-bereich.aktiv {
   border-color: var(--signal);
   border-top-color: transparent;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  background: var(--tisch-hoch);
+  background: var(--flaeche);
 }
 
 /* „Du bist am Zug" — steht in der Überschrift deiner Auslage, in derselben
@@ -2286,7 +2312,7 @@ const CONFIG = {
     // Groesste erlaubte Schrittweite. 12 heisst: keine Grenze (bisheriger Stand).
     // Zum Ausprobieren: 3. Dann faellt 4-8-12 weg - ein Dreier, der mit
     // Schrittweite 4 sofort unerweiterbar und damit gratis sicher ist.
-    maxSchrittweite: 12,
+    maxSchrittweite: 3,
   },
 
   /* ---------- Der Drache ---------- */
@@ -2328,14 +2354,17 @@ const CONFIG = {
     zerstoerteKartenNach: 'ABLAGE',
 
     // Kosmische Karten (außer der Sternschnuppe), die beim Auffüllen in die
-    // Mitte gezogen werden: sofort auf die Ablage (true) oder bis zum
-    // Rundenende liegen lassen (false).
-    //   Antons Entscheidung vom 6. September 2026: sofort. Solange
-    //   kosmischeAusMitteNehmbar false ist, kann niemand etwas mit ihnen
-    //   anfangen — sie machen die Mitte nur unübersichtlich.
-    // Nebenwirkung: Über die zurückgemischte Ablage kommen sie schneller
-    // wieder ins Spiel. Gemessene Auswirkung siehe berichte/Balance-Befunde.md.
-    mitteKosmischSofortAblegen: true,
+    // Mitte gezogen werden - dort kann niemand etwas mit ihnen anfangen,
+    // solange kosmischeAusMitteNehmbar false ist. Wohin damit?
+    //   'MITTE'      = liegen lassen (ursprünglich). Mitte bis 20 Karten.
+    //   'ABLAGE'     = sofort auf den Ablagestapel. Mitte höchstens 12 - aber
+    //                  sie kommen über die zurückgemischte Ablage schneller
+    //                  wieder: bei vier Spielern +33 %% Schwarze Löcher.
+    //   'RUNDENENDE' = beiseite legen, erst beim nächsten Rundenanfang wieder
+    //                  einsammeln. Mitte genauso aufgeräumt, ohne dass die
+    //                  kosmischen Karten häufiger gespielt werden.
+    // Zahlen dazu: berichte/Balance-Befunde.md.
+    mitteKosmischNach: 'RUNDENENDE',
 
     // Nova
     novaZerstoertAuchSicher: true,
@@ -2976,6 +3005,9 @@ class Spiel {
     this.nova = nova;
     this.novaVerbraucht = false;
     this.ausDemSpiel = [];    // verbrauchte Karten, die nie wieder ins Deck kommen (Nova)
+    // Kosmische Karten, die beim Auffuellen aussortiert wurden und erst beim
+    // naechsten Rundenanfang wieder eingesammelt werden (Einstellung 'RUNDENENDE').
+    this.beiseite = [];
     this.sbZaehler = 0;       // Sternbild-IDs je Partie, damit gleiche Seed gleiche IDs gibt
     // Welche kosmische Karte zuletzt gewirkt hat. Nur für die Oberfläche, die
     // daran ihr Bild wählt; sie setzt das Feld nach dem Lesen selbst zurück.
@@ -3020,9 +3052,10 @@ class Spiel {
 
   zieheKarte() {
     if (this.deck.length === 0) {
-      if (this.ablage.length === 0) return null;
+      if (this.ablage.length === 0) { this.stats.leerGezogen++; return null; }
       this.deck = this.rng.shuffle(this.ablage);
       this.ablage = [];
+      this.stats.neumischungen++;
       this.log('Nachziehstapel leer — Ablage neu gemischt.');
     }
     return this.deck.pop();
@@ -3053,26 +3086,41 @@ class Spiel {
   fuelleMitte() {
     const ziel = mitteGroesse(this.runde);
     let schutz = 200;
+    /*
+       Aussortierte kosmische Karten werden ERST NACH der Schleife abgelegt.
+       Landeten sie sofort auf der Ablage, konnte folgendes passieren: Deck
+       leer → Ablage zurückmischen → dieselbe kosmische Karte wieder ziehen →
+       wieder ablegen → Deck leer → … Gemessen 2074 Neumischungen in einer
+       einzigen Partie. Hier sammeln sie sich, bis die Mitte steht.
+    */
+    const beiseite = [];
     while (this.zahlenInMitte() < ziel && schutz-- > 0) {
       const k = this.zieheKarte();
       if (!k) break;
-      // Nicht nehmbare kosmische Karten sofort auf die Ablage: sie lägen sonst
-      // bis zum Rundenende in der Mitte herum, ohne dass jemand sie benutzen
-      // kann. Sie kommen über die zurückgemischte Ablage wieder ins Spiel.
-      if (CONFIG.kosmisch.mitteKosmischSofortAblegen && this.liegtNutzlosInMitte(k)) {
-        this.ablage.push(k);
+      // Nicht nehmbare kosmische Karten gehören nicht in die Mitte: dort läge
+      // sie bis zum Rundenende, ohne dass jemand sie benutzen kann.
+      if (CONFIG.kosmisch.mitteKosmischNach !== 'MITTE' && this.liegtNutzlosInMitte(k)) {
+        beiseite.push(k);
         continue;
       }
       this.mitte.push(k);
     }
+    // 'ABLAGE': sie kommen ueber die zurueckgemischte Ablage schnell wieder ins
+    // Spiel. 'RUNDENENDE': sie liegen beiseite und werden erst beim naechsten
+    // Rundenanfang mit eingesammelt - der Tisch bleibt genauso aufgeraeumt,
+    // aber die kosmischen Karten werden nicht haeufiger gespielt.
+    if (CONFIG.kosmisch.mitteKosmischNach === 'RUNDENENDE') this.beiseite.push(...beiseite);
+    else this.ablage.push(...beiseite);
+    // Knappheitsanzeiger: Die Karten reichten nicht für die Sollzahl der Mitte.
+    if (this.zahlenInMitte() < ziel) this.stats.mitteUnterZiel++;
   }
 
   /* ---------------- Rundenablauf ---------------- */
 
   alleKartenEinsammeln() {
     // `ausDemSpiel` bleibt bewusst außen vor — was dort liegt, kommt nie zurück.
-    const alle = [...this.mitte, ...this.ablage];
-    this.mitte = []; this.ablage = [];
+    const alle = [...this.mitte, ...this.ablage, ...this.beiseite];
+    this.mitte = []; this.ablage = []; this.beiseite = [];
     for (const sp of this.spieler) {
       alle.push(...sp.hand); sp.hand = [];
       for (const sb of sp.sternbilder) alle.push(...sb.karten);
@@ -3504,6 +3552,10 @@ class Spiel {
 function leereStats() {
   return {
     zuege: 0, zuegeMitLueckeInDerHand: 0, mitteSumme: 0, mitteMax: 0,
+    // Kartenknappheit: wie oft die Ablage zurueckgemischt werden musste, wie oft
+    // gar keine Karte mehr da war, und in wie vielen Runden die Mitte ihre
+    // Sollzahl nicht erreicht hat.
+    neumischungen: 0, leerGezogen: 0, mitteUnterZiel: 0,
     klaus: 0, versiegelungen: 0, abwuerfe: 0, drachen: 0, himmel: 0,
     jokerKlaus: 0, jokerTausch: 0, novaGenutzt: 0, entschaedigung: 0,
     kosmisch: { SCHWARZES_LOCH: 0, WEISSES_LOCH: 0, URKNALL: 0, MILCHSTRASSE: 0 },
@@ -5571,11 +5623,19 @@ function baueStartschirm(rueckrufe) {
   });
 
 
+  /**
+   * Der Tisch wird beim Menü nicht nur überdeckt, sondern ausgeblendet.
+   * Sonst sah man hinter dem Startschirm weiter Rundenanzeige, Mitte und die
+   * eigene Hand durchscheinen. Hinter dem Menü gehört nur die Galaxie.
+   */
+  const tisch = document.getElementById('tisch');
+  const tischZeigen = (an) => { if (tisch) tisch.hidden = !an; };
+
   return {
-    zeigen() { el.hidden = false; zeigeEbene('menue'); },
+    zeigen() { el.hidden = false; tischZeigen(false); zeigeEbene('menue'); },
     /** Direkt bei der Frage „gegen wen?" aufmachen — nach dem Tutorial. */
-    zeigeWahl() { el.hidden = false; zeigeEbene('bots'); },
-    verstecken() { el.hidden = true; },
+    zeigeWahl() { el.hidden = false; tischZeigen(false); zeigeEbene('bots'); },
+    verstecken() { el.hidden = true; tischZeigen(true); },
     name: () => (nameFeld.value || '').trim() || gemerkterName(),
   };
 }

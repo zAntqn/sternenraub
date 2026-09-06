@@ -100,7 +100,7 @@ const CONFIG = {
     // Groesste erlaubte Schrittweite. 12 heisst: keine Grenze (bisheriger Stand).
     // Zum Ausprobieren: 3. Dann faellt 4-8-12 weg - ein Dreier, der mit
     // Schrittweite 4 sofort unerweiterbar und damit gratis sicher ist.
-    maxSchrittweite: 12,
+    maxSchrittweite: 3,
   },
 
   /* ---------- Der Drache ---------- */
@@ -142,14 +142,17 @@ const CONFIG = {
     zerstoerteKartenNach: 'ABLAGE',
 
     // Kosmische Karten (außer der Sternschnuppe), die beim Auffüllen in die
-    // Mitte gezogen werden: sofort auf die Ablage (true) oder bis zum
-    // Rundenende liegen lassen (false).
-    //   Antons Entscheidung vom 6. September 2026: sofort. Solange
-    //   kosmischeAusMitteNehmbar false ist, kann niemand etwas mit ihnen
-    //   anfangen — sie machen die Mitte nur unübersichtlich.
-    // Nebenwirkung: Über die zurückgemischte Ablage kommen sie schneller
-    // wieder ins Spiel. Gemessene Auswirkung siehe berichte/Balance-Befunde.md.
-    mitteKosmischSofortAblegen: true,
+    // Mitte gezogen werden - dort kann niemand etwas mit ihnen anfangen,
+    // solange kosmischeAusMitteNehmbar false ist. Wohin damit?
+    //   'MITTE'      = liegen lassen (ursprünglich). Mitte bis 20 Karten.
+    //   'ABLAGE'     = sofort auf den Ablagestapel. Mitte höchstens 12 - aber
+    //                  sie kommen über die zurückgemischte Ablage schneller
+    //                  wieder: bei vier Spielern +33 %% Schwarze Löcher.
+    //   'RUNDENENDE' = beiseite legen, erst beim nächsten Rundenanfang wieder
+    //                  einsammeln. Mitte genauso aufgeräumt, ohne dass die
+    //                  kosmischen Karten häufiger gespielt werden.
+    // Zahlen dazu: berichte/Balance-Befunde.md.
+    mitteKosmischNach: 'RUNDENENDE',
 
     // Nova
     novaZerstoertAuchSicher: true,
@@ -790,6 +793,9 @@ class Spiel {
     this.nova = nova;
     this.novaVerbraucht = false;
     this.ausDemSpiel = [];    // verbrauchte Karten, die nie wieder ins Deck kommen (Nova)
+    // Kosmische Karten, die beim Auffuellen aussortiert wurden und erst beim
+    // naechsten Rundenanfang wieder eingesammelt werden (Einstellung 'RUNDENENDE').
+    this.beiseite = [];
     this.sbZaehler = 0;       // Sternbild-IDs je Partie, damit gleiche Seed gleiche IDs gibt
     // Welche kosmische Karte zuletzt gewirkt hat. Nur für die Oberfläche, die
     // daran ihr Bild wählt; sie setzt das Feld nach dem Lesen selbst zurück.
@@ -834,9 +840,10 @@ class Spiel {
 
   zieheKarte() {
     if (this.deck.length === 0) {
-      if (this.ablage.length === 0) return null;
+      if (this.ablage.length === 0) { this.stats.leerGezogen++; return null; }
       this.deck = this.rng.shuffle(this.ablage);
       this.ablage = [];
+      this.stats.neumischungen++;
       this.log('Nachziehstapel leer — Ablage neu gemischt.');
     }
     return this.deck.pop();
@@ -867,26 +874,41 @@ class Spiel {
   fuelleMitte() {
     const ziel = mitteGroesse(this.runde);
     let schutz = 200;
+    /*
+       Aussortierte kosmische Karten werden ERST NACH der Schleife abgelegt.
+       Landeten sie sofort auf der Ablage, konnte folgendes passieren: Deck
+       leer → Ablage zurückmischen → dieselbe kosmische Karte wieder ziehen →
+       wieder ablegen → Deck leer → … Gemessen 2074 Neumischungen in einer
+       einzigen Partie. Hier sammeln sie sich, bis die Mitte steht.
+    */
+    const beiseite = [];
     while (this.zahlenInMitte() < ziel && schutz-- > 0) {
       const k = this.zieheKarte();
       if (!k) break;
-      // Nicht nehmbare kosmische Karten sofort auf die Ablage: sie lägen sonst
-      // bis zum Rundenende in der Mitte herum, ohne dass jemand sie benutzen
-      // kann. Sie kommen über die zurückgemischte Ablage wieder ins Spiel.
-      if (CONFIG.kosmisch.mitteKosmischSofortAblegen && this.liegtNutzlosInMitte(k)) {
-        this.ablage.push(k);
+      // Nicht nehmbare kosmische Karten gehören nicht in die Mitte: dort läge
+      // sie bis zum Rundenende, ohne dass jemand sie benutzen kann.
+      if (CONFIG.kosmisch.mitteKosmischNach !== 'MITTE' && this.liegtNutzlosInMitte(k)) {
+        beiseite.push(k);
         continue;
       }
       this.mitte.push(k);
     }
+    // 'ABLAGE': sie kommen ueber die zurueckgemischte Ablage schnell wieder ins
+    // Spiel. 'RUNDENENDE': sie liegen beiseite und werden erst beim naechsten
+    // Rundenanfang mit eingesammelt - der Tisch bleibt genauso aufgeraeumt,
+    // aber die kosmischen Karten werden nicht haeufiger gespielt.
+    if (CONFIG.kosmisch.mitteKosmischNach === 'RUNDENENDE') this.beiseite.push(...beiseite);
+    else this.ablage.push(...beiseite);
+    // Knappheitsanzeiger: Die Karten reichten nicht für die Sollzahl der Mitte.
+    if (this.zahlenInMitte() < ziel) this.stats.mitteUnterZiel++;
   }
 
   /* ---------------- Rundenablauf ---------------- */
 
   alleKartenEinsammeln() {
     // `ausDemSpiel` bleibt bewusst außen vor — was dort liegt, kommt nie zurück.
-    const alle = [...this.mitte, ...this.ablage];
-    this.mitte = []; this.ablage = [];
+    const alle = [...this.mitte, ...this.ablage, ...this.beiseite];
+    this.mitte = []; this.ablage = []; this.beiseite = [];
     for (const sp of this.spieler) {
       alle.push(...sp.hand); sp.hand = [];
       for (const sb of sp.sternbilder) alle.push(...sb.karten);
@@ -1318,6 +1340,10 @@ class Spiel {
 function leereStats() {
   return {
     zuege: 0, zuegeMitLueckeInDerHand: 0, mitteSumme: 0, mitteMax: 0,
+    // Kartenknappheit: wie oft die Ablage zurueckgemischt werden musste, wie oft
+    // gar keine Karte mehr da war, und in wie vielen Runden die Mitte ihre
+    // Sollzahl nicht erreicht hat.
+    neumischungen: 0, leerGezogen: 0, mitteUnterZiel: 0,
     klaus: 0, versiegelungen: 0, abwuerfe: 0, drachen: 0, himmel: 0,
     jokerKlaus: 0, jokerTausch: 0, novaGenutzt: 0, entschaedigung: 0,
     kosmisch: { SCHWARZES_LOCH: 0, WEISSES_LOCH: 0, URKNALL: 0, MILCHSTRASSE: 0 },
