@@ -1215,18 +1215,33 @@ button.karte { cursor: pointer; }
      Die Maße stehen hier, damit der Erzähler unabhängig vom Tisch bleibt. */
   --karte-b: 62px;
   --karte-h: 87px;
+  /* Wie hell der Schein gerade ist. Die Oberfläche setzt den Wert bei jedem
+     Sprechblip kurz hoch und lässt ihn danach auf den Ruhewert zurück. */
+  --schein: .35;
   flex: 0 0 auto;
   transform-origin: 50% 100%;
+  /* Warmes Sternenlicht — derselbe Gelbton wie die Karten der mittleren
+     Reihe. Kein Rahmen: drei weiche Ringe, die nach außen auslaufen. */
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, .5),
+    0 0 calc(10px + var(--schein) * 8px) rgba(217, 160, 43, calc(var(--schein) * .55)),
+    0 0 calc(26px + var(--schein) * 20px) rgba(217, 160, 43, calc(var(--schein) * .30)),
+    0 0 calc(54px + var(--schein) * 34px) rgba(217, 160, 43, calc(var(--schein) * .16));
+  transition: box-shadow 110ms ease-out;
 }
 
-/* Wippen, während gesprochen wird. Zwei Grad, anderthalb Sekunden —
-   es soll leben, nicht zappeln. */
+/* Wippen, während gesprochen wird. Zurückgenommen auf ein Grad, seit der
+   Schein die Arbeit macht — beides zusammen war zu unruhig. */
 @keyframes erz-wippen {
-  0%   { transform: rotate(-1.6deg) translateY(0); }
-  50%  { transform: rotate(1.6deg) translateY(-3px); }
-  100% { transform: rotate(-1.6deg) translateY(0); }
+  0%   { transform: rotate(-1deg) translateY(0); }
+  50%  { transform: rotate(1deg) translateY(-2px); }
+  100% { transform: rotate(-1deg) translateY(0); }
 }
-.erz-karte.spricht { animation: erz-wippen 1.6s ease-in-out infinite; }
+.erz-karte.spricht { animation: erz-wippen 2.1s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .erz-karte.spricht { animation: none; }
+}
 
 .erz-inhalt { min-width: 0; }
 
@@ -1786,7 +1801,7 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
 .karte.fliegt {
   position: absolute;
   margin: 0;
-  transition-property: left, top, width, height, opacity;
+  transition-property: left, top, width, height, opacity, transform;
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
   transition-duration: 700ms;   /* die Oberfläche setzt die Dauer selbst */
 }
@@ -1796,6 +1811,40 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
    unterscheidet sich das Wegnehmen nicht vom bloßen Legen. */
 .karte.flug-klau      { outline: 2px solid var(--gold); }
 .karte.flug-zerstoert { outline: 2px solid var(--stern-heiss); }
+
+/* Kosmische Karten erzählen selbst, was sie tun.
+   Schwarzes Loch und Nova saugen ein: alles läuft zusammen und wird kleiner.
+   Der Urknall schleudert auseinander. Das Weiße Loch zieht eine einzelne
+   Karte heraus — langsam, damit man ihr folgen kann. */
+.karte.flug-loch {
+  outline: 2px solid var(--stern-heiss);
+  transition-timing-function: cubic-bezier(.7, 0, .84, 0);   /* zieht am Ende an */
+}
+.karte.flug-knall {
+  outline: 2px solid var(--stern-heiss);
+  transition-timing-function: cubic-bezier(.05, .7, .3, 1);  /* schlägt sofort aus */
+}
+.karte.flug-zug {
+  outline: 2px solid var(--signal);
+  transition-timing-function: cubic-bezier(.5, 0, .2, 1);
+}
+
+/* Der Urknall blendet den Tisch kurz auf — ein einzelner heller Anschlag,
+   kein Leuchten und keine Farbe, die es sonst nicht gibt. */
+@keyframes knall-blitz {
+  0%   { opacity: 0; }
+  12%  { opacity: .5; }
+  100% { opacity: 0; }
+}
+.knall-blitz {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  pointer-events: none;
+  background: var(--signal);
+  animation: knall-blitz 620ms ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) { .knall-blitz { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .karte.fliegt { transition: none; }
@@ -2680,6 +2729,9 @@ class Spiel {
     this.novaVerbraucht = false;
     this.ausDemSpiel = [];    // verbrauchte Karten, die nie wieder ins Deck kommen (Nova)
     this.sbZaehler = 0;       // Sternbild-IDs je Partie, damit gleiche Seed gleiche IDs gibt
+    // Welche kosmische Karte zuletzt gewirkt hat. Nur für die Oberfläche, die
+    // daran ihr Bild wählt; sie setzt das Feld nach dem Lesen selbst zurück.
+    this.letzteKosmisch = null;
 
     // Spieler, die das Schwarze Loch aus dem Himmel selbst ausrichten dürfen.
     // Alle anderen (die Bots) bekommen automatisch das stärkste Ziel.
@@ -2845,6 +2897,10 @@ class Spiel {
     this.pruefeKartenDa(sp, [wahl.kartenId]);
     const karte = this.entferneKarteAusHand(sp, wahl.kartenId);
     if (!karte) throw new Error('Kosmische Karte nicht auf der Hand');
+    // Rein für die Oberfläche: welche Karte zuletzt gewirkt hat. Damit kann
+    // sie das passende Bild zeigen, statt den Zug aus dem Protokoll zu raten.
+    // Keine Regel hängt daran.
+    this.letzteKosmisch = karte.art;
     this.ablage.push(karte);
     this.stats.kosmisch[karte.art] = (this.stats.kosmisch[karte.art] ?? 0) + 1;
 
@@ -2890,6 +2946,7 @@ class Spiel {
   /** Freie Aktion: die Nova. */
   spieleNova(spielerIdx, wahl) {
     if (!this.nova) return;
+    this.letzteKosmisch = 'NOVA';
     const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
     if (!sb) return;
     this.log(`${this.spieler[spielerIdx].name} zündet die NOVA auf ein Sternbild von ${this.spieler[wahl.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
@@ -3083,6 +3140,7 @@ class Spiel {
   himmelZielZerstoeren(ziel) {
     const sb = this.findeSb(ziel.zielIdx, ziel.sbId);
     if (!sb || istSicher(sb)) return false;
+    this.letzteKosmisch = 'SCHWARZES_LOCH';
     this.log(`🕳 Schwarzes Loch aus dem Himmel trifft ${this.spieler[ziel.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
     this.loeseSbAuf(ziel.zielIdx, sb);
     return true;
@@ -4826,7 +4884,18 @@ function ablageZiel(wie) {
  * @param {Map} vorher Ergebnis von kartenLage() VOR dem Zug
  * @returns {Promise<void>}
  */
-function fliegeUm(vorher, dauer = 700) {
+/**
+ * @param {Map} vorher  Ergebnis von kartenLage() VOR dem Zug
+ * @param {{kosmisch?:string, dauer?:number}} [opt]
+ *   kosmisch: 'SCHWARZES_LOCH' | 'URKNALL' | 'WEISSES_LOCH' | 'NOVA'
+ *   Dann erzählt die Bewegung, was die Karte getan hat: das Schwarze Loch
+ *   saugt ein, der Urknall schleudert auseinander, das Weiße Loch zieht eine
+ *   einzelne Karte heraus. Vorher waren die Karten einfach weg und man musste
+ *   im Protokoll nachlesen, was passiert war.
+ */
+function fliegeUm(vorher, opt = {}) {
+  const dauer = opt.dauer || 700;
+  const kosmisch = opt.kosmisch || null;
   const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (ruhig || !vorher || vorher.size === 0) return Promise.resolve();
 
@@ -4849,6 +4918,8 @@ function fliegeUm(vorher, dauer = 700) {
       fluege.push({ id, von: alt.r, nach: neu.r, art: 'legen' });
     }
     else if (istSp(alt.ort) && neu.ort === 'mitte') fluege.push({ id, von: alt.r, nach: neu.r, art: 'zerstoert', quelle: alt.el });
+    // Aus einer Auslage auf die eigene Hand — das tut das Weiße Loch.
+    else if (istSp(alt.ort) && neu.ort === 'hand0') fluege.push({ id, von: alt.r, nach: neu.r, art: 'zug', quelle: alt.el });
   }
 
   // Karten, die der Zug ganz vom Tisch genommen hat (zerstört, auf die Ablage).
@@ -4860,13 +4931,58 @@ function fliegeUm(vorher, dauer = 700) {
 
   if (!fluege.length) return Promise.resolve();
 
+  /* ---- Kosmische Karten bekommen ihr eigenes Bild ---- */
+  const zerstoerte = fluege.filter((f) => f.art === 'zerstoert');
+  if (kosmisch === 'SCHWARZES_LOCH' || kosmisch === 'NOVA') {
+    // Einsaugen: alles läuft im Schwerpunkt der zerfallenden Auslage zusammen
+    // und schrumpft dabei auf nichts.
+    const m = schwerpunkt(zerstoerte);
+    for (const f of zerstoerte) {
+      f.nach = { left: m.x - 3, top: m.y - 4, width: 6, height: 8 };
+      f.weg = true;
+      f.dreh = (f.von.left - m.x) / 6;
+      f.art = 'loch';
+    }
+  } else if (kosmisch === 'URKNALL') {
+    // Auseinanderfliegen: jede Karte weg von der Mitte des Geschehens.
+    const m = schwerpunkt(zerstoerte);
+    for (const f of zerstoerte) {
+      const dx = (f.von.left + f.von.width / 2) - m.x;
+      const dy = (f.von.top + f.von.height / 2) - m.y;
+      const laenge = Math.max(1, Math.hypot(dx, dy));
+      const weite = 340 + Math.random() * 220;
+      f.nach = {
+        left: f.von.left + (dx / laenge) * weite,
+        top: f.von.top + (dy / laenge) * weite,
+        width: f.von.width,
+        height: f.von.height,
+      };
+      f.weg = true;
+      f.dreh = (Math.random() * 2 - 1) * 90;
+      f.art = 'knall';
+    }
+  } else if (kosmisch === 'WEISSES_LOCH') {
+    // Herausziehen: die eine Karte wandert langsam und deutlich.
+    for (const f of fluege) if (f.art === 'legen') f.art = 'zug';
+  }
+
   // Klauen und Zerstören sind die großen Momente — sie dauern länger.
   const langsam = fluege.some((f) => f.art !== 'legen');
-  const zeit = langsam ? Math.round(dauer * 1.7) : dauer;
+  let zeit = langsam ? Math.round(dauer * 1.7) : dauer;
+  if (kosmisch === 'URKNALL') zeit = 1250;
+  if (kosmisch === 'SCHWARZES_LOCH' || kosmisch === 'NOVA') zeit = 1150;
+  if (kosmisch === 'WEISSES_LOCH') zeit = 1100;
 
   const buehne = el('div', 'flug-buehne');
   document.body.appendChild(buehne);
   const versteckt = [];
+
+  // Der Urknall macht einen Knall: ein kurzer heller Anschlag über allem.
+  if (kosmisch === 'URKNALL') {
+    const blitz = el('div', 'knall-blitz');
+    document.body.appendChild(blitz);
+    setTimeout(() => blitz.remove(), 700);
+  }
 
   for (const f of fluege) {
     const echt = document.querySelector(`.karte[data-id="${f.id}"]`);
@@ -4882,14 +4998,15 @@ function fliegeUm(vorher, dauer = 700) {
     if (echt) { echt.style.visibility = 'hidden'; versteckt.push(f.id); }
     if (f.weg) klon.style.opacity = '1';
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       klon.style.transitionDuration = zeit + 'ms';
       klon.style.left = f.nach.left + 'px';
       klon.style.top = f.nach.top + 'px';
       klon.style.width = f.nach.width + 'px';
       klon.style.height = f.nach.height + 'px';
+      if (f.dreh) klon.style.transform = `rotate(${Math.round(f.dreh)}deg)`;
       if (f.weg) klon.style.opacity = '0';
-    });
+    }, 20);
   }
 
   return new Promise((fertig) => {
@@ -4900,8 +5017,16 @@ function fliegeUm(vorher, dauer = 700) {
         if (echt) echt.style.visibility = '';
       }
       fertig();
-    }, zeit + 40);
+    }, zeit + 60);
   });
+}
+
+/** Mittelpunkt einer Gruppe von Flügen — der Ort, an dem etwas passiert. */
+function schwerpunkt(fluege) {
+  if (!fluege.length) return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  let x = 0, y = 0;
+  for (const f of fluege) { x += f.von.left + f.von.width / 2; y += f.von.top + f.von.height / 2; }
+  return { x: x / fluege.length, y: y / fluege.length };
 }
 
 /* ---------------- Mischen ---------------- */
@@ -4995,7 +5120,18 @@ function schreib(schluessel, wert) {
   try { localStorage.setItem(schluessel, wert); } catch { /* egal */ }
 }
 
-// (tutorialSchonGesehen() gibt es nicht mehr: das Tutorial startet nie von selbst.)
+/**
+ * Wurde das Tutorial schon gespielt oder übersprungen?
+ *
+ * Es startet NICHT beim Öffnen der Seite — der Startschirm kommt immer zuerst.
+ * Erst beim Druck auf „Spielen" führt der erste Besuch ins Tutorial.
+ * Ist localStorage gesperrt, gilt es als gesehen: lieber einmal zu wenig
+ * führen als jedes Mal ungefragt.
+ */
+function tutorialSchonGesehen() {
+  try { return localStorage.getItem(SPEICHER_TUTORIAL) === 'ja'; }
+  catch { return true; }
+}
 const merkeTutorialGesehen = () => schreib(SPEICHER_TUTORIAL, 'ja');
 const gemerkterName = () => lies(SPEICHER_NAME, 'Anton');
 const merkeName = (name) => schreib(SPEICHER_NAME, name);
@@ -5032,6 +5168,9 @@ function baueStartschirm(rueckrufe) {
   const zeigeWahl = (an) => { knoepfe.hidden = an; wahl.hidden = !an; };
 
   document.getElementById('btn-spielen').addEventListener('click', () => {
+    // Beim allerersten Mal übernimmt start.js und führt ins Tutorial.
+    // Sonst kommt wie gehabt die Frage, gegen wen gespielt wird.
+    if (rueckrufe.spielenGedrueckt && rueckrufe.spielenGedrueckt()) return;
     zeigeWahl(true);
     nameFeld.focus();
   });
@@ -5049,6 +5188,8 @@ function baueStartschirm(rueckrufe) {
 
   return {
     zeigen() { el.hidden = false; zeigeWahl(false); },
+    /** Direkt bei der Frage „gegen wen?" aufmachen — nach dem Tutorial. */
+    zeigeWahl() { el.hidden = false; zeigeWahl(true); },
     verstecken() { el.hidden = true; },
     name: () => (nameFeld.value || '').trim() || gemerkterName(),
   };
@@ -5387,12 +5528,46 @@ class Tutorial {
         },
       },
 
+      /* ================= Vorführung: das Schwarze Loch =================
+         Von allen kosmischen Karten braucht genau diese eine Erklärung:
+         Sie ist der Moment, den man ohne Vorwarnung nicht versteht — auf
+         einmal ist ein Sternbild weg. Alle durchzuspielen würde das
+         Tutorial zu lang machen; die Sternschnuppe erklärt sich selbst. */
+      {
+        art: 'zeigen',
+        titel: 'Kosmische Karten',
+        text: () => 'Zwischendurch tauchen kosmische Karten auf. Eine davon musst du kennen: '
+            + `das Schwarze Loch. ${t._gegnerName()} hat gerade eins auf der Hand — und du `
+            + 'hast einen schönen Wagen liegen. Sieh zu.',
+        danach: () => 'Weg. Das Schwarze Loch löscht ein fremdes Sternbild aus, ohne dass '
+            + 'der Gegner eine einzige Karte dafür hergibt. Keine Trostpunkte, nichts. '
+            + 'Es kostet ihn nicht einmal seinen Zug — die kosmische Karte ist der Vorspann, '
+            + 'danach darf er noch ganz normal bauen.',
+        aufbau() {
+          t._sbZiel = t._sternbild(t.ich, [3, 6, 9, 12]);   // Wagen, 4 Punkte
+          t._hand(t.ich, [1, 5, 8, 11]);
+          t._hand(t.gegner, ['SCHWARZES_LOCH', 2, 7, 10]);
+          t._mitte([1, 2, 4, 5, 11], 1);
+        },
+        /** Der Gegner zündet es auf genau dieses Sternbild. */
+        ereignis() {
+          const bot = t.spiel.spieler[t.gegner];
+          const karte = bot.hand.find((k) => k.art === 'SCHWARZES_LOCH');
+          if (!karte) return;
+          t.spiel.spieleKosmisch(t.gegner, {
+            kartenId: karte.id, art: 'SCHWARZES_LOCH',
+            zielIdx: t.ich, sbId: t._sbZiel,
+          });
+        },
+      },
+
       /* ================= Aufgabe 5: versiegeln ================= */
       {
         art: 'aufgabe',
         titel: 'Mach es sicher',
         text: 'Unten steht „Pfeil versiegeln". Drück drauf.',
-        warum: 'Ein versiegeltes Sternbild kann niemand mehr klauen und keine kosmische '
+        warum: 'Das ist die Antwort auf beides — auf den Klau und auf das Schwarze Loch. '
+             + 'Ein versiegeltes Sternbild kann niemand mehr nehmen und keine kosmische '
              + 'Karte mehr zerstören. Dafür kostet es dich einen ganzen Zug, es kann nicht '
              + `mehr wachsen, und du hast nur ${VERSIEGELN_PRO_RUNDE} Siegel pro Runde. `
              + 'Zu früh versiegeln verschenkt Punkte, zu spät verliert alles.',
@@ -5410,9 +5585,10 @@ class Tutorial {
       /* ================= Schluss ================= */
       {
         art: 'reden',
-        text: 'Das war das Wichtigste. Es gibt noch kosmische Karten — die ziehen '
-            + 'Karten nach, reißen Sternbilder auseinander oder vertreten als Sternschnuppe '
-            + 'jeden Wert. Die erklären sich, wenn du mit der Maus darüber gehst.',
+        text: 'Das war das Wichtigste. Es gibt noch drei weitere kosmische Karten: '
+            + 'die Milchstraße zieht Karten nach, der Urknall reißt alles auseinander, '
+            + 'was nicht versiegelt ist, und die Sternschnuppe vertritt jeden Wert, den '
+            + 'du brauchst. Was eine Karte tut, steht auf ihr, wenn du daraufzeigst.',
       },
       {
         art: 'ende',
@@ -5455,8 +5631,12 @@ function formenUebersichtText() {
 
 const TON_SPEICHER = 'sternenraub.ton';
 
-/** Vorgaben, bis der Spieler etwas anderes einstellt. */
-const TON_VORGABE = { an: true, gesamt: 0.7, laut: 0.7 };
+/**
+ * Vorgaben, bis der Spieler etwas anderes einstellt.
+ * `sprechen` ist der eigene Regler für die Sprechblips der Erzählerkarte —
+ * manche wollen die Spielgeräusche, aber kein Geplapper.
+ */
+const TON_VORGABE = { an: true, gesamt: 0.7, laut: 0.7, sprechen: 0.55 };
 
 const TS = {
   ...TON_VORGABE,
@@ -5464,6 +5644,7 @@ const TS = {
   gesamtKnoten: null,
   leiseKnoten: null,
   lautKnoten: null,
+  sprechKnoten: null,
   zuletzt: new Map(),   // Name -> Zeitpunkt, gegen übereinanderfallende Töne
 };
 
@@ -5477,28 +5658,34 @@ function tonLies() {
     if (typeof w.an === 'boolean') TS.an = w.an;
     if (typeof w.gesamt === 'number') TS.gesamt = tonBegrenze(w.gesamt);
     if (typeof w.laut === 'number') TS.laut = tonBegrenze(w.laut);
+    if (typeof w.sprechen === 'number') TS.sprechen = tonBegrenze(w.sprechen);
   } catch { /* kaputter oder gesperrter Speicher: Vorgaben behalten */ }
 }
 
 function tonSchreib() {
   try {
-    localStorage.setItem(TON_SPEICHER, JSON.stringify({ an: TS.an, gesamt: TS.gesamt, laut: TS.laut }));
+    localStorage.setItem(TON_SPEICHER, JSON.stringify({
+      an: TS.an, gesamt: TS.gesamt, laut: TS.laut, sprechen: TS.sprechen,
+    }));
   } catch { /* egal */ }
 }
 
 const tonBegrenze = (n) => Math.min(1, Math.max(0, Number(n) || 0));
 
-const tonEinstellungen = () => ({ an: TS.an, gesamt: TS.gesamt, laut: TS.laut });
+const tonEinstellungen = () =>
+  ({ an: TS.an, gesamt: TS.gesamt, laut: TS.laut, sprechen: TS.sprechen });
 
 function setzeTon(an) { TS.an = !!an; tonSchreib(); tonPegelSetzen(); }
 function setzeGesamt(v) { TS.gesamt = tonBegrenze(v); tonSchreib(); tonPegelSetzen(); }
 function setzeLaut(v) { TS.laut = tonBegrenze(v); tonSchreib(); tonPegelSetzen(); }
+function setzeSprechen(v) { TS.sprechen = tonBegrenze(v); tonSchreib(); tonPegelSetzen(); }
 
 function tonPegelSetzen() {
   if (!TS.ctx) return;
   const jetzt = TS.ctx.currentTime;
   TS.gesamtKnoten.gain.setTargetAtTime(TS.an ? TS.gesamt : 0, jetzt, 0.01);
   TS.lautKnoten.gain.setTargetAtTime(TS.laut, jetzt, 0.01);
+  TS.sprechKnoten.gain.setTargetAtTime(TS.sprechen, jetzt, 0.01);
 }
 
 /* ---------------- Der Tonapparat ---------------- */
@@ -5521,11 +5708,14 @@ function tonBereit() {
     TS.gesamtKnoten = TS.ctx.createGain();
     TS.leiseKnoten = TS.ctx.createGain();
     TS.lautKnoten = TS.ctx.createGain();
+    TS.sprechKnoten = TS.ctx.createGain();
     TS.leiseKnoten.gain.value = 1;
     TS.lautKnoten.gain.value = TS.laut;
+    TS.sprechKnoten.gain.value = TS.sprechen;
     TS.gesamtKnoten.gain.value = TS.an ? TS.gesamt : 0;
     TS.leiseKnoten.connect(TS.gesamtKnoten);
     TS.lautKnoten.connect(TS.gesamtKnoten);
+    TS.sprechKnoten.connect(TS.gesamtKnoten);
     TS.gesamtKnoten.connect(TS.ctx.destination);
     return true;
   } catch {
@@ -5679,6 +5869,31 @@ function tonMischen(t) {
           spitze: 0.22, ziel: TS.leiseKnoten });
 }
 
+/**
+ * Ein Sprechblip — die Technik aus Undertale und Animal Crossing: pro
+ * erscheinendem Zeichen ein sehr kurzer Ton, kein echtes Sprechen.
+ *
+ * Weich statt Retro: Dreieck statt Rechteck, dazu ein Tiefpass, der sofort
+ * zufällt. Das klingt eher nach einem leisen Glockenklopfen als nach
+ * 8-Bit-Piepsen und passt zu Papier auf der Nacht.
+ *
+ * Jeder Blip weicht zufällig um bis zu zehn Prozent von der Grundtonhöhe ab.
+ * Ohne diese Streuung klingt eine Zeile nach wenigen Sekunden unerträglich.
+ *
+ * @param {number} grund Grundtonhöhe in Hz. Verschiedene Figuren bekommen
+ *   verschiedene Werte — dann klingt jede anders, ohne neue Töne.
+ */
+function spielSprechBlip(grund = 500) {
+  if (!tonBereit()) return;
+  const t = TS.ctx.currentTime + 0.005;
+  const hz = grund * (0.9 + Math.random() * 0.2);
+  tonKlang({
+    start: t, dauer: 0.075, von: hz, nach: hz * 0.86, form: 'triangle',
+    anstieg: 0.006, spitze: 0.085, tiefpass: hz * 3.2, tiefpassNach: hz * 1.1,
+    ziel: TS.sprechKnoten,
+  });
+}
+
 const TON_TABELLE = {
   legen: tonLegen,
   klauen: tonKlauen,
@@ -5735,13 +5950,31 @@ const ERZ_TAKT = 26;
 /** Nach einem Satzzeichen wird kurz Luft geholt. */
 const ERZ_PAUSE = { '.': 260, '!': 260, '?': 260, ',': 110, ';': 140, '—': 160 };
 
+/** Nur bei jedem soundsovielten Zeichen ein Blip — sonst wird es ein Sirren. */
+const ERZ_BLIP_ABSTAND = 3;
+/** Zeichen, die stumm bleiben: Leerraum und Satzzeichen. */
+const ERZ_STUMM = /[\s.,!?;:—–„"'()-]/;
+
+/** Ruhepegel des Scheins. Darüber pulst es beim Sprechen. */
+const ERZ_SCHEIN_RUHE = 0.35;
+const ERZ_SCHEIN_SPITZE = 0.75;
+
 class Erzaehler {
-  /** @param {object} dom  Elemente aus start.js: erz, erzKarte, erzText, erzWeiter, erzEnde */
-  constructor(dom) {
+  /**
+   * @param {object} dom  Elemente aus start.js: erz, erzKarte, erzText, erzWeiter, erzEnde
+   * @param {object} [opt]
+   * @param {(hz:number)=>void} [opt.blip] wird je hörbarem Zeichen gerufen
+   * @param {number} [opt.stimme] Grundtonhöhe dieser Figur in Hz. Andere
+   *   Figuren bekommen andere Werte und klingen dadurch verschieden.
+   */
+  constructor(dom, opt = {}) {
     this.dom = dom;
+    this.blip = opt.blip || null;
+    this.stimme = opt.stimme || 500;
     this._timer = null;
     this._fertig = null;      // löst auf, wenn der Text zu Ende getippt ist
     this._ganzerText = '';
+    this._seitBlip = 0;       // Zeichen seit dem letzten Blip
     this._weiterAuf = null;   // löst auf, wenn „Weiter" gedrückt wurde
 
     // Ein Tippen auf den Kasten überspringt das Tippen des Textes.
@@ -5770,6 +6003,7 @@ class Erzaehler {
     d.erzText.textContent = '';
     d.erzWeiter.hidden = true;
     d.erzKarte.classList.remove('spricht');
+    d.erzKarte.style.setProperty('--schein', String(ERZ_SCHEIN_RUHE));
 
     const ruhig = window.matchMedia
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -5827,16 +6061,41 @@ class Erzaehler {
     d.erzKarte.classList.add('spricht');
 
     let i = 0;
+    this._seitBlip = 0;
     return new Promise((fertig) => {
       this._fertig = fertig;
       const schreib = () => {
         if (i >= text.length) { this._abschluss(); return; }
         const z = text[i++];
         d.erzText.textContent += z;
+
+        // Ton und Schein hängen an derselben Stelle — dann passen sie immer
+        // zusammen, auch wenn der Text durch eine Pause stockt.
+        if (!ERZ_STUMM.test(z) && ++this._seitBlip >= ERZ_BLIP_ABSTAND) {
+          this._seitBlip = 0;
+          this._puls();
+          if (this.blip) this.blip(this.stimme);
+        }
+
         this._timer = setTimeout(schreib, ERZ_TAKT + (ERZ_PAUSE[z] || 0));
       };
       this._timer = setTimeout(schreib, 160);
     });
+  }
+
+  /**
+   * Ein Atemzug des Scheins: kurz heller, dann zurück auf den Ruhepegel.
+   * Läuft unabhängig vom Ton — wer stumm spielt, sieht trotzdem, dass geredet
+   * wird. Der Ruhepegel selbst ist das Zeichen: Text fertig, du kannst weiter.
+   */
+  _puls() {
+    const k = this.dom.erzKarte;
+    if (!k) return;
+    k.style.setProperty('--schein', String(ERZ_SCHEIN_SPITZE));
+    clearTimeout(this._pulsTimer);
+    this._pulsTimer = setTimeout(() => {
+      k.style.setProperty('--schein', String(ERZ_SCHEIN_RUHE));
+    }, 90);
   }
 
   /** Tippen überspringen: sofort der ganze Text. */
@@ -5848,8 +6107,11 @@ class Erzaehler {
 
   _abschluss() {
     clearTimeout(this._timer);
+    clearTimeout(this._pulsTimer);
     this._timer = null;
     this.dom.erzKarte.classList.remove('spricht');
+    // Ruhepegel: der Schein bleibt schwach stehen und sagt damit „fertig".
+    this.dom.erzKarte.style.setProperty('--schein', String(ERZ_SCHEIN_RUHE));
     const f = this._fertig;
     this._fertig = null;
     if (f) f();
@@ -5857,6 +6119,7 @@ class Erzaehler {
 
   _stoppen() {
     clearTimeout(this._timer);
+    clearTimeout(this._pulsTimer);
     this._timer = null;
     this._fertig = null;
   }
@@ -5927,6 +6190,7 @@ const S = {
   punkteRundenStart: [],        // für die Rundenbilanz inklusive Trost- und Himmelspunkten
   tutorial: null,               // läuft gerade das Tutorial?
   tutorialZugFertig: null,      // Rückruf, sobald der geforderte Zug gemacht ist
+  tutorialAufgedraengt: false,  // kam das Tutorial ungefragt hinter „Spielen"?
   letzterSchritt: '',           // für das Aufleuchten beim Schrittwechsel
   // (Gegnerplaetze klappen nicht mehr auf und zu - sie liegen immer offen.)
   zugMeldung: '',               // was der Bot gerade getan hat, für die Leiste
@@ -5995,8 +6259,15 @@ const botFn = () => (S.schwer ? botNormal : botEinfach);
  */
 let tutorialLauf = 0;
 
-function starteTutorial() {
+/**
+ * @param {boolean} [ersterBesuch] true, wenn das Tutorial ungefragt hinter
+ *   „Spielen" kam. Dann heißt der Abbruchknopf „Überspringen", und danach
+ *   geht es direkt weiter zur Frage, gegen wen gespielt wird.
+ */
+function starteTutorial(ersterBesuch) {
   clearTimeout(S.botTimer);
+  S.tutorialAufgedraengt = !!ersterBesuch;
+  dom.erzEnde.textContent = ersterBesuch ? 'Überspringen' : 'Tutorial beenden';
   startschirm.verstecken();
   schliesseModal(dom);
 
@@ -6016,7 +6287,10 @@ function starteTutorial() {
   laufeTutorial(++tutorialLauf);
 }
 
-/** Bricht das Tutorial ab und geht zurück ins Menü. */
+/**
+ * Bricht das Tutorial ab. Wer es übersprungen hat, hat es gesehen — es kommt
+ * nicht wieder von selbst. Über „Wie es geht" im Menü bleibt es erreichbar.
+ */
 function beendeTutorial() {
   tutorialLauf++;                    // laufende Folge stilllegen
   S.tutorial = null;
@@ -6024,6 +6298,9 @@ function beendeTutorial() {
   fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
   merkeTutorialGesehen();
+  // Übersprungen heißt: ich wollte spielen. Dann nicht ins Menü zurück,
+  // sondern gleich zur Frage, gegen wen.
+  if (S.tutorialAufgedraengt) { S.tutorialAufgedraengt = false; startschirm.zeigeWahl(); return; }
   zeigeStart();
 }
 
@@ -6056,6 +6333,35 @@ async function laufeTutorial(lauf) {
       await fuehrer.warteAufWeiter(s.art === 'ende' ? 'Losspielen' : 'Weiter');
       if (!gilt()) return;
       if (s.art === 'ende') { tutorialFertig(); return; }
+      t.weiter();
+      zeichne();
+      continue;
+    }
+
+    /* ---- Vorführung: die Karte zeigt etwas, statt es zu verlangen ---- */
+    if (s.art === 'zeigen') {
+      fuehrer.lage('dock');
+      auswahlLeeren();
+      zeichne();
+      zeigeErzKopf('', s.titel);
+      dom.erzWarum.textContent = '';
+      await fuehrer.sag(text(s.text));
+      if (!gilt()) return;
+      await fuehrer.warteAufWeiter('Zeig es mir');
+      if (!gilt()) return;
+      fuehrer.knopfWeg();
+
+      const vorher = kartenLage();
+      if (s.ereignis) s.ereignis();
+      zeichne();
+      tonZumZug(vorher);
+      await fliegeUm(vorher, { kosmisch: nimmKosmisch() });
+      if (!gilt()) return;
+
+      await fuehrer.sag(text(s.danach));
+      if (!gilt()) return;
+      await fuehrer.warteAufWeiter('Weiter');
+      if (!gilt()) return;
       t.weiter();
       zeichne();
       continue;
@@ -6097,10 +6403,12 @@ function tutorialFertig() {
   fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
   merkeTutorialGesehen();
+  S.tutorialAufgedraengt = false;
   zeigeModal(dom, 'Die Formen auf einen Blick', `<p>${formenUebersichtText()}</p>`,
     [{ text: 'Losspielen', klasse: 'haupt', tun: () => {
+      // Nicht sofort losspielen: erst darf man wählen, gegen wen.
       schliesseModal(dom);
-      neuesSpiel(3, true, (Math.random() * 2 ** 32) >>> 0, S.meinName);
+      startschirm.zeigeWahl();
     } }], true);
   const kasten = dom.modalInhalt.querySelector('.modal-text');
   if (kasten) kasten.appendChild(formenTafel());
@@ -6159,7 +6467,7 @@ function weiterLaufen() {
 
     zeichne();
     tonZumZug(vorher);
-    fliegeUm(vorher).then(() => {
+    fliegeUm(vorher, { kosmisch: nimmKosmisch() }).then(() => {
       if (S.ablauf !== a) return;
       // Kurz stehen lassen, damit das Ergebnis ankommt, bevor der Nächste zieht.
       S.botTimer = setTimeout(() => {
@@ -6676,10 +6984,27 @@ function baueKnoepfe(s) {
     }
   }
 
-  if (S.auswahlHand.size === 1 && S.auswahlMitte.size === 0) {
+  /*
+     Abwerfen ist nach den Regeln an keine Bedingung geknüpft: genau eine
+     Handkarte auf den Ablagestapel, fertig. Deshalb steht der Knopf da,
+     sobald genau eine Handkarte gewählt ist — auch wenn ein besserer Zug
+     möglich wäre. Ob man schlecht spielt, entscheidet der Spieler.
+
+     Die Aktion wird hier selbst gebaut und nicht in opt.aktionen gesucht:
+     generiereAktionen() fasst wertgleiche Handkarten zu EINEM Abwurf
+     zusammen. Wer die zweite von zwei Fünfen anwählte, bekam sonst keinen
+     Knopf. Die Engine nimmt jede Handkarten-Id an.
+  */
+  if (S.auswahlHand.size === 1 && !S.tutorial) {
     const id = [...S.auswahlHand][0];
-    const ab = opt.aktionen.find((a) => a.art === 'ABWERFEN' && a.handIds[0] === id);
-    if (ab) { knoepfe.push({ text: 'Abwerfen' }); tun.push(() => fuehreAus(ab)); }
+    const mit = S.auswahlMitte.size;
+    knoepfe.push({
+      text: 'Abwerfen',
+      titel: mit
+        ? 'Nur die Handkarte wandert auf die Ablage; die Mittelkarten bleiben liegen.'
+        : 'Eine Handkarte auf den Ablagestapel. Kostet den Zug.',
+    });
+    tun.push(() => fuehreAus({ art: 'ABWERFEN', handIds: [id], gewinn: 0, punkteNachher: 0 }));
   }
 
   if (!etwasGewaehlt) {
@@ -6875,11 +7200,26 @@ function fragUrknall(wahl) {
     ]);
 }
 
+/**
+ * Welche kosmische Karte hat gerade gewirkt? Einmal lesen, dann zurücksetzen —
+ * sonst zeigte der nächste Zug noch einmal dasselbe Bild.
+ */
+function nimmKosmisch() {
+  const sp = S.ablauf && S.ablauf.spiel;
+  if (!sp) return null;
+  const art = sp.letzteKosmisch || null;
+  sp.letzteKosmisch = null;
+  return art;
+}
+
 function spieleKosmisch(wahl) {
+  const vorher = kartenLage();
   S.ablauf.spiel.spieleKosmisch(S.menschIdx, wahl);
   S.kosmischGespielt = true;
   auswahlLeeren();
   zeichne();
+  // Erst die Bewegung, dann das Protokoll: man soll sehen, was passiert ist.
+  fliegeUm(vorher, { kosmisch: nimmKosmisch() });
 }
 
 function sternbildGeklickt(sbId) {
@@ -6894,7 +7234,13 @@ function sternbildGeklickt(sbId) {
   if (S.modus) {
     if (S.modus.art === 'NOVA') {
       const wahl = S.optionen.nova.find((w) => w.sbId === sbId);
-      if (wahl) { a.spiel.spieleNova(S.menschIdx, wahl); S.modus = null; zeichne(); }
+      if (wahl) {
+        const vorher = kartenLage();
+        a.spiel.spieleNova(S.menschIdx, wahl);
+        S.modus = null;
+        zeichne();
+        fliegeUm(vorher, { kosmisch: nimmKosmisch() });
+      }
       return;
     }
     if (S.modus.art === 'SCHWARZES_LOCH') {
@@ -6924,7 +7270,7 @@ function fuehreAus(aktion) {
     tonZumZug(vorher);
     const weiter = S.tutorialZugFertig;
     S.tutorialZugFertig = null;
-    fliegeUm(vorher).then(() => { if (weiter) weiter(); });
+    fliegeUm(vorher, { kosmisch: nimmKosmisch() }).then(() => { if (weiter) weiter(); });
     return;
   }
   // Vorher merken, wo die Karten liegen — beim Klauen sieht man sie danach wandern.
@@ -6934,7 +7280,7 @@ function fuehreAus(aktion) {
   S.kosmischGespielt = false;
   zeichne();
   tonZumZug(vorher);
-  fliegeUm(vorher).then(() => weiterLaufen());
+  fliegeUm(vorher, { kosmisch: nimmKosmisch() }).then(() => weiterLaufen());
 }
 
 function nachZug() {
@@ -7153,7 +7499,9 @@ function tippGeklickt(nr) {
 /* ================================================================= */
 
 holeDom();
-const fuehrer = new Erzaehler(dom);
+// Die Erzählerkarte spricht mit 500 Hz. Weitere Figuren bekämen andere Werte
+// und klängen dadurch verschieden, ohne dass es neue Töne braucht.
+const fuehrer = new Erzaehler(dom, { blip: spielSprechBlip, stimme: 500 });
 verdrahte();
 tonVorbereiten();
 
@@ -7165,7 +7513,17 @@ const startschirm = baueStartschirm({
     startschirm.verstecken();
     neuesSpiel(bots + 1, stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, name);
   },
-  tutorial: () => starteTutorial(),
+  /**
+   * „Spielen" beim allerersten Besuch: erst das Tutorial, dann das Spiel.
+   * Danach steht in localStorage, dass man es kennt, und der Knopf führt
+   * wie gewohnt zur Frage, gegen wen gespielt wird.
+   */
+  spielenGedrueckt: () => {
+    if (tutorialSchonGesehen()) return false;
+    starteTutorial(true);
+    return true;
+  },
+  tutorial: () => starteTutorial(false),
   freunde: () => {
     zeigeModal(dom, 'Mit Freunden',
       '<p>Die Lobby kommt zum Schluss — erst Startschirm und Tutorial, dann das Spiel gegen Bots, dann das Spiel zu mehreren.</p>',
