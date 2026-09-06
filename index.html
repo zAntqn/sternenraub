@@ -148,7 +148,7 @@
   --raum2:      calc(var(--raum) * 2);          /* 16px */
   --raum3:      calc(var(--raum) * 3);          /* 24px */
   --seite-b:    200px;                          /* Breite der Seitenleiste */
-  --sitz-b:     clamp(148px, 13vw, 196px);      /* Breite der Seitenplätze */
+  --sitz-b:     clamp(176px, 15vw, 232px);      /* Breite der Seitenplaetze: sechs kleine Karten passen quer */
   --schleier:   color-mix(in srgb, var(--tisch-tief) 84%, transparent);
 }
 
@@ -468,12 +468,23 @@ button.karte { cursor: pointer; }
 
 .sternbild .kartenreihe { gap: 3px; flex-wrap: nowrap; }
 
+/* In einem Sternbild ist die einzige kosmische Karte die Sternschnuppe.
+   Ihr Name brach auf den kleinen Karten in „Ster nsch nup" um — dort
+   tragen das Zeichen und der vertretene Wert die Auskunft allein. */
+.sternbild .karte-name { display: none; }
+
 /* Zustände: die Ränder tragen die Information allein —
    kein Schloss, kein Häkchen. */
 .sternbild.sicher     { border: 1px solid var(--gold); padding: calc(var(--raum-halb) + 1px); }
 .sternbild.versiegelt { border: 2px solid var(--gold); padding: var(--raum-halb); }
 .sternbild.versiegelt .sb-typ,
 .sternbild.versiegelt .sb-punkte { color: var(--gold); }
+
+/* Anfassbar, aber noch nicht gewählt: nur der Zeiger und eine Spur Papier
+   beim Überfahren. Kein Rand — sonst stünde der halbe Tisch in Kästen. */
+.sternbild.anklickbar        { cursor: pointer; }
+.sternbild.anklickbar:hover  { background: var(--tisch-hoch); }
+.sternbild.anklickbar:focus-visible { outline: 2px solid var(--signal); outline-offset: 1px; }
 
 .sternbild.ziel        { border: 2px solid var(--signal); cursor: pointer; }
 .sternbild.gefahr      { border: 1px solid var(--stern-heiss); padding: calc(var(--raum-halb) + 1px); }
@@ -493,71 +504,6 @@ button.karte { cursor: pointer; }
   gap: var(--raum);
   min-width: 0;
 }
-
-/* ---------- Kompakte Gegneransicht ----------
-   Statt der Karten eine Zeile je Sternbild: Form, Kartenzahl,
-   Punkte. Schmal und ruhig. Sicher und versiegelt tragen genau
-   dieselben Goldränder wie ein ausgelegtes Sternbild — das ist
-   das eine, was hier auf einen Blick lesbar sein muss. */
-
-.gegner[data-ansicht="kompakt"] .sternbilder {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 2px;
-}
-
-.sb-zeile {
-  display: flex;
-  align-items: baseline;
-  gap: var(--raum-halb);
-  min-width: 0;
-  padding: 1px var(--raum-halb);
-  border: 2px solid transparent;   /* reserviert, damit die Zeile nicht springt */
-  border-radius: var(--r-flaeche);
-  line-height: 1.35;
-}
-/* Auf dem schmalsten Platz kürzt der Formname, nicht die Punktzahl —
-   die Punkte und der Goldrand müssen immer ganz lesbar bleiben. */
-.sb-zeile .sb-typ {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-family: var(--serif);
-  font-size: var(--t-neben);
-  color: var(--schrift);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sb-zeile .sb-karten {
-  flex: 0 0 auto;
-  font-family: var(--grotesk);
-  font-size: var(--t-neben);
-  color: var(--schrift-leise);
-  white-space: nowrap;
-}
-.sb-zeile .sb-punkte {
-  flex: 0 0 auto;
-  margin-left: 0;
-  min-width: 2ch;
-  text-align: right;
-  font-family: var(--grotesk);
-  font-weight: 500;
-  color: var(--schrift);
-}
-
-.sb-zeile.sicher     { border: 1px solid var(--gold); padding: 2px calc(var(--raum-halb) + 1px); }
-.sb-zeile.versiegelt { border: 2px solid var(--gold); }
-.sb-zeile.versiegelt .sb-typ,
-.sb-zeile.versiegelt .sb-punkte { color: var(--gold); }
-
-.sb-zeile.ziel  { border: 2px solid var(--signal); cursor: pointer; }
-.sb-zeile.gefahr{ border: 1px solid var(--stern-heiss); padding: 2px calc(var(--raum-halb) + 1px); }
-.sb-zeile[data-typ="WRACK"] .sb-typ,
-.sb-zeile[data-typ="WRACK"] .sb-punkte { color: var(--schrift-leise); }
-
-/* In der Kartenansicht gibt es die Zeilen nicht und umgekehrt. */
-.gegner[data-ansicht="kompakt"] .sternbild { display: none; }
-.gegner[data-ansicht="karten"] .sb-zeile { display: none; }
 
 
 /* ============================================================
@@ -779,20 +725,26 @@ button.karte { cursor: pointer; }
    darunter, darunter die Auslage.
    ============================================================ */
 
+/*
+   Sitzordnung wie am Tisch: die Gegner an den Rändern, die Mitte in der
+   Mitte, du unten über die ganze Breite. Drei Gegner sitzen oben, links und
+   rechts; zwei oben und links; einer nur oben. Alle Plätze sind immer zu
+   sehen — es wird nichts auf- oder zugeklappt.
+
+   Die eigene Auslage und die Hand spannen sich über alle Spalten. Sie standen
+   früher in der Mittelspalte und begannen dadurch mitten im Bild.
+*/
 #feld {
   display: grid;
   grid-template-columns: var(--sitz-b) minmax(0, 1fr) var(--sitz-b);
-  /* Die Mitte bekommt KEINE eigene 1fr-Zeile mehr — sie wächst mit ihrem
-     Inhalt. Der freie Platz sammelt sich stattdessen über den Plätzen
-     (Zeile „oben"), damit unter der Mitte kein Loch entsteht. */
-  grid-template-rows: minmax(0, 1fr) auto auto auto;
-  /* Die Hand steht in derselben Spalte wie die eigene Auslage — beide
-     gehören zu dir und sollen an derselben Kante beginnen. */
+  /* Die Mitte bekommt die dehnbare Zeile: sie füllt, was Gegner und Hand
+     übrig lassen. */
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   grid-template-areas:
     "links oben   rechts"
     "links mitte  rechts"
-    "links ich    rechts"
-    "links hand   rechts";
+    "ich   ich    ich"
+    "hand  hand   hand";
   gap: var(--raum) var(--raum2);
   overflow: hidden;
   min-height: 0;
@@ -820,13 +772,14 @@ button.karte { cursor: pointer; }
     "hand";
 }
 
-/* Zwei Gegner: links und rechts, die obere Zeile entfällt. */
+/* Zwei Gegner: oben und links, die rechte Spalte entfällt. */
 #feld:has(#gegner-bereich[data-anzahl="2"]) {
-  grid-template-rows: auto auto auto;
+  grid-template-columns: var(--sitz-b) minmax(0, 1fr);
   grid-template-areas:
-    "links mitte  rechts"
-    "links ich    rechts"
-    "links hand   rechts";
+    "links oben"
+    "links mitte"
+    "ich   ich"
+    "hand  hand";
 }
 
 /* ---------- Ein Platz ---------- */
@@ -837,8 +790,21 @@ button.karte { cursor: pointer; }
   gap: var(--raum-halb);
   min-width: 0;
   min-height: 0;
-  padding: 0;
+  /* Links Platz für den Balken des aktiven Platzes — sonst springt alles,
+     sobald der Zug weitergeht. */
+  padding: var(--raum-halb) var(--raum-halb) var(--raum-halb) var(--raum);
+  border-left: 3px solid transparent;
+  border-radius: var(--r-flaeche);
 }
+
+/* Die Karten eines Gegners sind klein: die Zacken müssen zählbar bleiben,
+   mehr braucht man von fremder Auslage nicht. */
+.gegner { --g-karte-b: 30px; --g-karte-h: 42px; }
+/* Seitenplätze sind schmaler als der Platz gegenüber. Ein Drache mit sechs
+   Karten muss auch dort in eine Reihe passen, ohne abgeschnitten zu werden. */
+.gegner[data-sitz="links"],
+.gegner[data-sitz="rechts"] { --g-karte-b: 26px; --g-karte-h: 36px; }
+.gegner .sternbild { --karte-b: var(--g-karte-b); --karte-h: var(--g-karte-h); }
 
 .gegner-kopf {
   display: flex;
@@ -855,13 +821,30 @@ button.karte { cursor: pointer; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Die Handkarten des Gegners: verdeckte Blättchen, daneben die Zahl.
+   Winzig — sie sind eine Mengenangabe, kein Spielmaterial. */
 .gegner-hand {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.mini-faecher { display: flex; gap: 1px; }
+.mini-rueck {
+  width: 7px;
+  height: 10px;
+  background: var(--papier-tief);
+  border: 1px solid rgba(0, 0, 0, .35);
+  border-radius: 1px;
+}
+.gegner-hand-zahl {
   font-family: var(--grotesk);
   font-size: var(--t-neben);
   color: var(--schrift-leise);
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
+
 .gegner-punkte {
   font-family: var(--grotesk);
   font-weight: 500;
@@ -869,8 +852,21 @@ button.karte { cursor: pointer; }
   color: var(--schrift);
 }
 
-/* Wer am Zug ist, wird am Namen erkannt. Es blinkt nichts. */
+/* Wer am Zug ist: Balken an der Kante, hellerer Grund, das Wort dazu.
+   Es blinkt nichts — der Platz ist einfach heller als die anderen. */
+.gegner.aktiv {
+  border-left-color: var(--signal);
+  background: var(--tisch-hoch);
+}
 .gegner.aktiv .gegner-name { color: var(--signal); }
+.gegner-dran {
+  font-family: var(--grotesk);
+  font-size: calc(var(--t-neben) - 1px);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--signal);
+  white-space: nowrap;
+}
 
 /* Die Auslage eines Gegners scrollt in sich selbst — der Tisch
    wächst nie über seinen Platz hinaus. */
@@ -895,16 +891,10 @@ button.karte { cursor: pointer; }
      216 px weiter rechts als ihre eigene Überschrift. */
   justify-content: flex-start;
   /* Obergrenze: was nicht hineinpasst, scrollt hier — der Platz
-     gegenüber darf die Mitte nicht nach unten drücken. */
-  max-height: calc(var(--karte-h) + var(--raum) * 6);
+     gegenüber darf die Mitte nicht nach unten drücken. Zwei Reihen
+     kleiner Sternbilder passen immer. */
+  max-height: calc(var(--g-karte-h) * 2 + var(--t-neben) * 4 + var(--raum) * 5);
 }
-/* Oben stehen die kompakten Zeilen nebeneinander — dort ist
-   Breite da und Höhe knapp. */
-.gegner[data-sitz="oben"][data-ansicht="kompakt"] .sternbilder {
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-.gegner[data-sitz="oben"] .sb-zeile { flex: 0 1 auto; min-width: 0; }
 
 
 /* ============================================================
@@ -1029,6 +1019,12 @@ button.karte { cursor: pointer; }
    ------------------------------------------------------------
    Zwei Zonen, getrennt durch eine Haarlinie. Kein Kasten.
    ============================================================ */
+
+/* Bist du dran, trägt dein Bereich denselben Balken wie ein aktiver
+   Gegnerplatz — die Hervorhebung wandert sichtbar um den Tisch. */
+#ich-bereich.aktiv,
+#hand-bereich.aktiv { border-left: 3px solid var(--signal); padding-left: var(--raum); }
+#ich-bereich, #hand-bereich { border-left: 3px solid transparent; padding-left: var(--raum); }
 
 #ich-bereich {
   display: flex;
@@ -1169,6 +1165,11 @@ button.karte { cursor: pointer; }
 }
 /* Eine kurze Fehlermeldung. Sie wechselt die Farbe, sie blinkt nicht. */
 #leiste-text.warnung { color: var(--stern-heiss); }
+
+/* Was ein Gegner gerade getan hat: hell, damit man es im Vorbeigehen liest. */
+#leiste-text.ist-zug { color: var(--schrift); }
+/* Warum der gewählte Zug nicht geht: dieselbe Farbe wie eine Warnung. */
+#leiste-text.ist-fehler { color: var(--stern-heiss); }
 
 #leiste-knoepfe {
   flex: 0 0 auto;
@@ -1479,7 +1480,7 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
   :root {
     --karte-b: 60px;
     --karte-h: 84px;
-    --sitz-b: clamp(136px, 11vw, 168px);
+    --sitz-b: clamp(168px, 14vw, 200px);
   }
   #tisch { gap: var(--raum-halb); padding: var(--raum-halb) var(--raum); }
   #feld  { gap: var(--raum-halb) var(--raum2); }
@@ -1695,10 +1696,16 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
 .karte.fliegt {
   position: absolute;
   margin: 0;
-  transition-property: left, top, width, height;
+  transition-property: left, top, width, height, opacity;
   transition-timing-function: cubic-bezier(.4, 0, .2, 1);
-  transition-duration: 800ms;   /* die Oberfläche setzt die Dauer selbst */
+  transition-duration: 700ms;   /* die Oberfläche setzt die Dauer selbst */
 }
+
+/* Ein Klau und eine Zerstörung sind die lauten Momente: die Karte bekommt
+   für die Dauer des Fluges den Goldrand bzw. den heißen Rand — sonst
+   unterscheidet sich das Wegnehmen nicht vom bloßen Legen. */
+.karte.flug-klau      { outline: 2px solid var(--gold); }
+.karte.flug-zerstoert { outline: 2px solid var(--stern-heiss); }
 
 @media (prefers-reduced-motion: reduce) {
   .karte.fliegt { transition: none; }
@@ -4374,35 +4381,16 @@ function sternbildEl(sb, opt = {}) {
   }
   e.appendChild(reihe);
 
-  if (opt.ziel) {
+  // Anfassbar ist jedes Sternbild, das noch wachsen kann — eigenes wie fremdes.
+  // Ohne diese Marke sieht man dem fremden Stapel nicht an, dass man ihn
+  // antippen kann, um zu klauen.
+  if (opt.ziel || opt.anklickbar) {
     e.setAttribute('role', 'button');
     e.tabIndex = 0;
+    e.classList.add('anklickbar');
     if (opt.zielText) e.title = opt.zielText;
+    else if (opt.anklickText) e.title = opt.anklickText;
   }
-  return e;
-}
-
-/**
- * Ein Sternbild als eine Zeile statt als Karten — für Gegnerplätze, wenn der
- * Tisch voll ist. Zeigt genau das, was man über einen fremden Stapel wissen
- * muss: welche Form, wie viele Karten, wie viele Punkte, und ob man drankommt.
- */
-function sternbildZeile(sb, opt = {}) {
-  const e = el('div', 'sb-zeile');
-  e.dataset.typ = sb.typ ?? 'WRACK';
-  e.dataset.sb = sb.id;
-  if (sb.versiegelt) e.classList.add('versiegelt');
-  if (sb.sicher) e.classList.add('sicher');
-  if (opt.ziel) e.classList.add('ziel');
-  if (opt.jokerChance) e.classList.add('joker-chance');
-
-  e.appendChild(el('span', 'sb-typ', typText(sb.typ)));
-  e.appendChild(el('span', 'sb-karten', sb.karten.length + ' Karten'));
-  e.appendChild(el('span', 'sb-punkte', String(sb.punkte)));
-
-  const zustand = sb.versiegelt ? 'versiegelt' : sb.sicher ? 'fertig' : 'offen';
-  e.title = `${typText(sb.typ)}, ${sb.karten.length} Karten, ${sb.punkte} Punkte, ${zustand}`;
-  if (opt.ziel) { e.setAttribute('role', 'button'); e.tabIndex = 0; }
   return e;
 }
 
@@ -4433,8 +4421,8 @@ function zeichneKopf(dom, s) {
  */
 const SITZE = {
   1: ['oben'],
-  2: ['links', 'rechts'],
-  3: ['links', 'oben', 'rechts'],
+  2: ['oben', 'links'],
+  3: ['oben', 'links', 'rechts'],
 };
 
 function zeichneGegner(dom, s) {
@@ -4453,31 +4441,36 @@ function zeichneGegner(dom, s) {
 
     const kopf = el('header', 'gegner-kopf');
     kopf.appendChild(el('span', 'gegner-name', sp.name));
-    kopf.appendChild(el('span', 'gegner-hand', sp.handAnzahl + ' Karten'));
+    if (sp.idx === s.z.amZug) kopf.appendChild(el('span', 'gegner-dran', 'am Zug'));
+
+    // Die Handkarten verdeckt und winzig — man muss nur sehen, wie viele es sind.
+    const handbox = el('div', 'gegner-hand');
+    handbox.title = sp.handAnzahl + ' Handkarten';
+    const faecher = el('div', 'mini-faecher');
+    for (let i = 0; i < sp.handAnzahl; i++) faecher.appendChild(el('div', 'mini-rueck'));
+    handbox.appendChild(faecher);
+    handbox.appendChild(el('span', 'gegner-hand-zahl', String(sp.handAnzahl)));
+    kopf.appendChild(handbox);
+
     kopf.appendChild(el('span', 'gegner-punkte', String(sp.punkte)));
     art.appendChild(kopf);
 
-    // Bei vollem Tisch wird es eng. Dann zeigt ein Gegnerplatz nur noch Typ,
-    // Kartenzahl und Punkte als Zeile — die Karten erst auf Antippen.
-    // Was man immer erkennen muss: sicher oder versiegelt.
-    const kompakt = s.kompakteGegner.has(sp.idx);
-    art.dataset.ansicht = kompakt ? 'kompakt' : 'karten';
-
+    // Gegnerische Sternbilder liegen IMMER offen mit ihren Karten da.
+    // Es gab hier einmal eine kompakte Zeilenansicht — die hat das Spiel
+    // unspielbar gemacht: man musste erst suchen, was die anderen haben.
     const box = el('div', 'sternbilder');
     if (sp.sternbilder.length === 0) box.appendChild(el('p', 'leer', 'noch nichts ausgelegt'));
     for (const sb of sp.sternbilder) {
       const ziel = s.zieleSb.get(sb.id);
-      if (kompakt) {
-        box.appendChild(sternbildZeile(sb, { ziel: !!ziel, jokerChance: s.jokerSb.has(sb.id) }));
-      } else {
-        box.appendChild(sternbildEl(sb, {
-          ziel: !!ziel,
-          zielText: ziel ? aktionText(ziel, s.z) : '',
-          jokerChance: s.jokerSb.has(sb.id),
-          frisch: s.frisch.has(sb.id),
-          jokerWerte: s.jokerWerte.get(sb.id),
-        }));
-      }
+      box.appendChild(sternbildEl(sb, {
+        ziel: !!ziel,
+        zielText: ziel ? aktionText(ziel, s.z) : '',
+        anklickbar: s.dranMensch && !sb.sicher,
+        anklickText: 'Antippen: hier klauen. Dazu mindestens zwei eigene Handkarten wählen.',
+        jokerChance: s.jokerSb.has(sb.id),
+        frisch: s.frisch.has(sb.id),
+        jokerWerte: s.jokerWerte.get(sb.id),
+      }));
     }
     art.appendChild(box);
     dom.gegnerBereich.appendChild(art);
@@ -4547,6 +4540,10 @@ function zeichneStapel(dom, s) {
 function zeichneIch(dom, s) {
   const ich = s.z.spieler[s.menschIdx];
 
+  // Derselbe Balken wie bei einem aktiven Gegnerplatz.
+  if (dom.ichBereich) dom.ichBereich.classList.toggle('aktiv', !!s.dranMensch);
+  if (dom.handBereich) dom.handBereich.classList.toggle('aktiv', !!s.dranMensch);
+
   leere(dom.meineSternbilder);
   if (ich.sternbilder.length === 0) {
     dom.meineSternbilder.appendChild(el('p', 'leer', 'Noch kein Sternbild — leg eins aus.'));
@@ -4556,6 +4553,8 @@ function zeichneIch(dom, s) {
     dom.meineSternbilder.appendChild(sternbildEl(sb, {
       ziel: !!ziel,
       zielText: ziel ? aktionText(ziel, s.z) : '',
+      anklickbar: s.dranMensch && !sb.sicher,
+      anklickText: 'Antippen: hier anlegen und das Sternbild vergrößern.',
       gefahr: s.gefahrSb.has(sb.id),
       frisch: s.frisch.has(sb.id),
       jokerWerte: s.jokerWerte.get(sb.id),
@@ -4601,6 +4600,9 @@ function zeichneProtokoll(dom, zeilen) {
 
 function zeichneLeiste(dom, s) {
   dom.leisteText.textContent = s.hinweis;
+  // Drei Tonlagen: was gerade passiert ist, warum etwas nicht geht, alles andere.
+  dom.leisteText.classList.toggle('ist-zug', !!s.hinweisIstZug);
+  dom.leisteText.classList.toggle('ist-fehler', !!s.hinweisIstFehler);
   leere(dom.leisteKnoepfe);
   s.knoepfe.forEach((k, i) => {
     const b = el('button', 'knopf' + (k.klasse ? ' ' + k.klasse : ''), k.text);
@@ -4653,10 +4655,42 @@ function kartenLage() {
     const gegner = e.closest('.gegner');
     if (gegner) ort = 'sp' + gegner.dataset.idx;
     else if (e.closest('#mitte-karten')) ort = 'mitte';
-    else if (e.closest('#ich-bereich') || e.closest('#hand-bereich')) ort = 'sp0';
-    m.set(id, { r: e.getBoundingClientRect(), ort });
+    // Die eigene Hand ist ein eigener Ort, nicht dasselbe wie die eigene
+    // Auslage — sonst wäre das Legen einer Handkarte gar keine Bewegung.
+    else if (e.closest('#hand-bereich')) ort = 'hand0';
+    else if (e.closest('#ich-bereich')) ort = 'sp0';
+    // Das Element wird mitgemerkt: Karten, die der Zug vom Tisch nimmt, sind
+    // nach dem Neuzeichnen nicht mehr da. Ein abgehängtes Element lässt sich
+    // trotzdem klonen — nur so kann man sie noch wegfliegen lassen.
+    m.set(id, { r: e.getBoundingClientRect(), ort, el: e });
   }
   return m;
+}
+
+/** Wo hat dieser Platz seine Handkarten? Ausgangspunkt für gelegte Karten. */
+function handQuelle(ort, wie) {
+  const wahl = ort === 'sp0'
+    ? document.getElementById('meine-hand')
+    : document.querySelector(`.gegner[data-idx="${ort.slice(2)}"] .gegner-hand`);
+  if (!wahl) return null;
+  const b = wahl.getBoundingClientRect();
+  if (!b.width) return null;
+  // Aus der Mitte der Handzone starten, in der Größe der Zielkarte.
+  return {
+    left: b.left + b.width / 2 - wie.width / 2,
+    top: b.top + b.height / 2 - wie.height / 2,
+    width: wie.width,
+    height: wie.height,
+  };
+}
+
+/** Der Ablagestapel — dorthin verschwinden zerstörte Karten. */
+function ablageZiel(wie) {
+  const a = document.getElementById('stapel-ablage');
+  if (!a) return null;
+  const b = a.getBoundingClientRect();
+  if (!b.width) return null;
+  return { left: b.left, top: b.top, width: wie.width, height: wie.height };
 }
 
 /**
@@ -4670,58 +4704,81 @@ function kartenLage() {
  * @param {Map} vorher Ergebnis von kartenLage() VOR dem Zug
  * @returns {Promise<void>}
  */
-function fliegeUm(vorher, dauer = 800) {
+function fliegeUm(vorher, dauer = 700) {
   const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (ruhig || !vorher || vorher.size === 0) return Promise.resolve();
 
   const jetzt = kartenLage();
   const fluege = [];
+  const istSp = (o) => o.indexOf('sp') === 0;
+
   for (const [id, neu] of jetzt) {
     const alt = vorher.get(id);
-    if (!alt || alt.ort === neu.ort) continue;
-    const vonSpieler = alt.ort.indexOf('sp') === 0;
-    const nachSpieler = neu.ort.indexOf('sp') === 0;
-    const geklaut = vonSpieler && nachSpieler;
-    const zerstoert = vonSpieler && neu.ort === 'mitte';
-    if (!geklaut && !zerstoert) continue;
-    fluege.push({ id, alt, neu });
+    if (!alt) {
+      // Vorher nirgends zu sehen und jetzt in einer Auslage: aus der Hand gelegt.
+      if (!istSp(neu.ort)) continue;
+      const von = handQuelle(neu.ort, neu.r);
+      if (von) fluege.push({ id, von, nach: neu.r, art: 'legen' });
+      continue;
+    }
+    if (alt.ort === neu.ort) continue;
+    if (istSp(alt.ort) && istSp(neu.ort)) fluege.push({ id, von: alt.r, nach: neu.r, art: 'klau', quelle: alt.el });
+    else if ((alt.ort === 'mitte' || alt.ort === 'hand0') && istSp(neu.ort)) {
+      fluege.push({ id, von: alt.r, nach: neu.r, art: 'legen' });
+    }
+    else if (istSp(alt.ort) && neu.ort === 'mitte') fluege.push({ id, von: alt.r, nach: neu.r, art: 'zerstoert', quelle: alt.el });
   }
+
+  // Karten, die der Zug ganz vom Tisch genommen hat (zerstört, auf die Ablage).
+  for (const [id, alt] of vorher) {
+    if (jetzt.has(id) || !istSp(alt.ort)) continue;
+    const ziel = ablageZiel(alt.r);
+    if (ziel) fluege.push({ id, von: alt.r, nach: ziel, art: 'zerstoert', quelle: alt.el, weg: true });
+  }
+
   if (!fluege.length) return Promise.resolve();
+
+  // Klauen und Zerstören sind die großen Momente — sie dauern länger.
+  const langsam = fluege.some((f) => f.art !== 'legen');
+  const zeit = langsam ? Math.round(dauer * 1.7) : dauer;
 
   const buehne = el('div', 'flug-buehne');
   document.body.appendChild(buehne);
+  const versteckt = [];
 
   for (const f of fluege) {
     const echt = document.querySelector(`.karte[data-id="${f.id}"]`);
-    if (!echt) continue;
-    const klon = echt.cloneNode(true);
-    klon.classList.add('fliegt');
-    klon.style.left = f.alt.r.left + 'px';
-    klon.style.top = f.alt.r.top + 'px';
-    klon.style.width = f.alt.r.width + 'px';
-    klon.style.height = f.alt.r.height + 'px';
+    const muster = echt || f.quelle;
+    if (!muster) continue;
+    const klon = muster.cloneNode(true);
+    klon.classList.add('fliegt', 'flug-' + f.art);
+    klon.style.left = f.von.left + 'px';
+    klon.style.top = f.von.top + 'px';
+    klon.style.width = f.von.width + 'px';
+    klon.style.height = f.von.height + 'px';
     buehne.appendChild(klon);
-    echt.style.visibility = 'hidden';
+    if (echt) { echt.style.visibility = 'hidden'; versteckt.push(f.id); }
+    if (f.weg) klon.style.opacity = '1';
 
-    // Im nächsten Bild die Zielwerte setzen — dann läuft der Übergang.
     requestAnimationFrame(() => {
-      klon.style.transitionDuration = dauer + 'ms';
-      klon.style.left = f.neu.r.left + 'px';
-      klon.style.top = f.neu.r.top + 'px';
-      klon.style.width = f.neu.r.width + 'px';
-      klon.style.height = f.neu.r.height + 'px';
+      klon.style.transitionDuration = zeit + 'ms';
+      klon.style.left = f.nach.left + 'px';
+      klon.style.top = f.nach.top + 'px';
+      klon.style.width = f.nach.width + 'px';
+      klon.style.height = f.nach.height + 'px';
+      if (f.weg) klon.style.opacity = '0';
     });
   }
 
   return new Promise((fertig) => {
     setTimeout(() => {
       buehne.remove();
-      for (const f of fluege) {
-        const echt = document.querySelector(`.karte[data-id="${f.id}"]`);
+      for (const id of versteckt) {
+        const echt = document.querySelector(`.karte[data-id="${id}"]`);
         if (echt) echt.style.visibility = '';
       }
       fertig();
-    }, dauer + 40);
+    }, zeit + 40);
   });
 }
 
@@ -5601,8 +5658,14 @@ function probeTon(welcher) {
 const BOT_NAMEN = ['Rigel', 'Wega', 'Atair'];
 const MAX_TIPPS = 8;
 
-/** Denkpause der Bots in Millisekunden. Über sternenraub.tempo(ms) umstellbar. */
-let botTempo = 750;
+/**
+ * Denkpause der Bots vor dem Zug, in Millisekunden. Über sternenraub.tempo(ms)
+ * umstellbar. Danach läuft die Kartenbewegung (700 ms, beim Klauen und
+ * Zerstören 1190 ms), dann bleibt das Bild BOT_NACHLAUF stehen. Zusammen
+ * knapp anderthalb Sekunden je Botzug — genug, um mitzubekommen, was passiert.
+ */
+let botTempo = 420;
+const BOT_NACHLAUF = 280;
 
 /* ================================================================= */
 /*  Zustand der Oberfläche                                            */
@@ -5628,7 +5691,8 @@ const S = {
   punkteRundenStart: [],        // für die Rundenbilanz inklusive Trost- und Himmelspunkten
   tutorial: null,               // läuft gerade das Tutorial?
   letzterSchritt: '',           // für das Aufleuchten beim Schrittwechsel
-  aufgeklappt: new Set(),       // Gegnerplätze, die du von Hand aufgeklappt hast
+  // (Gegnerplaetze klappen nicht mehr auf und zu - sie liegen immer offen.)
+  zugMeldung: '',               // was der Bot gerade getan hat, für die Leiste
   zielSb: null,                 // angeklicktes Zielsternbild (eigenes = erweitern, fremdes = klauen)
   zeigeTipps: false,            // Vorschlagsliste aufgeklappt?
 };
@@ -5643,6 +5707,7 @@ function holeDom() {
     tipps: 'tipps', protokoll: 'protokoll',
     leisteText: 'leiste-text', leisteKnoepfe: 'leiste-knoepfe',
     stapelDeck: 'stapel-deck', stapelAblage: 'stapel-ablage', ichPunkte: 'ich-punkte',
+    ichBereich: 'ich-bereich', handBereich: 'hand-bereich',
     tutor: 'tutor', tutorSchritt: 'tutor-schritt', tutorTitel: 'tutor-titel',
     tutorText: 'tutor-text', tutorWeiter: 'tutor-weiter', tutorEnde: 'tutor-ende',
     modal: 'modal', modalInhalt: 'modal-inhalt',
@@ -5792,10 +5857,26 @@ function weiterLaufen() {
   S.botTimer = setTimeout(() => {
     if (S.ablauf !== a) return;              // inzwischen neu gestartet
     const vorher = kartenLage();
+    const logVor = a.spiel.protokoll ? a.spiel.protokoll.length : 0;
+
     a.botZug(botFn());
+
+    // Was der Bot getan hat, in einem Satz. Ohne diese Zeile sieht man nur,
+    // dass sich etwas verändert hat — nicht was.
+    const neu = a.spiel.protokoll ? a.spiel.protokoll.slice(logVor) : [];
+    S.zugMeldung = logText(neu.map((p) => p.text).filter((t) => t.indexOf('—') !== 0).join(' · '));
+
     zeichne();
     tonZumZug(vorher);
-    fliegeUm(vorher).then(() => { if (S.ablauf === a) weiterLaufen(); });
+    fliegeUm(vorher).then(() => {
+      if (S.ablauf !== a) return;
+      // Kurz stehen lassen, damit das Ergebnis ankommt, bevor der Nächste zieht.
+      S.botTimer = setTimeout(() => {
+        if (S.ablauf !== a) return;
+        S.zugMeldung = '';
+        weiterLaufen();
+      }, BOT_NACHLAUF);
+    });
   }, botTempo);
 }
 
@@ -5811,14 +5892,29 @@ function auswahlLeeren() {
 }
 
 /** Enthält `ids` alle Elemente von `menge`? */
-function umfasst(ids, menge) {
-  for (const id of menge) if (!ids.includes(id)) return false;
-  return true;
+/**
+ * Wertmuster einer Kartenliste, z. B. "ZAHL:5,ZAHL:6". Sortiert, damit die
+ * Reihenfolge egal ist.
+ *
+ * Warum das nötig ist: generiereAktionen() fasst wertgleiche Kombinationen
+ * zusammen und liefert nur EINEN Vertreter je Muster. Liegen zwei Sechsen in
+ * der Mitte, kennt die Aktionsliste nur die eine. Wer die andere anklickt,
+ * wählt dieselbe Kombination — nur mit anderen IDs. Über IDs zu vergleichen
+ * hat solche Züge fälschlich abgelehnt.
+ */
+function muster(karten) {
+  return karten.map((k) => k.art + ':' + (k.wert ?? '')).sort().join(',');
 }
 
-/** Genau dieselben Karten? */
-function deckungsgleich(ids, menge) {
-  return ids.length === menge.size && umfasst(ids, menge);
+/** Muster einer ID-Liste; null, sobald eine ID nicht auflösbar ist. */
+function musterVonIds(ids, nachId) {
+  const karten = [];
+  for (const id of ids || []) {
+    const k = nachId.get(id);
+    if (!k) return null;
+    karten.push(k);
+  }
+  return muster(karten);
 }
 
 
@@ -5857,6 +5953,11 @@ function pruefeAuswahl() {
     if (t) { ziel = t; zielBesitzer = sp.idx; break; }
   }
   const klauen = ziel && zielBesitzer !== S.menschIdx;
+  const opfer = klauen ? z.spieler[zielBesitzer].name : '';
+  // Vorspann für jede Klau-Meldung, damit immer klar ist, worum es geht.
+  const klauKopf = klauen
+    ? `${opfer}s ${typText(ziel.typ)} (${ziel.punkte} P., ${ziel.karten.length} Karten) klauen: `
+    : '';
 
   /* --- die harten Grenzen zuerst, sie sind am leichtesten zu erklären --- */
 
@@ -5866,8 +5967,8 @@ function pruefeAuswahl() {
   }
 
   if (klauen && hand < CONFIG.zug.klauenMinHandkarten) {
-    return { grund: `Zum Klauen musst du mindestens ${CONFIG.zug.klauenMinHandkarten} eigene ` +
-      `Handkarten anlegen. Du hast ${hand}.` };
+    return { grund: klauKopf + `Du musst mindestens ${CONFIG.zug.klauenMinHandkarten} eigene ` +
+      `Handkarten dazulegen — gewählt hast du ${hand}.` };
   }
   if (!klauen && hand < CONFIG.zug.bauenMinHandkarten) {
     return { grund: `Mindestens ${CONFIG.zug.bauenMinHandkarten} eigene Handkarte muss dabei sein.` };
@@ -5887,34 +5988,49 @@ function pruefeAuswahl() {
   for (const k of z.mitte) if (S.auswahlMitte.has(k.id)) karten.push(k);
 
   if (karten.length < CONFIG.sternbild.minKarten) {
-    return { grund: `Ein Sternbild braucht mindestens ${CONFIG.sternbild.minKarten} Karten. ` +
+    return { grund: klauKopf + `Ein Sternbild braucht mindestens ${CONFIG.sternbild.minKarten} Karten. ` +
       `Du kommst auf ${karten.length}.` };
   }
   if (karten.length > CONFIG.sternbild.maxKarten) {
-    return { grund: `Höchstens ${CONFIG.sternbild.maxKarten} Karten. Du kommst auf ${karten.length}.` };
+    return { grund: klauKopf + `Höchstens ${CONFIG.sternbild.maxKarten} Karten. ` +
+      `Du kommst auf ${karten.length}.` };
   }
 
   const b = bewerte(karten);
   if (!b.gueltig) {
     const werte = karten.filter((k) => k.art === 'ZAHL').map((k) => k.wert).sort((x, y) => x - y);
-    return { grund: `Aus ${werte.join('-')} wird keine gültige Form. ` +
+    return { grund: klauKopf + `Aus ${werte.join('-')} wird keine gültige Form. ` +
       'Pfeil braucht Werte in Folge, Wagen gleiche Abstände, dazu Krone, Kreuz, ' +
       'Zwilling und Doppelstier — siehe „Formen" oben.' };
   }
 
   if (klauen && b.punkte <= ziel.punkte) {
-    return { grund: `Klauen muss sich lohnen: ${typText(b.typ)} bringt ${b.punkte} Punkte, ` +
-      `das Sternbild hat aber schon ${ziel.punkte}.` };
+    return { grund: klauKopf + `Es muss mehr werden. ${typText(b.typ)} ${werteText(b.werte)} ` +
+      `bringt ${b.punkte} Punkte — das Sternbild hat aber schon ${ziel.punkte}.` };
   }
 
   /* --- die Engine hat das letzte Wort --- */
 
+  const nachId = new Map();
+  for (const k of ich.hand || []) nachId.set(k.id, k);
+  for (const k of z.mitte) nachId.set(k.id, k);
+
+  const mHand = muster((ich.hand || []).filter((k) => S.auswahlHand.has(k.id)));
+  const mMitte = muster(z.mitte.filter((k) => S.auswahlMitte.has(k.id)));
+
   const treffer = (S.optionen ? S.optionen.aktionen : []).find((a) => {
     if (a.art !== 'BAUEN' && a.art !== 'KLAUEN') return false;
     if ((a.sbId || null) !== (S.zielSb || null)) return false;
-    return deckungsgleich(a.handIds, S.auswahlHand) && deckungsgleich(a.mitteIds, S.auswahlMitte);
+    if ((a.handIds || []).length !== S.auswahlHand.size) return false;
+    if ((a.mitteIds || []).length !== S.auswahlMitte.size) return false;
+    return musterVonIds(a.handIds, nachId) === mHand
+        && musterVonIds(a.mitteIds, nachId) === mMitte;
   });
-  if (treffer) return { aktion: treffer };
+  // Die gefundene Aktion wird auf die tatsächlich angeklickten Karten
+  // umgeschrieben — sonst legt die Engine andere, wertgleiche Karten ab.
+  if (treffer) {
+    return { aktion: { ...treffer, handIds: [...S.auswahlHand], mitteIds: [...S.auswahlMitte] } };
+  }
 
   // Hierher kommt man nur, wenn die Engine etwas verbietet, das oben nicht
   // abgefangen wurde. Lieber ehrlich sagen als etwas erfinden.
@@ -5970,19 +6086,8 @@ function baueSicht() {
     novaMoeglich: false,
     wlKarten: new Set(),
     jokerSb: new Set(),      // fremde Sternbilder, aus denen du gerade einen Joker holen kannst
-    kompakteGegner: new Set(),
+    dranMensch,
   };
-
-  // Wann lohnen fremde Karten nicht mehr? Sobald der Tisch die Karten so weit
-  // schrumpfen lässt, dass man die Zacken nicht mehr zählen kann — unter 40 px
-  // Kartenbreite ist Schluss. Das ist der Fall bei mehr als einem Gegner oder
-  // in einem flachen Fenster. Dann zeigt ein Gegnerplatz nur Zeilen;
-  // ein Klick auf den Namen klappt ihn trotzdem auf.
-  const eng = z.spieler.length > 2 || window.innerHeight <= 800 || window.innerWidth < 1200;
-  for (const sp of z.spieler) {
-    if (sp.idx === S.menschIdx) continue;
-    if (eng && !S.aufgeklappt.has(sp.idx)) s.kompakteGegner.add(sp.idx);
-  }
 
   for (const sp of z.spieler) {
     for (const sb of sp.sternbilder) {
@@ -6010,7 +6115,9 @@ function baueSicht() {
   }
 
   if (!dranMensch) {
-    s.hinweis = a.phase === 'ZUG' ? `${z.spieler[z.amZug].name} überlegt …` : '';
+    // Steht eine frische Meldung an, hat sie Vorrang vor „… überlegt".
+    s.hinweis = S.zugMeldung || (a.phase === 'ZUG' ? `${z.spieler[z.amZug].name} überlegt …` : '');
+    s.hinweisIstZug = !!S.zugMeldung;
     s.mitteHinweis = '';
     S.knopfTun = [];
     return s;
@@ -6103,6 +6210,26 @@ function tippWert(a) {
   }
 }
 
+/**
+ * Was passiert, wenn ich jetzt bestätige? Beim Klauen steht hier ausdrücklich,
+ * was es mir bringt und was der Bestohlene dafür bekommt — sonst rechnet man
+ * mitten im Zug nach.
+ */
+function erfolgText(a, z) {
+  const form = `${typText(a.typ)} ${werteText(a.werte)}`;
+  if (a.art === 'KLAUEN') {
+    const opfer = z.spieler[a.opferIdx] ? z.spieler[a.opferIdx].name : 'Der Gegner';
+    return `Klauen geht: ${form} — ${a.punkteNachher} Punkte für dich. `
+      + `${opfer} verliert das Sternbild und bekommt ${a.entschaedigung} Trostpunkte `
+      + `(${a.geklauteKarten} geklaute Karten). Unten bestätigen.`;
+  }
+  if (a.sbId) {
+    return `Das geht: erweitert auf ${form} — ${a.punkteNachher} Punkte `
+      + `(${plus(a.gewinn)}). Unten bestätigen.`;
+  }
+  return `Das geht: ${form} — ${a.punkteNachher} Punkte. Unten bestätigen.`;
+}
+
 function baueKnoepfe(s) {
   const knoepfe = [];
   const tun = [];
@@ -6115,12 +6242,18 @@ function baueKnoepfe(s) {
     const p = pruefeAuswahl();
     if (p.aktion) {
       const a = p.aktion;
-      const was = a.art === 'KLAUEN'
-        ? `Klauen: ${typText(a.typ)} ${werteText(a.werte)}`
-        : a.sbId
+      if (a.art === 'KLAUEN') {
+        knoepfe.push({
+          text: `Klauen: ${typText(a.typ)} ${werteText(a.werte)}  (${a.punkteNachher} P.)`,
+          klasse: 'haupt gefahr',
+          titel: `Du bekommst ${a.punkteNachher} Punkte, der Bestohlene ${a.entschaedigung} Trostpunkte.`,
+        });
+      } else {
+        const was = a.sbId
           ? `Erweitern zu ${typText(a.typ)} ${werteText(a.werte)}`
           : `${typText(a.typ)} ${werteText(a.werte)} legen`;
-      knoepfe.push({ text: `${was}  (${plus(a.art === 'KLAUEN' ? a.punkteNachher - a.entschaedigung : a.gewinn)})`, klasse: 'haupt' });
+        knoepfe.push({ text: `${was}  (${plus(a.gewinn)})`, klasse: 'haupt' });
+      }
       tun.push(() => fuehreAus(a));
     } else {
       knoepfe.push({ text: 'Legen', klasse: 'haupt', aus: true, titel: p.grund });
@@ -6193,9 +6326,7 @@ function baueKnoepfe(s) {
   } else {
     // Hier steht entweder, was herauskommt, oder woran es scheitert.
     const p = pruefeAuswahl();
-    s.hinweis = p.aktion
-      ? 'Das geht — unten bestätigen.'
-      : p.grund;
+    s.hinweis = p.aktion ? erfolgText(p.aktion, s.z) : p.grund;
     s.hinweisIstFehler = !p.aktion;
   }
 }
@@ -6556,17 +6687,8 @@ function verdrahte() {
       karteGeklickt(karte.dataset.ort, Number(karte.dataset.id), karte);
       return;
     }
-    // Einen Gegnerplatz auf- oder zuklappen.
-    const kopf = e.target.closest('.gegner-kopf');
-    if (kopf) {
-      const idx = Number(kopf.parentElement.dataset.idx);
-      if (S.aufgeklappt.has(idx)) S.aufgeklappt.delete(idx); else S.aufgeklappt.add(idx);
-      zeichne();
-      return;
-    }
-
     // Jedes Sternbild ist anklickbar - es waehlt das Ziel, nicht den Zug.
-    const sb = e.target.closest('.sternbild, .sb-zeile');
+    const sb = e.target.closest('.sternbild');
     if (sb && sb.dataset.sb) { sternbildGeklickt(sb.dataset.sb); return; }
 
     const knopf = e.target.closest('[data-knopf]');
@@ -6642,6 +6764,7 @@ window.sternenraub = {
   tempo: (ms) => { botTempo = Math.max(0, Number(ms) || 0); },
   zustand: () => (S.ablauf ? S.ablauf.zustand() : null),
   spiel: () => (S.ablauf ? S.ablauf.spiel : null),
+  ablauf: () => S.ablauf,
   neuZeichnen: () => zeichne(),
 };
 
