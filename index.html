@@ -200,49 +200,19 @@
     /* die Tiefe: nach außen läuft alles ins Schwarzblau */
     radial-gradient(120% 90% at 45% 40%,
       var(--tisch) 0%,
-      var(--tisch-tief) 62%,
-      #05070E 100%);
+      var(--tisch-tief) 66%,
+      #060A14 100%);   /* aussen dunkler, aber weiter blau - nicht schwarz */
 }
 
-/* Die Sterne: ein kleines Muster, das sich wiederholt. Ein einziges
-   SVG in der Datei, kein Netzabruf, keine Ladezeit.
-
-   Jeder Stern besteht aus zwei Kreisen: einem winzigen hellen Kern und
-   einem größeren, sehr schwachen Hof darum. Das ergibt die weiche Kante,
-   für die man sonst einen Weichzeichner bräuchte — der aber auf dem Handy
-   bei jedem Bild Rechenzeit kostet. Hier wird die Kachel einmal gerastert
-   und danach nur noch wiederholt.
-
-   Klein, schwach, viele. Sie sollen Tiefe geben, nicht auffallen. */
-#galaxie::after {
-  content: '';
+/* Die Sterne liegen auf einem Canvas darueber (app/galaxie.js). Es fuellt
+   die Flaeche und nimmt keine Klicks an. */
+#galaxie-sterne {
   position: absolute;
   inset: 0;
-  opacity: .62;
-  background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'>\
-<g fill='%23E6E1D4'>\
-<circle cx='19' cy='33' r='2.4' opacity='.05'/><circle cx='19' cy='33' r='.55' opacity='.34'/>\
-<circle cx='94' cy='14' r='2' opacity='.04'/><circle cx='94' cy='14' r='.45' opacity='.26'/>\
-<circle cx='162' cy='51' r='2.6' opacity='.055'/><circle cx='162' cy='51' r='.6' opacity='.32'/>\
-<circle cx='217' cy='23' r='1.8' opacity='.04'/><circle cx='217' cy='23' r='.4' opacity='.22'/>\
-<circle cx='46' cy='98' r='2.2' opacity='.05'/><circle cx='46' cy='98' r='.5' opacity='.3'/>\
-<circle cx='119' cy='78' r='3' opacity='.06'/><circle cx='119' cy='78' r='.7' opacity='.38'/>\
-<circle cx='187' cy='113' r='1.8' opacity='.04'/><circle cx='187' cy='113' r='.4' opacity='.22'/>\
-<circle cx='11' cy='150' r='2.4' opacity='.05'/><circle cx='11' cy='150' r='.55' opacity='.32'/>\
-<circle cx='77' cy='171' r='2' opacity='.04'/><circle cx='77' cy='171' r='.45' opacity='.26'/>\
-<circle cx='141' cy='151' r='2.2' opacity='.05'/><circle cx='141' cy='151' r='.5' opacity='.3'/>\
-<circle cx='210' cy='178' r='2.6' opacity='.055'/><circle cx='210' cy='178' r='.6' opacity='.32'/>\
-<circle cx='33' cy='214' r='1.8' opacity='.04'/><circle cx='33' cy='214' r='.4' opacity='.22'/>\
-<circle cx='105' cy='227' r='2.4' opacity='.05'/><circle cx='105' cy='227' r='.55' opacity='.3'/>\
-<circle cx='171' cy='233' r='1.8' opacity='.04'/><circle cx='171' cy='233' r='.4' opacity='.24'/>\
-<circle cx='231' cy='133' r='2.2' opacity='.05'/><circle cx='231' cy='133' r='.5' opacity='.28'/>\
-<circle cx='63' cy='47' r='1.6' opacity='.035'/><circle cx='63' cy='47' r='.35' opacity='.2'/>\
-<circle cx='134' cy='196' r='1.6' opacity='.035'/><circle cx='134' cy='196' r='.35' opacity='.2'/>\
-<circle cx='196' cy='87' r='1.6' opacity='.035'/><circle cx='196' cy='87' r='.35' opacity='.2'/>\
-</g></svg>");
-  background-repeat: repeat;
-  background-size: 240px 240px;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 /* Wer Bewegung abgeschaltet hat, bekommt trotzdem den Hintergrund —
@@ -2101,9 +2071,10 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
 </head>
 <body>
 
-<!-- Die Galaxie ganz hinten. Reine CSS-Verläufe plus ein kleines Sternmuster —
-     keine Bilddatei, kein Weichzeichner, keine Bewegung. -->
-<div id="galaxie" aria-hidden="true"></div>
+<!-- Die Galaxie ganz hinten: CSS-Verläufe für Farbe und Tiefe, darauf ein
+     Canvas mit Sternen und angedeuteten Figuren (app/galaxie.js). Keine
+     Bilddatei, kein Weichzeichner, keine Bewegung. -->
+<div id="galaxie" aria-hidden="true"><canvas id="galaxie-sterne"></canvas></div>
 
 <div id="startschirm">
   <div id="start-mitte">
@@ -2652,7 +2623,30 @@ function bewerte(karten) {
 /*  Schutz                                                             */
 /* ------------------------------------------------------------------ */
 
-/** "Was nicht mehr wachsen kann, ist fertig und sicher." */
+/*
+ * ZWEI VERSCHIEDENE ZUSTÄNDE — sie wurden einmal vermischt, das machte das
+ * Versiegeln sinnlos:
+ *
+ *   istSicher(sb)     "fertig und sicher": kann nicht mehr wachsen, also
+ *                     NICHT KLAUBAR. Trifft auf jedes Kreuz zu und auf jedes
+ *                     Sternbild mit der Höchstzahl an Karten. Kostet niemanden
+ *                     einen Zug — es ergibt sich von selbst.
+ *
+ *   sb.versiegelt     Der Besitzer hat einen ganzen Zug dafür ausgegeben.
+ *                     Nur das schützt vor Schwarzem Loch und Weißem Loch.
+ *
+ * Wer was beachtet:
+ *   Klauen, Jokerklau  → istSicher (fertig reicht als Schutz)
+ *   Schwarzes Loch     → nur versiegelt
+ *   Weißes Loch        → nur versiegelt
+ *   Urknall            → istSicher ("Fertige und versiegelte bleiben stehen")
+ *   Nova               → gar nichts, sie trifft alles
+ */
+
+/** Vor kosmischen Karten schützt allein das Siegel. */
+const istVersiegelt = (sb) => !!sb.versiegelt;
+
+/** "Was nicht mehr wachsen kann, ist fertig und sicher." — nicht klaubar. */
 function istSicher(sb) {
   if (sb.versiegelt) return true;
   const b = bewerte(sb.karten);
@@ -2914,7 +2908,9 @@ function generiereKosmische(spiel, spielerIdx) {
     for (let g = 0; g < spiel.spieler.length; g++) {
       if (g === spielerIdx) continue;
       for (const sb of spiel.spieler[g].sternbilder) {
-        if (istSicher(sb)) continue;
+        // Schwarzes und Weisses Loch treffen jedes UNVERSIEGELTE Sternbild.
+        // "Fertig" schuetzt nur vors Klauen, nicht vor kosmischen Karten.
+        if (istVersiegelt(sb)) continue;
         const punkte = bewerte(sb.karten).punkte;
         if (k.art === 'SCHWARZES_LOCH') {
           out.push({ kartenId: k.id, art: k.art, zielIdx: g, sbId: sb.id, wirkung: punkte });
@@ -3222,7 +3218,9 @@ class Spiel {
     switch (karte.art) {
       case 'SCHWARZES_LOCH': {
         const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
-        if (sb && !istSicher(sb)) {
+        // Trifft JEDES unversiegelte Sternbild, egal wie gross. "Fertig" heisst
+        // nur: nicht klaubar. Schutz davor gibt es allein durchs Versiegeln.
+        if (sb && !istVersiegelt(sb)) {
           this.log(`${sp.name} spielt Schwarzes Loch auf ${this.spieler[wahl.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
           this.loeseSbAuf(wahl.zielIdx, sb);
         }
@@ -3230,13 +3228,27 @@ class Spiel {
       }
       case 'WEISSES_LOCH': {
         const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
-        if (sb && !istSicher(sb)) {
+        // Wie das Schwarze Loch: nur das Siegel haelt es auf.
+        if (sb && !istVersiegelt(sb)) {
           const i = sb.karten.findIndex((k) => k.id === wahl.karteId);
           if (i >= 0) {
             const [genommen] = sb.karten.splice(i, 1);
             sp.hand.push(genommen);
             this.log(`${sp.name} zieht ${kartenName(genommen)} aus einem Sternbild von ${this.spieler[wahl.zielIdx].name}`);
-            if (sb.karten.length < CONFIG.sternbild.minKarten) this.loeseSbAuf(wahl.zielIdx, sb);
+            /*
+               Zerfallen tut es in zwei Fällen:
+               1. Es hat zu wenige Karten (steht so im Regelwerk).
+               2. Es ist größer als die Höchstzahl und keine gültige Form mehr.
+                  Das trifft genau den Drachen: Zieht man ihm eine Karte heraus,
+                  bleiben elf liegen — die sind kein Sternbild, sondern ein
+                  Haufen, den es nach den Größenregeln gar nicht geben darf.
+                  Vorher konnte das nicht passieren, weil der Drache als
+                  „fertig" vor dem Weißen Loch geschützt war.
+            */
+            const zuKlein = sb.karten.length < CONFIG.sternbild.minKarten;
+            const zuGross = sb.karten.length > CONFIG.sternbild.maxKarten
+              && !bewerte(sb.karten).gueltig;
+            if (zuKlein || zuGross) this.loeseSbAuf(wahl.zielIdx, sb);
           }
         }
         break;
@@ -3244,6 +3256,7 @@ class Spiel {
       case 'URKNALL': {
         this.log(`${sp.name} spielt den Urknall`);
         for (const p of this.spieler) {
+          // Der Urknall ist die Ausnahme: "Fertige und versiegelte bleiben stehen."
           for (const sb of [...p.sternbilder]) if (!istSicher(sb)) this.loeseSbAuf(p.idx, sb);
         }
         break;
@@ -3449,7 +3462,7 @@ class Spiel {
     for (const g of this.spieler) {
       if (g.idx === spielerIdx) continue;
       for (const sb of g.sternbilder) {
-        if (istSicher(sb)) continue;
+        if (istVersiegelt(sb)) continue;   // es ist ein Schwarzes Loch
         ziele.push({ zielIdx: g.idx, sbId: sb.id, punkte: bewerte(sb.karten).punkte });
       }
     }
@@ -3458,7 +3471,7 @@ class Spiel {
 
   himmelZielZerstoeren(ziel) {
     const sb = this.findeSb(ziel.zielIdx, ziel.sbId);
-    if (!sb || istSicher(sb)) return false;
+    if (!sb || istVersiegelt(sb)) return false;
     this.letzteKosmisch = 'SCHWARZES_LOCH';
     this.log(`🕳 Schwarzes Loch aus dem Himmel trifft ${this.spieler[ziel.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
     this.loeseSbAuf(ziel.zielIdx, sb);
@@ -3831,9 +3844,16 @@ function klaubar(sb) {
   return frei >= CONFIG.zug.klauenMinHandkarten;
 }
 
-/** Geschätztes Verlustrisiko eines eigenen, offenen Sternbilds. */
+/**
+ * Geschätztes Verlustrisiko eines eigenen Sternbilds.
+ *
+ * Risikofrei ist nur das VERSIEGELTE. Ein bloß fertiges kann niemand mehr
+ * klauen, aber Schwarzes Loch, Weißes Loch und Nova treffen es weiter —
+ * vorher hielt der Bot es für unantastbar und hatte deshalb nie einen Grund
+ * zu versiegeln.
+ */
 function risiko(spiel, sb) {
-  if (istSicher(sb)) return 0;
+  if (istVersiegelt(sb)) return 0;
   const b = B();
   let r = b.risikoNurKosmisch;
   if (klaubar(sb)) r = b.risikoKlaubar;
@@ -6615,6 +6635,228 @@ class Erzaehler {
   }
 }
 
+/* ===== app\galaxie.js ===== */
+/**
+ * Der Sternenhintergrund.
+ *
+ * Gezeichnet auf ein Canvas, nicht als CSS-Muster. Zwei Gründe:
+ *   - Man kann viele hundert Sterne in verschiedenen Helligkeiten setzen,
+ *     ohne dass die Datei wächst.
+ *   - Jeder Stern bleibt als Eintrag erhalten. Damit lässt sich später der
+ *     Effekt nachrüsten, bei dem die Sterne dem Mauszeiger ausweichen: dafür
+ *     bekommt jeder Stern einen Versatz und das Bild wird neu gezeichnet.
+ *     `zeichne()` und die Liste `sterne` sind schon darauf ausgelegt; es fehlt
+ *     nur die Schleife, die den Versatz berechnet.
+ *
+ * Die Farbschicht darunter (Nebel, Tiefe) macht weiter CSS — sie ändert sich
+ * nie und kostet dort nichts.
+ *
+ * Bewusst statisch: einmal zeichnen, danach nur noch bei Größenänderung. Kein
+ * Bild pro Sekunde, keine Rechenzeit auf dem Handy.
+ */
+
+/** Zufall mit festem Ausgangswert — dasselbe Bild bei jedem Laden. */
+function galRng(saat) {
+  let z = saat >>> 0;
+  return () => {
+    z = (z + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(z ^ (z >>> 15), 1 | z);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Ein Stern je so vielen Bildpunkten. Kleiner = dichter. */
+const GAL_DICHTE = 1700;
+/** Höchstzahl, damit ein großer Bildschirm nicht ausufert. */
+const GAL_MAX = 900;
+
+/**
+ * Fünf Figuren, angelehnt an echte Sternbilder — nur die Form, keine Namen.
+ * Angaben in Anteilen der Figurbreite, damit sie sich frei skalieren lassen.
+ * `linien` verbindet Punkte über ihre Nummern.
+ */
+const GAL_FIGUREN = [
+  { // Großer Wagen
+    punkte: [[0, .34], [.19, .28], [.38, .30], [.55, .40], [.62, .16], [.83, .06], [1, .20]],
+    linien: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]],
+  },
+  { // Kassiopeia
+    punkte: [[0, .30], [.24, .02], [.50, .28], [.75, .00], [1, .26]],
+    linien: [[0, 1], [1, 2], [2, 3], [3, 4]],
+  },
+  { // Orion
+    punkte: [[.10, 0], [.62, .06], [.36, .40], [.46, .43], [.56, .46], [.06, .86], [.70, .92]],
+    linien: [[0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6]],
+  },
+  { // Leier
+    punkte: [[.5, 0], [.24, .30], [.72, .32], [.30, .78], [.68, .80]],
+    linien: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 4]],
+  },
+  { // Schwan
+    punkte: [[.50, 0], [.50, .38], [.50, .78], [.08, .46], [.92, .44], [.50, 1]],
+    linien: [[0, 1], [1, 2], [2, 5], [3, 1], [1, 4]],
+  },
+];
+
+class Galaxie {
+  /** @param {HTMLCanvasElement} leinwand */
+  constructor(leinwand) {
+    this.leinwand = leinwand;
+    this.ctx = leinwand.getContext('2d');
+    /** @type {{x:number,y:number,r:number,hell:number,vx:number,vy:number}[]}
+     *  x und y sind Anteile (0..1) der Fläche. vx/vy ist der Versatz in
+     *  Bildpunkten — heute immer 0, später der Ausweichweg vor dem Zeiger. */
+    this.sterne = [];
+    this.figuren = [];
+    this.breite = 0;
+    this.hoehe = 0;
+    this._warte = null;
+
+    const spaeter = () => {
+      clearTimeout(this._warte);
+      this._warte = setTimeout(() => this.messen(), 150);
+    };
+    addEventListener('resize', spaeter);
+    // Ein resize-Ereignis kommt nicht überall: Wird die Seite in einen Rahmen
+    // gelegt oder ändert sich die Fläche ohne Fensterwechsel, bleibt es aus.
+    // Gemessen: Leinwand blieb 1 × 1, während das Fenster 1366 × 768 war.
+    // Der Beobachter am Elternelement fängt beides ab.
+    if (typeof ResizeObserver === 'function' && leinwand.parentElement) {
+      new ResizeObserver(spaeter).observe(leinwand.parentElement);
+    }
+    addEventListener('load', spaeter);
+  }
+
+  /** Größe übernehmen, Sterne neu würfeln, zeichnen. */
+  messen() {
+    // Die eigene Fläche zählt, nicht das Fenster: der Hintergrund kann auch
+    // in einem Rahmen liegen. Das Fenster ist nur der Rückfallwert.
+    const eigen = this.leinwand.parentElement
+      ? this.leinwand.parentElement.getBoundingClientRect() : null;
+    const b = Math.max(1, Math.round(eigen && eigen.width > 1 ? eigen.width : window.innerWidth));
+    const h = Math.max(1, Math.round(eigen && eigen.height > 1 ? eigen.height : window.innerHeight));
+    if (b === this.breite && h === this.hoehe) return;
+    this.breite = b;
+    this.hoehe = h;
+
+    // Auf dem Handy reicht die doppelte Auflösung; mehr kostet nur Speicher.
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.leinwand.width = Math.round(b * dpr);
+    this.leinwand.height = Math.round(h * dpr);
+    this.leinwand.style.width = b + 'px';
+    this.leinwand.style.height = h + 'px';
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    this.wuerfeln();
+    this.zeichne();
+  }
+
+  /** Sterne und Figuren neu setzen. */
+  wuerfeln() {
+    const rnd = galRng(20260908);
+    const b = this.breite, h = this.hoehe;
+
+    /* ---- die Figuren zuerst: sie belegen feste Plätze ---- */
+    this.figuren = [];
+    const belegt = [];
+    for (let i = 0; i < GAL_FIGUREN.length; i++) {
+      const vorlage = GAL_FIGUREN[i];
+      // Breite zwischen einem Achtel und einem Fünftel der Fläche
+      const gr = (0.12 + rnd() * 0.08) * Math.max(b, h);
+      let mx = 0, my = 0, versuche = 0;
+      do {
+        mx = 0.06 + rnd() * 0.82;
+        my = 0.06 + rnd() * 0.80;
+        versuche++;
+      } while (versuche < 30 && belegt.some((p) => Math.hypot(p.x - mx, p.y - my) < 0.26));
+      belegt.push({ x: mx, y: my });
+
+      const punkte = vorlage.punkte.map(([px, py]) => ({
+        x: mx + (px * gr) / b,
+        y: my + (py * gr) / h,
+      }));
+      this.figuren.push({ punkte, linien: vorlage.linien });
+    }
+
+    /* ---- dann das Streufeld ---- */
+    const anzahl = Math.min(GAL_MAX, Math.round((b * h) / GAL_DICHTE));
+    this.sterne = [];
+    for (let i = 0; i < anzahl; i++) {
+      // Die meisten sind winzig, wenige deutlich heller. Die vierte Potenz
+      // drückt die Verteilung nach unten: viele kleine, wenige große.
+      const w = rnd();
+      const hell = Math.pow(w, 4);
+      this.sterne.push({
+        x: rnd(),
+        y: rnd(),
+        r: 0.35 + hell * 1.15,
+        hell: 0.14 + hell * 0.62,
+        vx: 0,
+        vy: 0,
+      });
+    }
+
+    // Die Sterne der Figuren gehören mit ins Feld — heller als der Rest,
+    // damit man die Form überhaupt ahnen kann.
+    for (const f of this.figuren) {
+      for (const p of f.punkte) {
+        this.sterne.push({ x: p.x, y: p.y, r: 1.1, hell: 0.50, vx: 0, vy: 0 });
+      }
+    }
+  }
+
+  /**
+   * Alles neu malen. Später wird genau diese Stelle je Bild gerufen, wenn
+   * die Sterne dem Zeiger ausweichen — dann sind vx/vy nicht mehr null.
+   */
+  zeichne() {
+    const { ctx, breite: b, hoehe: h } = this;
+    if (!ctx || !b) return;
+    ctx.clearRect(0, 0, b, h);
+
+    /* ---- Verbindungslinien: das Schwächste im Bild ---- */
+    ctx.lineWidth = 0.6;
+    ctx.strokeStyle = 'rgba(230, 225, 212, 0.07)';
+    for (const f of this.figuren) {
+      ctx.beginPath();
+      for (const [a, z] of f.linien) {
+        const pa = f.punkte[a], pz = f.punkte[z];
+        if (!pa || !pz) continue;
+        ctx.moveTo(pa.x * b, pa.y * h);
+        ctx.lineTo(pz.x * b, pz.y * h);
+      }
+      ctx.stroke();
+    }
+
+    /* ---- die Sterne ---- */
+    for (const s of this.sterne) {
+      const x = s.x * b + s.vx;
+      const y = s.y * h + s.vy;
+      // Ein schwacher Hof gibt die weiche Kante, für die man sonst einen
+      // Weichzeichner bräuchte — hier kostet er nur einen zweiten Kreis.
+      if (s.r > 0.8) {
+        ctx.fillStyle = `rgba(230, 225, 212, ${(s.hell * 0.18).toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(x, y, s.r * 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = `rgba(230, 225, 212, ${s.hell.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(x, y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+/** Legt die Galaxie an und zeichnet sie einmal. */
+function starteGalaxie(leinwand) {
+  if (!leinwand || !leinwand.getContext) return null;
+  const g = new Galaxie(leinwand);
+  g.messen();
+  return g;
+}
+
 /* ===== app\start.js ===== */
 /**
  * Sternenraub — Oberfläche, Schritt 2: ein Mensch gegen Bots.
@@ -8025,6 +8267,10 @@ holeDom();
 // Die Erzählerkarte spricht mit 500 Hz. Weitere Figuren bekämen andere Werte
 // und klängen dadurch verschieden, ohne dass es neue Töne braucht.
 const fuehrer = new Erzaehler(dom, { blip: spielSprechBlip, stimme: 500 });
+
+// Der Sternenhintergrund. Er zeichnet sich einmal und danach nur noch bei
+// Groessenaenderung - im Spiel laeuft dafuer nichts mit.
+starteGalaxie(document.getElementById('galaxie-sterne'));
 verdrahte();
 tonVorbereiten();
 

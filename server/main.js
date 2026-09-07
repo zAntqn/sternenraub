@@ -440,7 +440,30 @@ function bewerte(karten) {
 /*  Schutz                                                             */
 /* ------------------------------------------------------------------ */
 
-/** "Was nicht mehr wachsen kann, ist fertig und sicher." */
+/*
+ * ZWEI VERSCHIEDENE ZUSTÄNDE — sie wurden einmal vermischt, das machte das
+ * Versiegeln sinnlos:
+ *
+ *   istSicher(sb)     "fertig und sicher": kann nicht mehr wachsen, also
+ *                     NICHT KLAUBAR. Trifft auf jedes Kreuz zu und auf jedes
+ *                     Sternbild mit der Höchstzahl an Karten. Kostet niemanden
+ *                     einen Zug — es ergibt sich von selbst.
+ *
+ *   sb.versiegelt     Der Besitzer hat einen ganzen Zug dafür ausgegeben.
+ *                     Nur das schützt vor Schwarzem Loch und Weißem Loch.
+ *
+ * Wer was beachtet:
+ *   Klauen, Jokerklau  → istSicher (fertig reicht als Schutz)
+ *   Schwarzes Loch     → nur versiegelt
+ *   Weißes Loch        → nur versiegelt
+ *   Urknall            → istSicher ("Fertige und versiegelte bleiben stehen")
+ *   Nova               → gar nichts, sie trifft alles
+ */
+
+/** Vor kosmischen Karten schützt allein das Siegel. */
+const istVersiegelt = (sb) => !!sb.versiegelt;
+
+/** "Was nicht mehr wachsen kann, ist fertig und sicher." — nicht klaubar. */
 function istSicher(sb) {
   if (sb.versiegelt) return true;
   const b = bewerte(sb.karten);
@@ -702,7 +725,9 @@ function generiereKosmische(spiel, spielerIdx) {
     for (let g = 0; g < spiel.spieler.length; g++) {
       if (g === spielerIdx) continue;
       for (const sb of spiel.spieler[g].sternbilder) {
-        if (istSicher(sb)) continue;
+        // Schwarzes und Weisses Loch treffen jedes UNVERSIEGELTE Sternbild.
+        // "Fertig" schuetzt nur vors Klauen, nicht vor kosmischen Karten.
+        if (istVersiegelt(sb)) continue;
         const punkte = bewerte(sb.karten).punkte;
         if (k.art === 'SCHWARZES_LOCH') {
           out.push({ kartenId: k.id, art: k.art, zielIdx: g, sbId: sb.id, wirkung: punkte });
@@ -1010,7 +1035,9 @@ class Spiel {
     switch (karte.art) {
       case 'SCHWARZES_LOCH': {
         const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
-        if (sb && !istSicher(sb)) {
+        // Trifft JEDES unversiegelte Sternbild, egal wie gross. "Fertig" heisst
+        // nur: nicht klaubar. Schutz davor gibt es allein durchs Versiegeln.
+        if (sb && !istVersiegelt(sb)) {
           this.log(`${sp.name} spielt Schwarzes Loch auf ${this.spieler[wahl.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
           this.loeseSbAuf(wahl.zielIdx, sb);
         }
@@ -1018,7 +1045,8 @@ class Spiel {
       }
       case 'WEISSES_LOCH': {
         const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
-        if (sb && !istSicher(sb)) {
+        // Wie das Schwarze Loch: nur das Siegel haelt es auf.
+        if (sb && !istVersiegelt(sb)) {
           const i = sb.karten.findIndex((k) => k.id === wahl.karteId);
           if (i >= 0) {
             const [genommen] = sb.karten.splice(i, 1);
@@ -1032,6 +1060,7 @@ class Spiel {
       case 'URKNALL': {
         this.log(`${sp.name} spielt den Urknall`);
         for (const p of this.spieler) {
+          // Der Urknall ist die Ausnahme: "Fertige und versiegelte bleiben stehen."
           for (const sb of [...p.sternbilder]) if (!istSicher(sb)) this.loeseSbAuf(p.idx, sb);
         }
         break;
@@ -1237,7 +1266,7 @@ class Spiel {
     for (const g of this.spieler) {
       if (g.idx === spielerIdx) continue;
       for (const sb of g.sternbilder) {
-        if (istSicher(sb)) continue;
+        if (istVersiegelt(sb)) continue;   // es ist ein Schwarzes Loch
         ziele.push({ zielIdx: g.idx, sbId: sb.id, punkte: bewerte(sb.karten).punkte });
       }
     }
@@ -1246,7 +1275,7 @@ class Spiel {
 
   himmelZielZerstoeren(ziel) {
     const sb = this.findeSb(ziel.zielIdx, ziel.sbId);
-    if (!sb || istSicher(sb)) return false;
+    if (!sb || istVersiegelt(sb)) return false;
     this.letzteKosmisch = 'SCHWARZES_LOCH';
     this.log(`🕳 Schwarzes Loch aus dem Himmel trifft ${this.spieler[ziel.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
     this.loeseSbAuf(ziel.zielIdx, sb);
@@ -1619,9 +1648,16 @@ function klaubar(sb) {
   return frei >= CONFIG.zug.klauenMinHandkarten;
 }
 
-/** Geschätztes Verlustrisiko eines eigenen, offenen Sternbilds. */
+/**
+ * Geschätztes Verlustrisiko eines eigenen Sternbilds.
+ *
+ * Risikofrei ist nur das VERSIEGELTE. Ein bloß fertiges kann niemand mehr
+ * klauen, aber Schwarzes Loch, Weißes Loch und Nova treffen es weiter —
+ * vorher hielt der Bot es für unantastbar und hatte deshalb nie einen Grund
+ * zu versiegeln.
+ */
 function risiko(spiel, sb) {
-  if (istSicher(sb)) return 0;
+  if (istVersiegelt(sb)) return 0;
   const b = B();
   let r = b.risikoNurKosmisch;
   if (klaubar(sb)) r = b.risikoKlaubar;
