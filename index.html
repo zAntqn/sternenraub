@@ -617,17 +617,26 @@ button.karte { cursor: pointer; }
    Ein Titelblatt auf der Nacht. Kein Sternenfeld, keine Bewegung.
    ============================================================ */
 
+/*
+   Mittig, solange Platz ist — und trotzdem vollständig erreichbar, wenn
+   nicht. Mit `align-items: center` wächst ein zu hoher Inhalt nach OBEN aus
+   dem Kasten heraus, und dorthin lässt sich nicht scrollen: der Titel war
+   angeschnitten und blieb es. Deshalb oben ausrichten und die Mitte über
+   `margin: auto` am Kind herstellen — das zentriert bei Platz und gibt bei
+   Enge oben nach.
+*/
 #startschirm {
   position: fixed;
   inset: 0;
   z-index: 40;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: var(--raum3);
   /* Durchsichtig: darunter liegt die Galaxie (Abschnitt 1). */
   background: transparent;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 #startschirm[hidden] { display: none; }
 
@@ -639,7 +648,12 @@ button.karte { cursor: pointer; }
   width: 100%;
   max-width: 420px;
   text-align: center;
+  /* Zentriert bei Platz, rutscht bei Enge nach oben — siehe #startschirm. */
+  margin: auto;
 }
+
+/* Die Einstellungen sind breiter als das Menü. */
+#start-mitte:has(#start-einstellungen:not([hidden])) { max-width: 560px; }
 
 #start-titel {
   margin: 0;
@@ -1181,13 +1195,16 @@ button.karte { cursor: pointer; }
 .regel-karte-zelle { white-space: nowrap; }
 .regel-formen { margin-top: var(--raum2); }
 
-/* Die beiden Nebenwege unter dem Startschirm, untereinander und ruhig. */
+/* Der Weg zu den Regeln unter dem Menue. */
 #start-fuss {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0;
 }
+/* Ohne diese Zeile schlaegt display:flex das hidden-Attribut - der Fuss
+   stand dann auch unter den Einstellungen. */
+#start-fuss[hidden] { display: none; }
 
 #ich-bereich {
   display: flex;
@@ -2267,7 +2284,10 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
         <button class="knopf" id="btn-ein-regeln" type="button">Regeln nachlesen</button>
         <button class="knopf" id="btn-ein-tutorial" type="button">Tutorial ansehen</button>
         <button class="knopf" id="btn-ein-tutorial-neu" type="button">Tutorial beim Start wieder zeigen</button>
-        <button class="knopf gefahr" id="btn-ein-reset" type="button">Alles zurücksetzen</button>
+        <button class="knopf" id="btn-ein-reset" type="button">Alles zurücksetzen</button>
+        <p class="ein-hinweis">Löscht alle gespeicherten Einstellungen und den
+          Tutorial-Fortschritt. Die Seite verhält sich danach wie beim ersten
+          Besuch. Laufende Partien sind nicht betroffen.</p>
       </div>
 
       <p class="ein-stand" id="ein-stand"></p>
@@ -5857,13 +5877,16 @@ function baueStartschirm(rueckrufe) {
     setTimeout(() => { btnNeu.textContent = 'Tutorial beim Start wieder zeigen'; }, 3000);
   });
 
+  // Zurücksetzen ist nicht rückgängig zu machen — deshalb einmal nachfragen.
+  // Die Frage stellt start.js, weil dort das Fenster liegt.
   const btnReset = document.getElementById('btn-ein-reset');
   btnReset.addEventListener('click', () => {
-    rueckrufe.allesZuruecksetzen();
-    nameFeld.value = gemerkterName();
-    einAnzeigen();
-    btnReset.textContent = 'Alles gelöscht';
-    setTimeout(() => { btnReset.textContent = 'Alles zurücksetzen'; }, 3000);
+    rueckrufe.allesZuruecksetzen(() => {
+      nameFeld.value = gemerkterName();
+      einAnzeigen();
+      btnReset.textContent = 'Alles gelöscht';
+      setTimeout(() => { btnReset.textContent = 'Alles zurücksetzen'; }, 3000);
+    });
   });
 
   document.getElementById('btn-spielen').addEventListener('click', () => {
@@ -7300,7 +7323,7 @@ let botNachlauf = 650;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '07.09.2026 20:03';
+const BAU_STAND = '07.09.2026 20:35';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -8779,9 +8802,22 @@ const startschirm = baueStartschirm({
   },
   setzeTempo: (t) => { setzeTempo(t); tempoUebernehmen(); },
   setzeBewegung: (b) => setzeBewegung(b),
-  allesZuruecksetzen: () => {
-    alleSpeicherLoeschen();
-    tempoUebernehmen();
+  allesZuruecksetzen: (danach) => {
+    zeigeModal(dom, 'Alles zurücksetzen?',
+      '<p>Gelöscht werden: Ton- und Tempo-Einstellungen, dein Name und der '
+      + 'Merker, dass du das Tutorial kennst. Danach verhält sich die Seite '
+      + 'wie beim ersten Besuch.</p>'
+      + '<p>Eine laufende Partie bleibt, wie sie ist — gespeichert wird sie '
+      + 'ohnehin nicht.</p>',
+      [
+        { text: 'Abbrechen', tun: () => schliesseModal(dom) },
+        { text: 'Zurücksetzen', klasse: 'haupt', tun: () => {
+          alleSpeicherLoeschen();
+          tempoUebernehmen();
+          schliesseModal(dom);
+          if (danach) danach();
+        } },
+      ]);
   },
 });
 
