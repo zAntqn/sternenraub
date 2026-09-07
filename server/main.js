@@ -175,6 +175,19 @@ const CONFIG = {
     novaZerstoertAuchSicher: true,
     novaKartenAufAblage: true,
     novaIstFreieAktion: true,
+
+    // Die Nova aufzunehmen kostet einen ganzen Zug. Danach liegt sie für alle
+    // sichtbar beim Besitzer, und erst in einem SPÄTEREN Zug lässt sie sich
+    // zünden — das Zünden selbst ist dann frei wie bei den anderen kosmischen
+    // Karten.
+    //
+    // Warum: Die Nova ist die stärkste Karte im Spiel, sie trifft sogar
+    // versiegelte Sternbilder. Wer sie im selben Zug nehmen und zünden kann,
+    // schlägt aus dem Nichts zu — niemand kann reagieren. Liegt sie sichtbar
+    // aus, wird sie zur Drohung, auf die alle antworten müssen.
+    //
+    // false stellt das alte Verhalten wieder her: einfach zünden, kostenlos.
+    novaNehmenKostetZug: true,
   },
 
   /* ---------- Bot-Stellschrauben ---------- */
@@ -210,6 +223,14 @@ const CONFIG = {
       // egal wie hoch die Schwelle sonst ist.
       endspurtZuege: 2,              // ab so vielen Restzügen gilt "Rundenende"
       novaLetzteRunde: true,         // spätestens in der Schlussrunde die Nova zünden
+      // Kostet das Aufnehmen einen ganzen Zug, muss der Bot abwägen: Ein Zug
+      // ohne Punkte gegen die Aussicht, im nächsten das dickste Sternbild am
+      // Tisch zu sprengen. Das Gewicht sagt, wie viel ihm ein zerstörter Punkt
+      // im Vergleich zu einem selbst gebauten wert ist.
+      novaNehmenGewicht: 0.5,
+      // Zusaetzliches Risiko, solange die Nova sichtbar bei einem Gegner liegt.
+      // Wirkt nur, wenn ein Siegel ueberhaupt gegen sie hilft.
+      novaDrohungRisiko: 0.25,
     },
   },
 
@@ -614,6 +635,13 @@ function generiereAktionen(spiel, spielerIdx) {
     aktionen.push({ art: 'ABWERFEN', handIds: [k.id], gewinn: 0, punkteNachher: 0 });
   }
 
+  /* ---------- Die Nova aufnehmen ---------- */
+  // Ein ganzer Zug für eine Karte, die man erst später zünden darf. Teuer —
+  // und genau deshalb sieht sie danach jeder liegen.
+  if (CONFIG.kosmisch.novaNehmenKostetZug && spiel.nova && spiel.novaBesitzer === null) {
+    aktionen.push({ art: 'NOVA_NEHMEN', gewinn: 0, punkteNachher: 0 });
+  }
+
   /* ---------- Versiegeln ---------- */
   if (sp.versiegelungenDieseRunde < CONFIG.zug.versiegelnProRunde) {
     for (const sb of sp.sternbilder) {
@@ -807,7 +835,9 @@ function generiereKosmische(spiel, spielerIdx) {
 }
 
 function generiereNova(spiel, spielerIdx) {
-  if (!spiel.nova) return [];
+  // Zündbar ist sie nur für ihren Besitzer und nur in einem späteren Zug als
+  // dem, in dem er sie aufgenommen hat (spiel.novaZuendbar).
+  if (!spiel.novaZuendbar(spielerIdx)) return [];
   const out = [];
   for (let g = 0; g < spiel.spieler.length; g++) {
     if (g === spielerIdx) continue;
@@ -877,6 +907,11 @@ class Spiel {
     this.mitte = [];
     this.nova = nova;
     this.novaVerbraucht = false;
+    // Wer die Nova aufgenommen hat (null = sie liegt noch frei am Rand) und in
+    // welchem Zug das war. Der Zugzähler verhindert das Zünden im selben Zug:
+    // gezündet werden darf erst, wenn `stats.zuege` weitergelaufen ist.
+    this.novaBesitzer = null;
+    this.novaGenommenBeiZug = -1;
     this.ausDemSpiel = [];    // verbrauchte Karten, die nie wieder ins Deck kommen (Nova)
     // Kosmische Karten, die beim Auffuellen aussortiert wurden und erst beim
     // naechsten Rundenanfang wieder eingesammelt werden (Einstellung 'RUNDENENDE').
@@ -1148,20 +1183,52 @@ class Spiel {
     }
   }
 
+  /**
+   * Darf dieser Spieler die Nova gerade zünden?
+   *
+   * Ohne die Regel „Aufnehmen kostet einen Zug" darf es jeder, jederzeit.
+   * Mit ihr muss er sie besitzen — und seit dem Aufnehmen muss mindestens ein
+   * Zug vergangen sein. Genau daran hängt der Sinn der Regel: zwischen dem
+   * Aufnehmen und dem Einschlag liegt eine Runde, in der alle anderen die
+   * Drohung sehen und darauf antworten können.
+   */
+  novaZuendbar(spielerIdx) {
+    if (!this.nova) return false;
+    if (!CONFIG.kosmisch.novaNehmenKostetZug) return true;
+    return this.novaBesitzer === spielerIdx && this.stats.zuege > this.novaGenommenBeiZug;
+  }
+
+  /** Ganzer Zug: die Nova an sich nehmen. Sie liegt danach offen beim Besitzer. */
+  nimmNova(spielerIdx) {
+    if (!this.nova || this.novaBesitzer !== null) return;
+    this.novaBesitzer = spielerIdx;
+    this.novaGenommenBeiZug = this.stats.zuege;
+    this.stats.novaGenommen++;
+    this.log(`${this.spieler[spielerIdx].name} nimmt die NOVA auf — zünden geht erst im nächsten Zug`);
+  }
+
   /** Freie Aktion: die Nova. */
   spieleNova(spielerIdx, wahl) {
-    if (!this.nova) return;
+    if (!this.novaZuendbar(spielerIdx)) return;
     this.letzteKosmisch = 'NOVA';
     const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
     if (!sb) return;
+    const beute = bewerte(sb.karten).punkte;
     this.log(`${this.spieler[spielerIdx].name} zündet die NOVA auf ein Sternbild von ${this.spieler[wahl.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
     this.loeseSbAuf(wahl.zielIdx, sb, CONFIG.kosmisch.novaKartenAufAblage ? 'ABLAGE' : 'ZERSTOERT');
     // Regel: "Danach ist die Nova aus dem Spiel." Nicht auf die Ablage — von dort
     // würde sie beim nächsten Einsammeln wieder ins Deck wandern.
     this.ausDemSpiel.push(this.nova);
     this.nova = null;
+    this.novaBesitzer = null;
     this.novaVerbraucht = true;
     this.stats.novaGenutzt++;
+    this.stats.novaBeute += beute;
+    // Wie lange lag sie sichtbar da, bevor sie einschlug? (in Zuegen aller
+    // Spieler zusammen; 0, wenn die Regel aus ist)
+    if (this.novaGenommenBeiZug >= 0) {
+      this.stats.novaWartezeit += this.stats.zuege - this.novaGenommenBeiZug;
+    }
   }
 
   /** Freie Aktion: eigenen Joker gegen die echte Karte tauschen. */
@@ -1194,6 +1261,10 @@ class Spiel {
         if (k) this.ablage.push(k);
         this.stats.abwuerfe++;
         this.log(`${sp.name} wirft ${k ? kartenName(k) : '?'} ab`);
+        break;
+      }
+      case 'NOVA_NEHMEN': {
+        this.nimmNova(spielerIdx);
         break;
       }
       case 'VERSIEGELN': {
@@ -1377,7 +1448,7 @@ class Spiel {
     this.stats.mitteMax = Math.max(this.stats.mitteMax, this.mitte.length);
 
     if (entscheidung.kosmisch) this.spieleKosmisch(spielerIdx, entscheidung.kosmisch);
-    if (entscheidung.nova && this.nova) this.spieleNova(spielerIdx, entscheidung.nova);
+    if (entscheidung.nova) this.spieleNova(spielerIdx, entscheidung.nova);
     if (entscheidung.jokerTausch) this.jokerTauschen(spielerIdx, entscheidung.jokerTausch);
 
     if (entscheidung.aktion) this.fuehreAktion(spielerIdx, entscheidung.aktion);
@@ -1447,7 +1518,7 @@ function leereStats() {
     // Sollzahl nicht erreicht hat.
     neumischungen: 0, leerGezogen: 0, mitteUnterZiel: 0,
     klaus: 0, versiegelungen: 0, abwuerfe: 0, drachen: 0, himmel: 0,
-    jokerKlaus: 0, jokerTausch: 0, novaGenutzt: 0, entschaedigung: 0,
+    jokerKlaus: 0, jokerTausch: 0, novaGenommen: 0, novaGenutzt: 0, novaWartezeit: 0, novaBeute: 0, entschaedigung: 0,
     kosmisch: { SCHWARZES_LOCH: 0, WEISSES_LOCH: 0, URKNALL: 0, MILCHSTRASSE: 0 },
     sternbildGebaut: { PFEIL: 0, WAGEN: 0, KRONE: 0, KREUZ: 0, ZWILLING: 0, DOPPELSTIER: 0, DRACHE: 0 },
   };
@@ -1669,6 +1740,10 @@ class Ablauf {
       beendet: this.beendet,
       mitte: [...s.mitte],
       nova: s.nova,
+      // Wer sie aufgenommen hat (null = liegt noch frei) — das ist öffentlich,
+      // darauf beruht die ganze Regel.
+      novaBesitzer: s.novaBesitzer,
+      novaZuendbar: s.nova ? s.novaZuendbar(this.amZug) : false,
       // Die beiden Stapel am Rand. Beides ist öffentlich: die Höhe des
       // Nachziehstapels sieht jeder, und der Ablagestapel liegt offen —
       // wichtig, weil er neu gemischt wird, sobald das Deck leer ist.
@@ -1729,11 +1804,21 @@ function klaubar(sb) {
  * vorher hielt der Bot es für unantastbar und hatte deshalb nie einen Grund
  * zu versiegeln.
  */
-function risiko(spiel, sb) {
+function risiko(spiel, sb, idx = -1) {
   if (istVersiegelt(sb)) return 0;
   const b = B();
   let r = b.risikoNurKosmisch;
   if (klaubar(sb)) r = b.risikoKlaubar;
+  /*
+     Liegt die Nova sichtbar bei einem Gegner, ist das eine angekündigte
+     Zerstörung. Der Bot rechnet sie aber nur ein, wenn ein Siegel überhaupt
+     dagegen hilft — solange die Nova auch Versiegeltes bricht, wäre Versiegeln
+     als Antwort auf sie sinnlos, und der Bot würde einen Zug verschenken.
+  */
+  if (spiel.novaBesitzer != null && spiel.novaBesitzer !== idx
+      && !CONFIG.kosmisch.novaZerstoertAuchSicher) {
+    r += b.novaDrohungRisiko;
+  }
   // Am Rundenende ist weniger Zeit für Angriffe
   const rest = spiel.restZuege ?? 2;
   return r * Math.min(1, (rest + 1) / 3);
@@ -1785,7 +1870,21 @@ function bewerteAktion(spiel, idx, a, kontext) {
       if (!sb) return -99;
       const p = bewerte(sb.karten).punkte;
       if (p < b.versiegelnMinPunkte) return -99;         // kleine Sternbilder offen lassen
-      return p * risiko(spiel, sb);
+      return p * risiko(spiel, sb, idx);
+    }
+
+    case 'NOVA_NEHMEN': {
+      // Ein Zug ohne Punkte, der sich erst im nächsten auszahlt. Zwei Gründe,
+      // es zu lassen: Es lohnt kein Ziel, oder es kommt kein eigener Zug mehr,
+      // in dem gezündet werden könnte.
+      if (spiel.runde >= CONFIG.spiel.runden && (spiel.restZuege ?? 0) < 1) return -99;
+      let best = 0;
+      for (const g of spiel.spieler) {
+        if (g.idx === idx) continue;
+        for (const sb of g.sternbilder) best = Math.max(best, bewerte(sb.karten).punkte);
+      }
+      if (best < b.novaMinPunkte) return -99;
+      return best * b.novaNehmenGewicht;
     }
 
     case 'DRACHE':
@@ -1797,7 +1896,7 @@ function bewerteAktion(spiel, idx, a, kontext) {
       const wirdSicher = a.typ === 'KREUZ' || a.groesse >= CONFIG.sternbild.maxKarten;
       if (wirdSicher) {
         // gesicherte Punkte sind mehr wert als offene
-        s += b.sicherBonus + a.punkteNachher * (sb ? risiko(spiel, sb) : 0.2);
+        s += b.sicherBonus + a.punkteNachher * (sb ? risiko(spiel, sb, idx) : 0.2);
       }
       // Fernziel Drache: gezielt den GEGENSTÜCK-Pfeil bauen, nicht irgendeinen
       if (kontext.drache.hat && a.typ === 'PFEIL' && a.werte && imBlock(a.werte, kontext.drache.gegenStart)) {
@@ -1900,6 +1999,10 @@ function waehleNova(spiel, idx, schonzone = null) {
   const b = B();
   const best = opt.reduce((a, c) => (c.wirkung > a.wirkung ? c : a));
   const endspurt = (spiel.restZuege ?? 99) <= b.endspurtZuege;
+  // Hat das Aufnehmen einen ganzen Zug gekostet, ist die Karte bezahlt: dann
+  // wird gezündet, sobald sich ein lohnendes Ziel zeigt, und nicht erst am
+  // Rundenende. Solange sie ungezündet daliegt, warnt sie ja alle anderen.
+  if (CONFIG.kosmisch.novaNehmenKostetZug && best.wirkung >= b.novaMinPunkte) return best;
   // In der Schlussrunde ist eine ungenutzte Nova verschenkt
   const letzteChance = b.novaLetzteRunde && spiel.runde >= CONFIG.spiel.runden && endspurt;
   if (best.wirkung >= b.novaMinPunkte && endspurt) return best;
@@ -1987,12 +2090,33 @@ function botEinfach(spiel, idx) {
   const aktionen = generiereAktionen(spiel, idx).filter((a) => a.art !== 'VERSIEGELN');
   if (aktionen.length === 0) return { aktion: null };
 
+  /*
+     Die Nova aufnehmen kostet einen ganzen Zug und bringt keine Punkte — nach
+     der Regel "höchster Sofortgewinn" würde dieser Bot sie also nie anfassen
+     und sie läge die ganze Partie unberührt am Rand. Deshalb die eine
+     Ausnahme: Liegt sie frei und hat ein Gegner etwas Dickes ausliegen, greift
+     er zu. Gezündet wird sie oben, im nächsten Zug.
+  */
+  const nehmen = aktionen.find((a) => a.art === 'NOVA_NEHMEN');
+  if (nehmen && lohnendesNovaZiel(spiel, idx)) return { aktion: nehmen };
+
   let best = null;
   for (const a of aktionen) {
     const wert = a.art === 'KLAUEN' ? a.punkteNachher : a.gewinn;
+    if (a.art === 'NOVA_NEHMEN') continue;
     if (!best || wert > best.wert) best = { wert, a };
   }
-  return { aktion: best.a };
+  return best ? { aktion: best.a } : { aktion: null };
+}
+
+/** Liegt bei einem Gegner ein Sternbild, für das sich die Nova lohnt? */
+function lohnendesNovaZiel(spiel, idx) {
+  const schwelle = CONFIG.bots.normal.novaMinPunkte;
+  for (const g of spiel.spieler) {
+    if (g.idx === idx) continue;
+    for (const sb of g.sternbilder) if (bewerte(sb.karten).punkte >= schwelle) return true;
+  }
+  return false;
 }
 
 /* ===== netz\raum.js ===== */
@@ -2292,7 +2416,7 @@ class Raum {
    * Der einzige Weg, einen Zug zu machen. `wahl` enthält NUR Nummern aus der
    * Liste, die dieser Spieler zuletzt bekommen hat.
    * @param {number} idx
-   * @param {{art:'AKTION'|'KOSMISCH'|'NOVA'|'JOKERTAUSCH'|'HIMMELZIEL', nr:number}} wahl
+   * @param {{art:'AKTION'|'KOSMISCH'|'NOVA'|'JOKERTAUSCH'|'HIMMELZIEL'|'AUSSETZEN', nr:number}} wahl
    */
   zug(idx, wahl) {
     const a = this.ablauf;
@@ -2329,6 +2453,20 @@ class Raum {
         if (a.phase !== 'HIMMELWAHL') return { ok: false, grund: 'Da ist gerade nichts zu wählen.' };
         const ziel = hol(o.himmelZiele, wahl.nr);
         a.waehleHimmelZiel(ziel ? ziel.sbId : null);
+        this.nachZug();
+        return { ok: true, weiter: true };
+      }
+      /*
+         Aussetzen. Es gibt Lagen, in denen gar nichts geht: Das Deck ist leer,
+         die Hand auch, und ohne Karte lässt sich weder bauen noch abwerfen.
+         Am eigenen Tisch nimmt man dann einfach die Hände hoch; über das Netz
+         braucht es dafür einen eigenen Zug, sonst steht die Partie still.
+         Freiwillig geht es nicht — nur wenn wirklich nichts erlaubt ist.
+      */
+      case 'AUSSETZEN': {
+        if (a.phase !== 'ZUG') return { ok: false, grund: 'Da ist gerade nichts auszusetzen.' };
+        if (o.aktionen.length > 0) return { ok: false, grund: 'Du hast noch Züge — aussetzen geht nicht.' };
+        a.spieleZug({ aktion: null });
         this.nachZug();
         return { ok: true, weiter: true };
       }
