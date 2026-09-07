@@ -2082,6 +2082,99 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
   .karte.fliegt { transition: none; }
 }
 
+
+/* ============================================================
+   19. Einstellungen
+   ------------------------------------------------------------
+   Derselbe ruhige Bau wie der Startschirm: Haarlinien statt
+   Kästen, Serife für die Überschriften.
+   ============================================================ */
+
+#start-einstellungen {
+  width: min(520px, 100%);
+  text-align: left;
+  /* Ein duenner Grund: die Galaxie bleibt sichtbar, der Text steht davor.
+     Ohne ihn liefen die Sterne mitten durch die Beschriftungen. */
+  padding: var(--raum3);
+  background: color-mix(in srgb, var(--tisch-tief) 74%, transparent);
+  border: 1px solid var(--tisch-linie);
+  border-radius: var(--r-flaeche);
+}
+#start-einstellungen[hidden] { display: none; }
+
+.ein-block {
+  margin: 0 0 var(--raum3);
+  padding: 0 0 var(--raum2);
+  border: 0;
+  border-bottom: 1px solid var(--tisch-linie);
+}
+.ein-block legend {
+  padding: 0;
+  font-family: var(--serif);
+  font-size: var(--t-abschnitt);
+  color: var(--schrift);
+}
+
+.ein-schalter {
+  display: flex;
+  align-items: center;
+  gap: var(--raum);
+  margin: var(--raum) 0;
+  font-family: var(--grotesk);
+  font-size: var(--t-text);
+  cursor: pointer;
+}
+.ein-schalter input { width: 20px; height: 20px; accent-color: var(--signal); }
+
+.ein-regler {
+  display: flex;
+  align-items: center;
+  gap: var(--raum2);
+  margin: var(--raum) 0 0;
+}
+.ein-regler label {
+  flex: 0 0 150px;
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  color: var(--schrift-leise);
+}
+.ein-regler input[type=range] {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--signal);
+}
+.ein-regler output {
+  flex: 0 0 34px;
+  text-align: right;
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  color: var(--schrift-leise);
+  font-variant-numeric: tabular-nums;
+}
+
+.ein-hinweis {
+  margin: var(--raum-halb) 0 0;
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  color: var(--schrift-leise);
+}
+
+.ein-wege {
+  display: flex;
+  flex-direction: column;
+  gap: var(--raum);
+  margin-bottom: var(--raum2);
+}
+
+/* Der Baustand: klein, ganz unten, zum Nachsehen beim Testen. */
+.ein-stand {
+  margin: 0 0 var(--raum2);
+  font-family: var(--grotesk);
+  font-size: calc(var(--t-neben) - 1px);
+  color: var(--schrift-leise);
+  word-break: break-all;
+}
+
 </style>
 </head>
 <body>
@@ -2100,6 +2193,7 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
       <button class="knopf gross haupt" id="btn-spielen" type="button">Spielen</button>
       <button class="knopf gross" id="btn-freunde" type="button">Mit Freunden</button>
       <button class="knopf gross" id="btn-tutorial" type="button">Wie es geht</button>
+      <button class="knopf gross" id="btn-einstellungen" type="button">Einstellungen</button>
     </div>
 
     <div id="start-wahl" hidden>
@@ -2122,9 +2216,69 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
       </div>
     </div>
 
+    <div id="start-einstellungen" hidden>
+      <h2 class="wahl-titel">Einstellungen</h2>
+
+      <fieldset class="ein-block">
+        <legend>Ton</legend>
+        <label class="ein-schalter">
+          <input type="checkbox" id="ein-ton-an"> Ton an
+        </label>
+        <div class="ein-regler">
+          <label for="ein-gesamt">Gesamtlautstärke</label>
+          <input type="range" id="ein-gesamt" min="0" max="100" step="1">
+          <output id="ein-gesamt-wert">70</output>
+        </div>
+        <div class="ein-regler">
+          <label for="ein-laut">Laute Ereignisse</label>
+          <input type="range" id="ein-laut" min="0" max="100" step="1">
+          <output id="ein-laut-wert">70</output>
+        </div>
+        <p class="ein-hinweis">Klauen, Nova, Drache, Himmel.</p>
+        <div class="ein-regler">
+          <label for="ein-sprechen">Sprechblips</label>
+          <input type="range" id="ein-sprechen" min="0" max="100" step="1">
+          <output id="ein-sprechen-wert">55</output>
+        </div>
+        <p class="ein-hinweis">Die Erzählerkarte im Tutorial.</p>
+      </fieldset>
+
+      <fieldset class="ein-block">
+        <legend>Bots</legend>
+        <div class="wahl-gruppe">
+          <button class="wahl-knopf" data-tempo="langsam" type="button">langsam</button>
+          <button class="wahl-knopf" data-tempo="normal" type="button">normal</button>
+          <button class="wahl-knopf" data-tempo="schnell" type="button">schnell</button>
+        </div>
+        <p class="ein-hinweis" id="ein-tempo-text"></p>
+      </fieldset>
+
+      <fieldset class="ein-block">
+        <legend>Bewegung</legend>
+        <div class="wahl-gruppe">
+          <button class="wahl-knopf" data-bewegung="voll" type="button">voll</button>
+          <button class="wahl-knopf" data-bewegung="kurz" type="button">kurz</button>
+          <button class="wahl-knopf" data-bewegung="aus" type="button">aus</button>
+        </div>
+        <p class="ein-hinweis" id="ein-bewegung-text"></p>
+      </fieldset>
+
+      <div class="ein-wege">
+        <button class="knopf" id="btn-ein-regeln" type="button">Regeln nachlesen</button>
+        <button class="knopf" id="btn-ein-tutorial" type="button">Tutorial ansehen</button>
+        <button class="knopf" id="btn-ein-tutorial-neu" type="button">Tutorial beim Start wieder zeigen</button>
+        <button class="knopf gefahr" id="btn-ein-reset" type="button">Alles zurücksetzen</button>
+      </div>
+
+      <p class="ein-stand" id="ein-stand"></p>
+
+      <div class="wahl-fuss">
+        <button class="knopf haupt gross" id="btn-ein-zurueck" type="button">Zurück</button>
+      </div>
+    </div>
+
     <div id="start-fuss">
       <button class="knopf link" id="btn-regeln-start" type="button">Regeln nachlesen</button>
-      <button class="knopf link" id="btn-tutorial-neu" type="button">Tutorial beim Start wieder zeigen</button>
     </div>
   </div>
 </div>
@@ -5269,8 +5423,10 @@ function ablageZiel(wie) {
  */
 function fliegeUm(vorher, opt = {}) {
   const kosmisch = opt.kosmisch || null;
-  const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (ruhig || !vorher || vorher.size === 0) return Promise.resolve();
+  // Der Faktor kommt aus den Einstellungen (voll / kurz / aus). 0 heisst:
+  // gar keine Bewegung - die Karten springen an ihren Platz.
+  const faktor = opt.faktor == null ? 1 : opt.faktor;
+  if (faktor <= 0 || !vorher || vorher.size === 0) return Promise.resolve();
 
   const jetzt = kartenLage();
   const fluege = [];
@@ -5320,13 +5476,15 @@ function fliegeUm(vorher, opt = {}) {
   const tischMitte = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   const herd = schwerpunkt(zerstoerte.length ? zerstoerte : geklaute);
 
-  // Zeiten. Alles zusammen bleibt unter zwei Sekunden.
-  const warnZeit = (zerstoerte.length || geklaute.length) ? 280 : 0;
+  // Zeiten. Alles zusammen bleibt unter zwei Sekunden, mal dem Faktor aus
+  // den Einstellungen.
+  const warnZeit = Math.round(((zerstoerte.length || geklaute.length) ? 280 : 0) * faktor);
   let zugZeit = 620;
   if (geklaute.length) zugZeit = 780;
   if (kosmisch === 'WEISSES_LOCH') zugZeit = 820;
   if (einsaugend) zugZeit = nova ? 1050 : 880;
   if (kosmisch === 'URKNALL') zugZeit = 900;
+  zugZeit = Math.max(120, Math.round(zugZeit * faktor));
 
   if (einsaugend) {
     // Alles läuft im Schlund zusammen und schrumpft dabei auf nichts.
@@ -5623,17 +5781,92 @@ function baueStartschirm(rueckrufe) {
     else { stufe = b.dataset.stufe; umschalten(wahl, 'stufe', stufe); }
   });
 
-  /** Genau eine Ebene ist offen: Hauptmenü oder „gegen wen?". */
+  /** Genau eine Ebene ist offen: Hauptmenü, „gegen wen?" oder Einstellungen. */
   function zeigeEbene(welche) {
     knoepfe.hidden = welche !== 'menue';
     wahl.hidden = welche !== 'bots';
+    einBereich.hidden = welche !== 'ein';
+    fuss.hidden = welche !== 'menue';
   }
   const zeigeWahl = (an) => zeigeEbene(an ? 'bots' : 'menue');
 
+  /* ================================================================= */
+  /*  Einstellungen                                                     */
+  /* ================================================================= */
+
+  const einBereich = document.getElementById('start-einstellungen');
+  const fuss = document.getElementById('start-fuss');
+
+  /** Einen Regler verdrahten: Wert anzeigen, speichern, Beispielton spielen. */
+  function reglerAn(id, setzen, probe) {
+    const r = document.getElementById('ein-' + id);
+    const aus = document.getElementById('ein-' + id + '-wert');
+    r.addEventListener('input', () => {
+      aus.textContent = r.value;
+      setzen(Number(r.value) / 100);
+      // Beim Schieben hört man sofort, was man einstellt.
+      if (probe) rueckrufe.probeTon(probe);
+    });
+  }
+
+  function einAnzeigen() {
+    const t = rueckrufe.tonStand();
+    document.getElementById('ein-ton-an').checked = !!t.an;
+    for (const [id, wert] of [['gesamt', t.gesamt], ['laut', t.laut], ['sprechen', t.sprechen]]) {
+      const r = document.getElementById('ein-' + id);
+      r.value = String(Math.round(wert * 100));
+      document.getElementById('ein-' + id + '-wert').textContent = r.value;
+    }
+    const e = rueckrufe.einStand();
+    umschalten(einBereich, 'tempo', e.tempo);
+    umschalten(einBereich, 'bewegung', e.bewegung);
+    document.getElementById('ein-tempo-text').textContent = e.tempoText;
+    document.getElementById('ein-bewegung-text').textContent = e.bewegungText;
+    document.getElementById('ein-stand').textContent =
+      `Stand ${e.stand} · Merker fürs Tutorial: ${SPEICHER_TUTORIAL}`;
+  }
+
+  document.getElementById('ein-ton-an').addEventListener('change', (ev) => {
+    rueckrufe.setzeTon(ev.target.checked);
+    if (ev.target.checked) rueckrufe.probeTon('legen');
+  });
+  reglerAn('gesamt', (v) => rueckrufe.setzeGesamt(v), 'legen');
+  reglerAn('laut', (v) => rueckrufe.setzeLaut(v), 'klauen');
+  reglerAn('sprechen', (v) => rueckrufe.setzeSprechen(v), 'blip');
+
+  einBereich.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-tempo], button[data-bewegung]');
+    if (!b) return;
+    if (b.dataset.tempo) rueckrufe.setzeTempo(b.dataset.tempo);
+    else rueckrufe.setzeBewegung(b.dataset.bewegung);
+    einAnzeigen();
+  });
+
+  document.getElementById('btn-einstellungen').addEventListener('click', () => {
+    einAnzeigen();
+    zeigeEbene('ein');
+  });
+  document.getElementById('btn-ein-zurueck').addEventListener('click', () => zeigeEbene('menue'));
+  document.getElementById('btn-ein-regeln').addEventListener('click', () => rueckrufe.regeln());
+  document.getElementById('btn-ein-tutorial').addEventListener('click', () => rueckrufe.tutorial());
+
+  const btnNeu = document.getElementById('btn-ein-tutorial-neu');
+  btnNeu.addEventListener('click', () => {
+    vergissTutorial();
+    btnNeu.textContent = 'Erledigt — beim nächsten „Loslegen" kommt es wieder';
+    setTimeout(() => { btnNeu.textContent = 'Tutorial beim Start wieder zeigen'; }, 3000);
+  });
+
+  const btnReset = document.getElementById('btn-ein-reset');
+  btnReset.addEventListener('click', () => {
+    rueckrufe.allesZuruecksetzen();
+    nameFeld.value = gemerkterName();
+    einAnzeigen();
+    btnReset.textContent = 'Alles gelöscht';
+    setTimeout(() => { btnReset.textContent = 'Alles zurücksetzen'; }, 3000);
+  });
+
   document.getElementById('btn-spielen').addEventListener('click', () => {
-    // Beim allerersten Mal übernimmt start.js und führt ins Tutorial.
-    // Sonst kommt wie gehabt die Frage, gegen wen gespielt wird.
-    if (rueckrufe.spielenGedrueckt && rueckrufe.spielenGedrueckt()) return;
     zeigeWahl(true);
     nameFeld.focus();
   });
@@ -5648,14 +5881,6 @@ function baueStartschirm(rueckrufe) {
   document.getElementById('btn-freunde').addEventListener('click', () => rueckrufe.freunde());
   document.getElementById('btn-tutorial').addEventListener('click', () => rueckrufe.tutorial());
   document.getElementById('btn-regeln-start').addEventListener('click', () => rueckrufe.regeln());
-
-  // Zum Prüfen: den Merker löschen, damit „Spielen" wieder ins Tutorial führt.
-  const btnNeu = document.getElementById('btn-tutorial-neu');
-  btnNeu.addEventListener('click', () => {
-    vergissTutorial();
-    btnNeu.textContent = 'Erledigt — „Spielen" führt wieder ins Tutorial';
-    setTimeout(() => { btnNeu.textContent = 'Tutorial beim Start wieder zeigen'; }, 3000);
-  });
 
 
   /**
@@ -6433,6 +6658,97 @@ function probeTon(welcher) {
   spieleTon(welcher);
 }
 
+/* ===== app\einstellungen.js ===== */
+/**
+ * Einstellungen, die nicht den Ton betreffen.
+ *
+ * Der Ton hat seinen eigenen Speicher (ton.js, Schlüssel `sternenraub.ton`),
+ * weil er auch ohne diese Datei laufen muss. Hier stehen Bot-Tempo und
+ * Bewegung.
+ *
+ * Alles landet unter EINEM Schlüssel, damit `alleSpeicherLoeschen()` weiß,
+ * was es aufzuräumen gibt.
+ */
+
+const EIN_SPEICHER = 'sternenraub.einstellungen';
+
+/** Alle Schlüssel, die das Spiel anlegt — für „Alles zurücksetzen". */
+const EIN_ALLE_SCHLUESSEL = [
+  'sternenraub.einstellungen',
+  'sternenraub.ton',
+  'sternenraub.tutorialGesehen',
+  'sternenraub.name',
+];
+
+/**
+ * Bot-Tempo. Die Zahlen sind Millisekunden: Denkpause vor dem Zug und
+ * Nachlauf, nachdem die Karten geflogen sind.
+ */
+const EIN_TEMPO = {
+  langsam: { denken: 1400, nachlauf: 900,  text: 'Rund drei Sekunden je Botzug. Zum Mitlesen.' },
+  normal:  { denken: 900,  nachlauf: 650,  text: 'Rund zwei Sekunden je Botzug.' },
+  schnell: { denken: 350,  nachlauf: 200,  text: 'Rund eine Sekunde je Botzug. Für Ungeduldige.' },
+};
+
+/** Wie lange die Bewegungen dauern. `aus` heißt: gar keine. */
+const EIN_BEWEGUNG = {
+  voll: { faktor: 1,   text: 'Kosmische Karten und Klauen laufen ganz ab.' },
+  kurz: { faktor: 0.5, text: 'Halb so lang — man sieht noch, was passiert.' },
+  aus:  { faktor: 0,   text: 'Karten springen sofort an ihren Platz.' },
+};
+
+const EIN_VORGABE = { tempo: 'normal', bewegung: 'voll' };
+
+const EIN = { ...EIN_VORGABE };
+
+function einLies() {
+  try {
+    const roh = localStorage.getItem(EIN_SPEICHER);
+    if (!roh) return;
+    const w = JSON.parse(roh);
+    if (EIN_TEMPO[w.tempo]) EIN.tempo = w.tempo;
+    if (EIN_BEWEGUNG[w.bewegung]) EIN.bewegung = w.bewegung;
+  } catch { /* kaputt oder gesperrt: Vorgaben behalten */ }
+}
+
+function einSchreib() {
+  try { localStorage.setItem(EIN_SPEICHER, JSON.stringify(EIN)); } catch { /* egal */ }
+}
+
+einLies();
+
+const einstellungen = () => ({ ...EIN });
+
+function setzeTempo(t) {
+  if (!EIN_TEMPO[t]) return;
+  EIN.tempo = t;
+  einSchreib();
+}
+
+function setzeBewegung(b) {
+  if (!EIN_BEWEGUNG[b]) return;
+  EIN.bewegung = b;
+  einSchreib();
+}
+
+/**
+ * Faktor für alle Bewegungsdauern. 0 heißt: gar nicht bewegen.
+ * Wer im Betriebssystem „Bewegung reduzieren" eingestellt hat, bekommt
+ * ebenfalls 0 — die Einstellung des Geräts hat Vorrang.
+ */
+function bewegungsFaktor() {
+  const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (ruhig) return 0;
+  return EIN_BEWEGUNG[EIN.bewegung].faktor;
+}
+
+/** Alles vergessen, was das Spiel gespeichert hat. */
+function alleSpeicherLoeschen() {
+  for (const k of EIN_ALLE_SCHLUESSEL) {
+    try { localStorage.removeItem(k); } catch { /* egal */ }
+  }
+}
+
 /* ===== app\erzaehler.js ===== */
 /**
  * Sternenraub — der Erzähler.
@@ -6875,6 +7191,86 @@ function starteGalaxie(leinwand) {
   return g;
 }
 
+/* ================================================================== */
+/*  Die Sterne weichen dem Zeiger aus                                  */
+/* ================================================================== */
+
+/** Wie weit reicht die Wirkung, und wie weit werden Sterne geschoben. */
+const GAL_REICHWEITE = 130;
+const GAL_SCHUB = 26;
+/** Wie schnell sie ihrem Ziel folgen (0..1) und wann Ruhe herrscht. */
+const GAL_TRAEGHEIT = 0.12;
+const GAL_RUHE = 0.05;
+
+/**
+ * Schaltet den Ausweich-Effekt an oder aus.
+ *
+ * Nur für den Startschirm gedacht: Im laufenden Spiel bleibt der Hintergrund
+ * still, dort würde die Bewegung stören. Und nur mit einer echten Maus —
+ * für Berührungen gibt es bewusst keinen Ersatz.
+ *
+ * Die Schleife läuft nur, solange sich noch etwas bewegt. Sind alle Sterne
+ * zurück an ihrem Platz und der Zeiger ist weg, hört sie von selbst auf.
+ */
+function zeigerEffekt(g, an) {
+  if (!g) return;
+  const feineMaus = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  const ruhigGewollt = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!an || !feineMaus || ruhigGewollt) {
+    if (g._zeigerAb) { g._zeigerAb(); g._zeigerAb = null; }
+    return;
+  }
+  if (g._zeigerAb) return;      // läuft schon
+
+  let mx = -9999, my = -9999;
+  let laeuft = false;
+
+  const schritt = () => {
+    let bewegt = false;
+    for (const s of g.sterne) {
+      const x = s.x * g.breite;
+      const y = s.y * g.hoehe;
+      let zielX = 0, zielY = 0;
+      const dx = x - mx, dy = y - my;
+      const d = Math.hypot(dx, dy);
+      if (d < GAL_REICHWEITE && d > 0.01) {
+        const kraft = (1 - d / GAL_REICHWEITE) * GAL_SCHUB;
+        zielX = (dx / d) * kraft;
+        zielY = (dy / d) * kraft;
+      }
+      s.vx += (zielX - s.vx) * GAL_TRAEGHEIT;
+      s.vy += (zielY - s.vy) * GAL_TRAEGHEIT;
+      if (Math.abs(s.vx) > GAL_RUHE || Math.abs(s.vy) > GAL_RUHE) bewegt = true;
+      else { s.vx = 0; s.vy = 0; }
+    }
+    g.zeichne();
+    if (bewegt) requestAnimationFrame(schritt);
+    else laeuft = false;
+  };
+
+  const anstossen = () => {
+    if (laeuft) return;
+    laeuft = true;
+    requestAnimationFrame(schritt);
+  };
+
+  const beiBewegung = (e) => { mx = e.clientX; my = e.clientY; anstossen(); };
+  const beiVerlassen = () => { mx = -9999; my = -9999; anstossen(); };
+
+  window.addEventListener('pointermove', beiBewegung);
+  window.addEventListener('pointerleave', beiVerlassen);
+
+  g._zeigerAb = () => {
+    window.removeEventListener('pointermove', beiBewegung);
+    window.removeEventListener('pointerleave', beiVerlassen);
+    // Alles zurück auf den Platz und einmal sauber zeichnen.
+    for (const s of g.sterne) { s.vx = 0; s.vy = 0; }
+    g.zeichne();
+  };
+}
+
 /* ===== app\start.js ===== */
 /**
  * Sternenraub — Oberfläche, Schritt 2: ein Mensch gegen Bots.
@@ -6897,7 +7293,21 @@ const MAX_TIPPS = 8;
  * mitbekommt, was der Gegner getan hat, kann auch nicht darauf reagieren.
  */
 let botTempo = 900;
-const BOT_NACHLAUF = 650;
+let botNachlauf = 650;
+
+/**
+ * Wann ist diese Fassung gebaut worden? Steht in den Einstellungen, damit man
+ * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
+ * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
+ */
+const BAU_STAND = '07.09.2026 20:03';
+
+/** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
+function tempoUebernehmen() {
+  const t = EIN_TEMPO[einstellungen().tempo];
+  botTempo = t.denken;
+  botNachlauf = t.nachlauf;
+}
 
 /* ================================================================= */
 /*  Zustand der Oberfläche                                            */
@@ -6927,6 +7337,7 @@ const S = {
   letzterSchritt: '',           // für das Aufleuchten beim Schrittwechsel
   // (Gegnerplaetze klappen nicht mehr auf und zu - sie liegen immer offen.)
   zugMeldung: '',               // was der Bot gerade getan hat, für die Leiste
+  nachTutorial: null,           // {bots,stufe,name}: diese Partie startet nach dem Tutorial
   zielSb: null,                 // angeklicktes Zielsternbild (eigenes = erweitern, fremdes = klauen)
   jokerZiel: null,              // angeklickte fremde Sternschnuppe (Karten-Id), die du holen willst
   zeigeTipps: false,            // Vorschlagsliste aufgeklappt?
@@ -7030,13 +7441,28 @@ function beendeTutorial() {
   S.tutorialZugFertig = null;
   fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
-  const aufgedraengt = S.tutorialAufgedraengt;
-  S.tutorialAufgedraengt = false;
-  // Als „gesehen" zählt nur der Weg über „Spielen". Wer freiwillig über
-  // „Wie es geht" hineinschaut, bleibt ein neuer Spieler — sonst nimmt man
+  // Als „gesehen" zählt nur der Weg über „Loslegen". Wer es freiwillig über
+  // die Einstellungen ansieht, bleibt ein neuer Spieler — sonst nähme man
   // sich mit einem Blick ins Tutorial die Führung beim ersten echten Start.
-  if (aufgedraengt) { merkeTutorialGesehen(); startschirm.zeigeWahl(); return; }
+  if (weiterInDiePartie()) return;
   zeigeStart();
+}
+
+/**
+ * Kam das Tutorial vor einer Partie? Dann gilt es als gesehen, und es geht
+ * ohne Zwischenschritt mit genau den gewählten Einstellungen weiter.
+ * @returns {boolean} true, wenn die Partie gestartet wurde
+ */
+function weiterInDiePartie() {
+  const w = S.nachTutorial;
+  S.nachTutorial = null;
+  S.tutorialAufgedraengt = false;
+  if (!w) return false;
+  merkeTutorialGesehen();
+  schliesseModal(dom);
+  startschirm.verstecken();
+  neuesSpiel(w.bots + 1, w.stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, w.name);
+  return true;
 }
 
 /** Wartet, bis der Spieler den gesuchten Zug gemacht hat. */
@@ -7141,14 +7567,14 @@ function tutorialFertig() {
   S.tutorialZugFertig = null;
   fuehrer.verstecken();
   dom.tisch.classList.remove('tutorial');
-  // Siehe beendeTutorial(): nur der Weg über „Spielen" setzt den Merker.
-  if (S.tutorialAufgedraengt) merkeTutorialGesehen();
-  S.tutorialAufgedraengt = false;
+  // Kam es vor einer Partie, geht es ohne Zwischenschritt dorthin weiter.
+  if (weiterInDiePartie()) return;
+
+  // Nur beim freiwilligen Ansehen: die Formentafel als Abschluss, dann Menü.
   zeigeModal(dom, 'Die Formen auf einen Blick', `<p>${formenUebersichtText()}</p>`,
-    [{ text: 'Losspielen', klasse: 'haupt', tun: () => {
-      // Nicht sofort losspielen: erst darf man wählen, gegen wen.
+    [{ text: 'Zurück ins Menü', klasse: 'haupt', tun: () => {
       schliesseModal(dom);
-      startschirm.zeigeWahl();
+      zeigeStart();
     } }], true);
   const kasten = dom.modalInhalt.querySelector('.modal-text');
   if (kasten) kasten.appendChild(formenTafel());
@@ -7214,7 +7640,7 @@ function weiterLaufen() {
         if (S.ablauf !== a) return;
         S.zugMeldung = '';
         weiterLaufen();
-      }, BOT_NACHLAUF);
+      }, botNachlauf);
     });
   }, botTempo);
 }
@@ -7965,7 +8391,7 @@ function bildDaten() {
   const sp = S.ablauf && S.ablauf.spiel;
   const trost = sp ? sp.letzteEntschaedigung : null;
   if (sp) sp.letzteEntschaedigung = null;
-  return { kosmisch: nimmKosmisch(), trost };
+  return { kosmisch: nimmKosmisch(), trost, faktor: bewegungsFaktor() };
 }
 
 function spieleKosmisch(wahl) {
@@ -8288,35 +8714,75 @@ const fuehrer = new Erzaehler(dom, { blip: spielSprechBlip, stimme: 500 });
 
 // Der Sternenhintergrund. Er zeichnet sich einmal und danach nur noch bei
 // Groessenaenderung - im Spiel laeuft dafuer nichts mit.
-starteGalaxie(document.getElementById('galaxie-sterne'));
+const sternenfeld = starteGalaxie(document.getElementById('galaxie-sterne'));
+
+/**
+ * Der Ausweich-Effekt laeuft nur, solange der Startschirm zu sehen ist.
+ * Im Spiel bleibt der Hintergrund still.
+ */
+function galaxieNachStartschirm() {
+  const start = document.getElementById('startschirm');
+  zeigerEffekt(sternenfeld, !!start && !start.hidden);
+}
+new MutationObserver(galaxieNachStartschirm)
+  .observe(document.getElementById('startschirm'), { attributes: true, attributeFilter: ['hidden'] });
 verdrahte();
 tonVorbereiten();
 
 const startschirm = baueStartschirm({
+  /**
+   * „Loslegen" — der einzige Weg in eine Partie.
+   *
+   * Beim allerersten Mal läuft davor das Tutorial. Danach geht es OHNE
+   * Zwischenschritt in die Partie mit genau den Einstellungen, die hier
+   * gewählt wurden — die werden dafür gemerkt. Wer überspringt, landet
+   * ebenso direkt in dieser Partie.
+   */
   spielen: ({ bots, stufe, name }) => {
     S.tutorial = null;
     dom.tisch.classList.remove('tutorial');
     fuehrer.verstecken();
     startschirm.verstecken();
+
+    if (!tutorialSchonGesehen()) {
+      S.nachTutorial = { bots, stufe, name };
+      starteTutorial(true);
+      return;
+    }
     neuesSpiel(bots + 1, stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, name);
   },
-  /**
-   * „Spielen" beim allerersten Besuch: erst das Tutorial, dann das Spiel.
-   * Danach steht in localStorage, dass man es kennt, und der Knopf führt
-   * wie gewohnt zur Frage, gegen wen gespielt wird.
-   */
-  spielenGedrueckt: () => {
-    if (tutorialSchonGesehen()) return false;
-    starteTutorial(true);
-    return true;
-  },
-  tutorial: () => starteTutorial(false),
+  /** Aus den Einstellungen: nur ansehen, ohne Merker und ohne Partie danach. */
+  tutorial: () => { S.nachTutorial = null; starteTutorial(false); },
   freunde: () => {
     zeigeModal(dom, 'Mit Freunden',
       '<p>Daran wird gerade gebaut.</p>',
       [{ text: 'Alles klar', klasse: 'haupt', tun: () => schliesseModal(dom) }]);
   },
   regeln: () => zeigeRegeln(),
+
+  /* ---- Einstellungen: der Startschirm fragt, start.js weiß Bescheid ---- */
+  tonStand: () => tonEinstellungen(),
+  setzeTon: (an) => setzeTon(an),
+  setzeGesamt: (v) => setzeGesamt(v),
+  setzeLaut: (v) => setzeLaut(v),
+  setzeSprechen: (v) => setzeSprechen(v),
+  probeTon: (was) => { if (was === 'blip') spielSprechBlip(500); else spieleTon(was); },
+  einStand: () => {
+    const e = einstellungen();
+    return {
+      tempo: e.tempo,
+      bewegung: e.bewegung,
+      tempoText: EIN_TEMPO[e.tempo].text,
+      bewegungText: EIN_BEWEGUNG[e.bewegung].text,
+      stand: BAU_STAND,
+    };
+  },
+  setzeTempo: (t) => { setzeTempo(t); tempoUebernehmen(); },
+  setzeBewegung: (b) => setzeBewegung(b),
+  allesZuruecksetzen: () => {
+    alleSpeicherLoeschen();
+    tempoUebernehmen();
+  },
 });
 
 S.meinName = gemerkterName();
@@ -8324,7 +8790,9 @@ S.meinName = gemerkterName();
 // früher von selbst, wenn man es noch nie gesehen hatte — wer den Link
 // zum ersten Mal öffnet, landete dann ungefragt in der Führung.
 // „Wie es geht" ist dort ein Knopf unter anderen.
+tempoUebernehmen();
 startschirm.zeigen();
+galaxieNachStartschirm();
 
 /* Kleiner Griff für Tests in der Browser-Konsole: sternenraub.tempo(0) */
 window.sternenraub = {
@@ -8332,6 +8800,7 @@ window.sternenraub = {
   zustand: () => (S.ablauf ? S.ablauf.zustand() : null),
   spiel: () => (S.ablauf ? S.ablauf.spiel : null),
   ablauf: () => S.ablauf,
+  galaxie: () => sternenfeld,
   neuZeichnen: () => zeichne(),
 };
 
