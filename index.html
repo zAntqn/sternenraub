@@ -177,31 +177,39 @@
    bleiben, nicht mit dem Grund konkurrieren.
    ============================================================ */
 
+/*
+   z-index: -1 und NICHT -2, und der body darf keinen eigenen Grund haben:
+   Ein Element mit negativem z-index malt hinter dem Hintergrund seines
+   Elternelements. Solange body { background: var(--tisch-tief) } gesetzt war,
+   lag die ganze Galaxie darunter — gemessen 581 gezeichnete Sterne bei
+   vollständig schwarzem Bild. Die Grundfarbe trägt jetzt html.
+*/
 #galaxie {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -1;
   pointer-events: none;
   background:
-    /* der helle Kern, weit oben links, sehr schwach */
+    /* der helle Kern, weit oben links */
     radial-gradient(58% 42% at 26% 18%,
-      color-mix(in srgb, var(--stern-warm) 13%, transparent) 0%,
-      color-mix(in srgb, var(--stern-warm) 5%, transparent) 38%,
+      color-mix(in srgb, var(--stern-warm) 22%, transparent) 0%,
+      color-mix(in srgb, var(--stern-warm) 9%, transparent) 38%,
       transparent 72%),
     /* der kalte Arm, unten rechts */
     radial-gradient(64% 48% at 78% 76%,
-      color-mix(in srgb, var(--stern-kalt) 12%, transparent) 0%,
-      color-mix(in srgb, var(--stern-kalt) 4%, transparent) 42%,
+      color-mix(in srgb, var(--stern-kalt) 22%, transparent) 0%,
+      color-mix(in srgb, var(--stern-kalt) 8%, transparent) 42%,
       transparent 76%),
     /* ein dritter, roter Nebelfleck als Gegengewicht */
     radial-gradient(40% 34% at 62% 24%,
-      color-mix(in srgb, var(--stern-heiss) 8%, transparent) 0%,
+      color-mix(in srgb, var(--stern-heiss) 14%, transparent) 0%,
       transparent 70%),
-    /* die Tiefe: nach außen läuft alles ins Schwarzblau */
+    /* Die Tiefe. Der Grundton ist Indigo, nicht Schwarz: in der Mitte die
+       abgesetzte Tischfarbe, nach außen die tiefe — aber immer noch blau. */
     radial-gradient(120% 90% at 45% 40%,
-      var(--tisch) 0%,
-      var(--tisch-tief) 66%,
-      #060A14 100%);   /* aussen dunkler, aber weiter blau - nicht schwarz */
+      var(--tisch-hoch) 0%,
+      var(--tisch) 55%,
+      var(--tisch-tief) 100%);
 }
 
 /* Die Sterne liegen auf einem Canvas darueber (app/galaxie.js). Es fuellt
@@ -221,13 +229,17 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: var(--tisch-tief);
   color: var(--schrift);
   font-family: var(--grotesk);
   font-size: var(--t-text);
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
 }
+
+/* Die Grundfarbe trägt html — sie liegt unter allem, auch unter der Galaxie.
+   Der body bleibt durchsichtig, sonst deckt er sie zu (siehe #galaxie). */
+html { background: var(--tisch); }
+body { background: transparent; }
 
 /* Tastaturbedienung muss sichtbar sein — ein Rand, kein Leuchten. */
 :focus-visible {
@@ -258,9 +270,10 @@ html, body {
   height: 100vh;
   height: 100dvh;
   padding: var(--raum);
-  /* Kein eigener Grund mehr - der Tisch IST die Galaxie darunter.
-     Die Mitte bleibt die einzige abgesetzte Flaeche (Abschnitt 8). */
-  background: transparent;
+  /* Kein eigener Grund, aber ein sehr duenner Schleier: die Sterne bleiben
+     sichtbar und treten hinter Karten und Text zurueck. Im Menue liegt der
+     Hintergrund unverschleiert - dort steht nichts, was lesbar sein muss. */
+  background: color-mix(in srgb, var(--tisch-tief) 42%, transparent);
   overflow: hidden;
 }
 
@@ -332,7 +345,9 @@ p.leer, li.leer {
   font-weight: 500;
   line-height: 1.2;
   color: var(--schrift);
-  background: none;
+  /* Nicht ganz durchsichtig: sonst laufen die Sterne des Hintergrunds durch
+     die Beschriftung. Kein Kasten - nur so viel Grund, dass Text steht. */
+  background: color-mix(in srgb, var(--tisch) 72%, transparent);
   border: 1px solid var(--tisch-linie);
   border-radius: var(--r-flaeche);
   padding: var(--raum) calc(var(--raum) * 1.5);
@@ -6667,9 +6682,9 @@ function galRng(saat) {
 }
 
 /** Ein Stern je so vielen Bildpunkten. Kleiner = dichter. */
-const GAL_DICHTE = 1700;
+const GAL_DICHTE = 1300;
 /** Höchstzahl, damit ein großer Bildschirm nicht ausufert. */
-const GAL_MAX = 900;
+const GAL_MAX = 1200;
 
 /**
  * Fünf Figuren, angelehnt an echte Sternbilder — nur die Form, keine Namen.
@@ -6744,8 +6759,11 @@ class Galaxie {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     this.leinwand.width = Math.round(b * dpr);
     this.leinwand.height = Math.round(h * dpr);
-    this.leinwand.style.width = b + 'px';
-    this.leinwand.style.height = h + 'px';
+    // Die ANGEZEIGTE Größe kommt aus dem Stylesheet (width/height 100 %), nicht
+    // von hier. Sonst behält die Leinwand ihre alte Breite, solange die
+    // Neumessung hinterherhinkt — gemessen: 1280 px breite Leinwand in einem
+    // 375-px-Fenster, rechts abgeschnitten. So ist sie immer passend groß und
+    // höchstens kurz etwas gestaucht.
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     this.wuerfeln();
@@ -6790,8 +6808,8 @@ class Galaxie {
       this.sterne.push({
         x: rnd(),
         y: rnd(),
-        r: 0.35 + hell * 1.15,
-        hell: 0.14 + hell * 0.62,
+        r: 0.45 + hell * 1.35,
+        hell: 0.26 + hell * 0.70,
         vx: 0,
         vy: 0,
       });
@@ -6801,7 +6819,7 @@ class Galaxie {
     // damit man die Form überhaupt ahnen kann.
     for (const f of this.figuren) {
       for (const p of f.punkte) {
-        this.sterne.push({ x: p.x, y: p.y, r: 1.1, hell: 0.50, vx: 0, vy: 0 });
+        this.sterne.push({ x: p.x, y: p.y, r: 1.4, hell: 0.72, vx: 0, vy: 0 });
       }
     }
   }
@@ -6817,7 +6835,7 @@ class Galaxie {
 
     /* ---- Verbindungslinien: das Schwächste im Bild ---- */
     ctx.lineWidth = 0.6;
-    ctx.strokeStyle = 'rgba(230, 225, 212, 0.07)';
+    ctx.strokeStyle = 'rgba(230, 225, 212, 0.13)';
     for (const f of this.figuren) {
       ctx.beginPath();
       for (const [a, z] of f.linien) {
@@ -6836,7 +6854,7 @@ class Galaxie {
       // Ein schwacher Hof gibt die weiche Kante, für die man sonst einen
       // Weichzeichner bräuchte — hier kostet er nur einen zweiten Kreis.
       if (s.r > 0.8) {
-        ctx.fillStyle = `rgba(230, 225, 212, ${(s.hell * 0.18).toFixed(3)})`;
+        ctx.fillStyle = `rgba(230, 225, 212, ${(s.hell * 0.22).toFixed(3)})`;
         ctx.beginPath();
         ctx.arc(x, y, s.r * 3.2, 0, Math.PI * 2);
         ctx.fill();
