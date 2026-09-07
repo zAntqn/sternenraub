@@ -54,6 +54,23 @@ const CONFIG = {
     zuegeBasis: { 2: 2, 3: 2, 4: 1 },
   },
 
+  /* ---------- Das kurze Spiel ----------
+     Einfach nach vier Runden aufzuhören taugt nicht: Züge und Mitte wachsen
+     mit der Rundennummer, die frühen Runden sind fast leer. Man bekäme den
+     schwachen Anfang, nicht eine kürzere Fassung des Ganzen. Deshalb steigen
+     zuegeBasis und mitteBasis, sodass Runde 1 auf dem Niveau von Runde 5 der
+     vollen Partie beginnt.
+
+     Gemessen über 200 Partien je Spielerzahl (engine/src/sim/kurz.html):
+     bei vier Spielern 30 statt 44 Zügen je Spieler, und der Anteil der
+     Sternbilder, die am Ende auf der Höchstgröße liegen, bleibt bei 54 %
+     statt 56 % — es wird also genauso oft jemand fertig. */
+  kurzesSpiel: {
+    runden: 4,
+    zuegePlus: 4,       // auf jeden Eintrag von zuegeBasis addiert
+    mitteBasis: 8,
+  },
+
   /* ---------- Der Zug ---------- */
   zug: {
     kosmischeProZug: 1,             // Teil 1: höchstens so viele kosmische Karten
@@ -204,6 +221,49 @@ const CONFIG = {
     maxZuegeSicherung: 5000,   // Notbremse gegen Endlosschleifen
   },
 };
+
+/* ------------------------------------------------------------------ */
+/*  Spielart: volle Partie oder kurzes Spiel                            */
+/* ------------------------------------------------------------------ */
+
+/** Die Werte der vollen Partie, damit man jederzeit zurückkann. */
+const VOLLE_PARTIE = {
+  runden: CONFIG.spiel.runden,
+  zuegeBasis: { ...CONFIG.spiel.zuegeBasis },
+  mitteBasis: CONFIG.spiel.mitteBasis,
+};
+
+let aktuelleSpielart = 'voll';
+
+/**
+ * Stellt CONFIG auf die gewählte Spielart um.
+ *
+ * ACHTUNG: Das ist globaler Zustand. Die App spielt immer nur eine Partie
+ * gleichzeitig, deshalb ist das hier in Ordnung — Simulationen, die beide
+ * Arten vergleichen wollen, müssen selbst umschalten und zurückstellen.
+ *
+ * @param {'voll'|'kurz'} art
+ */
+function setzeSpielart(art) {
+  const k = CONFIG.kurzesSpiel;
+  if (art === 'kurz') {
+    CONFIG.spiel.runden = k.runden;
+    CONFIG.spiel.mitteBasis = k.mitteBasis;
+    for (const n of Object.keys(VOLLE_PARTIE.zuegeBasis)) {
+      CONFIG.spiel.zuegeBasis[n] = VOLLE_PARTIE.zuegeBasis[n] + k.zuegePlus;
+    }
+    aktuelleSpielart = 'kurz';
+    return;
+  }
+  CONFIG.spiel.runden = VOLLE_PARTIE.runden;
+  CONFIG.spiel.mitteBasis = VOLLE_PARTIE.mitteBasis;
+  for (const n of Object.keys(VOLLE_PARTIE.zuegeBasis)) {
+    CONFIG.spiel.zuegeBasis[n] = VOLLE_PARTIE.zuegeBasis[n];
+  }
+  aktuelleSpielart = 'voll';
+}
+
+const spielart = () => aktuelleSpielart;
 
 /** Züge pro Spieler in Runde `runde` bei `spielerzahl` Spielern. */
 function zuegeInRunde(runde, spielerzahl) {
@@ -1052,7 +1112,20 @@ class Spiel {
             const [genommen] = sb.karten.splice(i, 1);
             sp.hand.push(genommen);
             this.log(`${sp.name} zieht ${kartenName(genommen)} aus einem Sternbild von ${this.spieler[wahl.zielIdx].name}`);
-            if (sb.karten.length < CONFIG.sternbild.minKarten) this.loeseSbAuf(wahl.zielIdx, sb);
+            /*
+               Zerfallen tut es in zwei Fällen:
+               1. Es hat zu wenige Karten (steht so im Regelwerk).
+               2. Es ist größer als die Höchstzahl und keine gültige Form mehr.
+                  Das trifft genau den Drachen: Zieht man ihm eine Karte heraus,
+                  bleiben elf liegen — die sind kein Sternbild, sondern ein
+                  Haufen, den es nach den Größenregeln gar nicht geben darf.
+                  Vorher konnte das nicht passieren, weil der Drache als
+                  „fertig" vor dem Weißen Loch geschützt war.
+            */
+            const zuKlein = sb.karten.length < CONFIG.sternbild.minKarten;
+            const zuGross = sb.karten.length > CONFIG.sternbild.maxKarten
+              && !bewerte(sb.karten).gueltig;
+            if (zuKlein || zuGross) this.loeseSbAuf(wahl.zielIdx, sb);
           }
         }
         break;

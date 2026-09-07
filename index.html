@@ -2192,6 +2192,99 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
   word-break: break-all;
 }
 
+/* ================================================================= */
+/*  20  Die Bestenliste auf dem Startschirm                           */
+/*                                                                    */
+/*  Sie steht unter den Knöpfen, nicht darüber: erst spielen, dann    */
+/*  nachsehen. Zahlen rechtsbündig und mit gleicher Ziffernbreite,    */
+/*  damit die Spalte ruhig steht.                                     */
+/* ================================================================= */
+
+/* Der Satz unter der Längenwahl — er erklärt, was man gerade gewählt hat. */
+.wahl-text {
+  margin: calc(var(--raum2) * -0.5) 0 var(--raum2);
+  padding-left: calc(6.5em + var(--raum));
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  line-height: 1.45;
+  color: var(--schrift-leise);
+}
+
+#start-bestenliste[hidden] { display: none; }
+
+.bestenliste {
+  margin-top: var(--raum3);
+  padding-top: var(--raum2);
+  border-top: 1px solid var(--tisch-linie);
+  text-align: left;
+}
+
+.bl-leer {
+  margin: 0;
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+  line-height: 1.5;
+  color: var(--schrift-leise);
+}
+
+.bl-kopf {
+  margin: var(--raum2) 0 var(--raum-halb);
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-neben);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--schrift-leise);
+}
+.bl-kopf:first-child { margin-top: 0; }
+
+.bl-zeile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--raum);
+  padding: 3px 0;
+  font-family: var(--grotesk);
+  font-size: var(--t-neben);
+}
+
+.bl-was {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--schrift);
+}
+
+.bl-wert {
+  flex: 0 0 auto;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--schrift);
+}
+
+/* Der eigene Rekord darf etwas lauter sein als der Rest der Liste. */
+.bl-rekord .bl-wert {
+  font-family: var(--serif);
+  font-size: var(--t-abschnitt);
+  color: var(--gold);
+}
+
+.bl-neben {
+  flex: 0 0 auto;
+  margin-left: auto;
+  text-align: right;
+  color: var(--schrift-leise);
+}
+
+.bl-sieg .bl-neben { color: var(--gold); }
+
+/* Schmal: der Nebensatz bekommt seine eigene Zeile, rechts unter dem Wert.
+   Sonst quetschen sich Bezeichnung, Zahl und Datum in 375 Pixel. */
+@media (max-width: 520px) {
+  .wahl-text { padding-left: 0; }
+  .bl-zeile { padding: 5px 0; }
+  .bl-neben { flex: 1 0 100%; margin-left: 0; }
+}
+
 </style>
 </head>
 <body>
@@ -2209,9 +2302,11 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
     <div id="start-knoepfe">
       <button class="knopf gross haupt" id="btn-spielen" type="button">Spielen</button>
       <button class="knopf gross" id="btn-freunde" type="button">Mit Freunden</button>
-      <button class="knopf gross" id="btn-tutorial" type="button">Wie es geht</button>
       <button class="knopf gross" id="btn-einstellungen" type="button">Einstellungen</button>
     </div>
+
+    <!-- Deine Bestenliste. Nur auf diesem Geraet, kein Konto. -->
+    <div id="start-bestenliste"></div>
 
     <div id="start-wahl" hidden>
       <h2 class="wahl-titel">Gegen wen?</h2>
@@ -2221,6 +2316,12 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
         <button class="wahl-knopf gewaehlt" data-bots="2" type="button">2</button>
         <button class="wahl-knopf" data-bots="3" type="button">3</button>
       </fieldset>
+      <fieldset class="wahl-gruppe">
+        <legend>Länge</legend>
+        <button class="wahl-knopf gewaehlt" data-laenge="voll" type="button">volle Partie</button>
+        <button class="wahl-knopf" data-laenge="kurz" type="button">kurzes Spiel</button>
+      </fieldset>
+      <p class="wahl-text leise" id="wahl-laenge-text"></p>
       <fieldset class="wahl-gruppe">
         <legend>Stärke</legend>
         <button class="wahl-knopf" data-stufe="einfach" type="button">einfach</button>
@@ -2286,8 +2387,8 @@ table.regel-tabelle tr:last-child td { border-bottom: 0; }
         <button class="knopf" id="btn-ein-tutorial-neu" type="button">Tutorial beim Start wieder zeigen</button>
         <button class="knopf" id="btn-ein-reset" type="button">Alles zurücksetzen</button>
         <p class="ein-hinweis">Löscht alle gespeicherten Einstellungen und den
-          Tutorial-Fortschritt. Die Seite verhält sich danach wie beim ersten
-          Besuch. Laufende Partien sind nicht betroffen.</p>
+          Tutorial-Fortschritt und die Bestenliste. Die Seite verhält sich
+          danach wie beim ersten Besuch. Laufende Partien sind nicht betroffen.</p>
       </div>
 
       <p class="ein-stand" id="ein-stand"></p>
@@ -2424,6 +2525,23 @@ const CONFIG = {
 
     // Züge pro Spieler und Runde =  Rundennummer + zuegeBasis[spielerzahl]
     zuegeBasis: { 2: 2, 3: 2, 4: 1 },
+  },
+
+  /* ---------- Das kurze Spiel ----------
+     Einfach nach vier Runden aufzuhören taugt nicht: Züge und Mitte wachsen
+     mit der Rundennummer, die frühen Runden sind fast leer. Man bekäme den
+     schwachen Anfang, nicht eine kürzere Fassung des Ganzen. Deshalb steigen
+     zuegeBasis und mitteBasis, sodass Runde 1 auf dem Niveau von Runde 5 der
+     vollen Partie beginnt.
+
+     Gemessen über 200 Partien je Spielerzahl (engine/src/sim/kurz.html):
+     bei vier Spielern 30 statt 44 Zügen je Spieler, und der Anteil der
+     Sternbilder, die am Ende auf der Höchstgröße liegen, bleibt bei 54 %
+     statt 56 % — es wird also genauso oft jemand fertig. */
+  kurzesSpiel: {
+    runden: 4,
+    zuegePlus: 4,       // auf jeden Eintrag von zuegeBasis addiert
+    mitteBasis: 8,
   },
 
   /* ---------- Der Zug ---------- */
@@ -2576,6 +2694,49 @@ const CONFIG = {
     maxZuegeSicherung: 5000,   // Notbremse gegen Endlosschleifen
   },
 };
+
+/* ------------------------------------------------------------------ */
+/*  Spielart: volle Partie oder kurzes Spiel                            */
+/* ------------------------------------------------------------------ */
+
+/** Die Werte der vollen Partie, damit man jederzeit zurückkann. */
+const VOLLE_PARTIE = {
+  runden: CONFIG.spiel.runden,
+  zuegeBasis: { ...CONFIG.spiel.zuegeBasis },
+  mitteBasis: CONFIG.spiel.mitteBasis,
+};
+
+let aktuelleSpielart = 'voll';
+
+/**
+ * Stellt CONFIG auf die gewählte Spielart um.
+ *
+ * ACHTUNG: Das ist globaler Zustand. Die App spielt immer nur eine Partie
+ * gleichzeitig, deshalb ist das hier in Ordnung — Simulationen, die beide
+ * Arten vergleichen wollen, müssen selbst umschalten und zurückstellen.
+ *
+ * @param {'voll'|'kurz'} art
+ */
+function setzeSpielart(art) {
+  const k = CONFIG.kurzesSpiel;
+  if (art === 'kurz') {
+    CONFIG.spiel.runden = k.runden;
+    CONFIG.spiel.mitteBasis = k.mitteBasis;
+    for (const n of Object.keys(VOLLE_PARTIE.zuegeBasis)) {
+      CONFIG.spiel.zuegeBasis[n] = VOLLE_PARTIE.zuegeBasis[n] + k.zuegePlus;
+    }
+    aktuelleSpielart = 'kurz';
+    return;
+  }
+  CONFIG.spiel.runden = VOLLE_PARTIE.runden;
+  CONFIG.spiel.mitteBasis = VOLLE_PARTIE.mitteBasis;
+  for (const n of Object.keys(VOLLE_PARTIE.zuegeBasis)) {
+    CONFIG.spiel.zuegeBasis[n] = VOLLE_PARTIE.zuegeBasis[n];
+  }
+  aktuelleSpielart = 'voll';
+}
+
+const spielart = () => aktuelleSpielart;
 
 /** Züge pro Spieler in Runde `runde` bei `spielerzahl` Spielern. */
 function zuegeInRunde(runde, spielerzahl) {
@@ -5786,6 +5947,7 @@ function baueStartschirm(rueckrufe) {
 
   let bots = 2;
   let stufe = 'normal';
+  let laenge = 'voll';
 
   /** Eine Reihe Umschaltknöpfe: genau einer trägt .gewaehlt. */
   function umschalten(gruppe, attribut, wert) {
@@ -5794,10 +5956,17 @@ function baueStartschirm(rueckrufe) {
     }
   }
 
+  const laengeText = document.getElementById('wahl-laenge-text');
+  function zeigeLaenge() {
+    umschalten(wahl, 'laenge', laenge);
+    laengeText.textContent = rueckrufe.laengeText(laenge);
+  }
+
   wahl.addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-bots], button[data-stufe]');
+    const b = e.target.closest('button[data-bots], button[data-stufe], button[data-laenge]');
     if (!b) return;
     if (b.dataset.bots) { bots = Number(b.dataset.bots); umschalten(wahl, 'bots', bots); }
+    else if (b.dataset.laenge) { laenge = b.dataset.laenge; zeigeLaenge(); }
     else { stufe = b.dataset.stufe; umschalten(wahl, 'stufe', stufe); }
   });
 
@@ -5807,6 +5976,8 @@ function baueStartschirm(rueckrufe) {
     wahl.hidden = welche !== 'bots';
     einBereich.hidden = welche !== 'ein';
     fuss.hidden = welche !== 'menue';
+    blKasten.hidden = welche !== 'menue';
+    if (welche === 'menue') bestenlisteZeigen();
   }
   const zeigeWahl = (an) => zeigeEbene(an ? 'bots' : 'menue');
 
@@ -5898,11 +6069,10 @@ function baueStartschirm(rueckrufe) {
   document.getElementById('btn-los').addEventListener('click', () => {
     const name = (nameFeld.value || '').trim() || gemerkterName();
     merkeName(name);
-    rueckrufe.spielen({ bots, stufe, name });
+    rueckrufe.spielen({ bots, stufe, name, laenge });
   });
 
   document.getElementById('btn-freunde').addEventListener('click', () => rueckrufe.freunde());
-  document.getElementById('btn-tutorial').addEventListener('click', () => rueckrufe.tutorial());
   document.getElementById('btn-regeln-start').addEventListener('click', () => rueckrufe.regeln());
 
 
@@ -5913,6 +6083,15 @@ function baueStartschirm(rueckrufe) {
    */
   const tisch = document.getElementById('tisch');
   const tischZeigen = (an) => { if (tisch) tisch.hidden = !an; };
+
+  // Die Bestenliste wird bei jedem Auftauchen des Menüs neu gebaut — nach
+  // einer Partie steht sonst der alte Stand da.
+  const blKasten = document.getElementById('start-bestenliste');
+  function bestenlisteZeigen() {
+    blKasten.replaceChildren(rueckrufe.bestenliste());
+  }
+
+  zeigeLaenge();
 
   return {
     zeigen() { el.hidden = false; tischZeigen(false); zeigeEbene('menue'); },
@@ -6701,6 +6880,7 @@ const EIN_ALLE_SCHLUESSEL = [
   'sternenraub.ton',
   'sternenraub.tutorialGesehen',
   'sternenraub.name',
+  'sternenraub.bestenliste',
 ];
 
 /**
@@ -7294,6 +7474,193 @@ function zeigerEffekt(g, an) {
   };
 }
 
+/* ===== app\bestenliste.js ===== */
+/**
+ * Die Bestenliste — nur für dich, nur auf diesem Gerät.
+ *
+ * Alles liegt in localStorage unter `sternenraub.bestenliste`. Kein Konto,
+ * keine fremden Spieler, nichts verlässt den Rechner.
+ *
+ * Kurze und volle Partien werden getrennt geführt: 4 Runden gegen 8 Runden
+ * ergibt völlig andere Punktzahlen, das wäre sonst ein Vergleich von Äpfeln
+ * mit Birnen.
+ */
+
+const BL_SPEICHER = 'sternenraub.bestenliste';
+/** So viele Partien werden im Verlauf aufgehoben. */
+const BL_VERLAUF = 8;
+
+const leereArt = () => ({
+  partien: 0,
+  siege: 0,
+  bestesPunkte: 0,
+  bestesDatum: null,
+  bestesSpieler: null,
+  meisteKlaus: 0,
+  gebaut: {},          // Sternbildtyp -> wie oft du ihn gebaut hast
+});
+
+const leer = () => ({ voll: leereArt(), kurz: leereArt(), verlauf: [] });
+
+function blLies() {
+  try {
+    const roh = localStorage.getItem(BL_SPEICHER);
+    if (!roh) return leer();
+    const w = JSON.parse(roh);
+    return {
+      voll: { ...leereArt(), ...(w.voll || {}) },
+      kurz: { ...leereArt(), ...(w.kurz || {}) },
+      verlauf: Array.isArray(w.verlauf) ? w.verlauf : [],
+    };
+  } catch { return leer(); }
+}
+
+function blSchreib(daten) {
+  try { localStorage.setItem(BL_SPEICHER, JSON.stringify(daten)); } catch { /* egal */ }
+}
+
+const bestenliste = () => blLies();
+
+/** Datum kurz und lesbar: 09.09. */
+function tagText(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.';
+}
+
+/**
+ * Eine beendete Partie eintragen.
+ * @param {object} e
+ *   art        'voll' | 'kurz'
+ *   spieler    Spielerzahl
+ *   punkte     deine Endpunktzahl
+ *   platz      dein Rang, 1 = erster
+ *   sieg       hast du (mit-)gewonnen?
+ *   klaus      wie oft DU geklaut hast
+ *   gebaut     { PFEIL: 3, WAGEN: 1, … } — was DU gebaut hast
+ */
+function partieEintragen(e) {
+  const d = blLies();
+  const a = d[e.art === 'kurz' ? 'kurz' : 'voll'];
+
+  a.partien++;
+  if (e.sieg) a.siege++;
+  if (e.punkte > a.bestesPunkte) {
+    a.bestesPunkte = e.punkte;
+    a.bestesDatum = new Date().toISOString();
+    a.bestesSpieler = e.spieler;
+  }
+  if ((e.klaus || 0) > a.meisteKlaus) a.meisteKlaus = e.klaus || 0;
+  for (const [typ, n] of Object.entries(e.gebaut || {})) {
+    a.gebaut[typ] = (a.gebaut[typ] || 0) + n;
+  }
+
+  d.verlauf.unshift({
+    datum: new Date().toISOString(),
+    art: e.art === 'kurz' ? 'kurz' : 'voll',
+    spieler: e.spieler,
+    punkte: e.punkte,
+    platz: e.platz,
+    sieg: !!e.sieg,
+  });
+  d.verlauf = d.verlauf.slice(0, BL_VERLAUF);
+
+  blSchreib(d);
+  return d;
+}
+
+/** Welchen Sternbildtyp hast du am häufigsten gebaut? */
+function liebsterTyp(a) {
+  let best = null, n = 0;
+  for (const [typ, anzahl] of Object.entries(a.gebaut || {})) {
+    if (anzahl > n) { n = anzahl; best = typ; }
+  }
+  return best ? { typ: best, anzahl: n } : null;
+}
+
+/**
+ * Die Bestenliste als Elemente. Reine Darstellung — die Übersetzung der
+ * Sternbildnamen kommt von außen, damit diese Datei keine Texte kennt.
+ * @param {(t:string)=>string} typName
+ */
+function bestenlisteEl(typName) {
+  const d = blLies();
+  const wurzel = document.createElement('div');
+  wurzel.className = 'bestenliste';
+
+  const gesamt = d.voll.partien + d.kurz.partien;
+  if (gesamt === 0) {
+    const p = document.createElement('p');
+    p.className = 'bl-leer';
+    p.textContent = 'Noch keine Partie gespielt. Was du hier spielst, bleibt auf diesem Gerät.';
+    wurzel.appendChild(p);
+    return wurzel;
+  }
+
+  const zeile = (klasse, ...teile) => {
+    const z = document.createElement('div');
+    z.className = klasse;
+    for (const t of teile) {
+      if (!t.t) continue;              // leere Nebenspalte gar nicht erst anlegen
+      const s = document.createElement('span');
+      s.className = t.k;
+      s.textContent = t.t;
+      z.appendChild(s);
+    }
+    return z;
+  };
+
+  /* ---- Rekorde je Spielart ---- */
+  for (const [art, name] of [['voll', 'Volle Partie'], ['kurz', 'Kurzes Spiel']]) {
+    const a = d[art];
+    if (!a.partien) continue;
+    const kopf = document.createElement('h3');
+    kopf.className = 'bl-kopf';
+    kopf.textContent = name;
+    wurzel.appendChild(kopf);
+
+    wurzel.appendChild(zeile('bl-zeile bl-rekord',
+      { k: 'bl-was', t: 'Höchstpunktzahl' },
+      { k: 'bl-wert', t: String(a.bestesPunkte) },
+      { k: 'bl-neben', t: `${tagText(a.bestesDatum)} · ${a.bestesSpieler} Spieler` }));
+
+    wurzel.appendChild(zeile('bl-zeile',
+      { k: 'bl-was', t: 'Partien' },
+      { k: 'bl-wert', t: String(a.partien) },
+      { k: 'bl-neben', t: `${a.siege} gewonnen (${Math.round((a.siege / a.partien) * 100)} %)` }));
+
+    if (a.meisteKlaus > 0) {
+      wurzel.appendChild(zeile('bl-zeile',
+        { k: 'bl-was', t: 'Meiste Klaus in einer Partie' },
+        { k: 'bl-wert', t: String(a.meisteKlaus) },
+        { k: 'bl-neben', t: '' }));
+    }
+    const lieb = liebsterTyp(a);
+    if (lieb) {
+      wurzel.appendChild(zeile('bl-zeile',
+        { k: 'bl-was', t: 'Am häufigsten gebaut' },
+        { k: 'bl-wert', t: typName(lieb.typ) },
+        { k: 'bl-neben', t: `${lieb.anzahl}×` }));
+    }
+  }
+
+  /* ---- Verlauf ---- */
+  if (d.verlauf.length) {
+    const kopf = document.createElement('h3');
+    kopf.className = 'bl-kopf';
+    kopf.textContent = 'Zuletzt gespielt';
+    wurzel.appendChild(kopf);
+    for (const p of d.verlauf) {
+      wurzel.appendChild(zeile('bl-zeile' + (p.sieg ? ' bl-sieg' : ''),
+        { k: 'bl-was', t: `${tagText(p.datum)} ${p.art === 'kurz' ? 'kurz' : 'voll'}, ${p.spieler} Spieler` },
+        { k: 'bl-wert', t: String(p.punkte) },
+        { k: 'bl-neben', t: p.sieg ? 'gewonnen' : `Platz ${p.platz}` }));
+    }
+  }
+
+  return wurzel;
+}
+
 /* ===== app\start.js ===== */
 /**
  * Sternenraub — Oberfläche, Schritt 2: ein Mensch gegen Bots.
@@ -7304,6 +7671,9 @@ function zeigerEffekt(g, an) {
  */
 
 const BOT_NAMEN = ['Rigel', 'Wega', 'Atair'];
+// Festhalten, solange CONFIG noch unberuehrt ist: setzeSpielart() dreht
+// spiel.runden spaeter hin und her.
+const VOLLE_RUNDEN = CONFIG.spiel.runden;
 const MAX_TIPPS = 8;
 
 /**
@@ -7323,7 +7693,7 @@ let botNachlauf = 650;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '07.09.2026 20:35';
+const BAU_STAND = '07.09.2026 20:57';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -7364,6 +7734,9 @@ const S = {
   zielSb: null,                 // angeklicktes Zielsternbild (eigenes = erweitern, fremdes = klauen)
   jokerZiel: null,              // angeklickte fremde Sternschnuppe (Karten-Id), die du holen willst
   zeigeTipps: false,            // Vorschlagsliste aufgeklappt?
+  laenge: 'voll',               // 'voll' (8 Runden) oder 'kurz' (4 Runden)
+  meineStats: null,             // was DU in dieser Partie getan hast - fuer die Bestenliste
+  eingetragen: false,           // schon in die Bestenliste geschrieben?
 };
 
 const dom = {};
@@ -7390,8 +7763,14 @@ function holeDom() {
 /*  Partie starten und weiterlaufen lassen                            */
 /* ================================================================= */
 
-function neuesSpiel(spielerzahl, schwer, seed, meinName) {
+function neuesSpiel(spielerzahl, schwer, seed, meinName, laenge) {
   clearTimeout(S.botTimer);
+  // Die Spielart steht in CONFIG und muss VOR dem Ablauf gesetzt sein - er
+  // liest Rundenzahl, Zuege und Mittengroesse beim Anlegen.
+  S.laenge = laenge === 'kurz' ? 'kurz' : 'voll';
+  setzeSpielart(S.laenge);
+  S.meineStats = { klaus: 0, gebaut: {} };
+  S.eingetragen = false;
   S.spielerzahl = spielerzahl;
   S.schwer = schwer !== false;
   if (meinName) S.meinName = meinName;
@@ -7437,6 +7816,9 @@ function starteTutorial(ersterBesuch) {
   dom.erzEnde.textContent = ersterBesuch ? 'Überspringen' : 'Tutorial beenden';
   startschirm.verstecken();
   schliesseModal(dom);
+  // Die Fuehrung laeuft immer im vollen Spiel - sie ist ohnehin geskriptet,
+  // und eine halbe Rundenzahl wuerde die Schritte nur verschieben.
+  setzeSpielart('voll');
 
   const a = new Ablauf(2, 20260904, { namen: [S.meinName, 'Rigel'], protokoll: true, menschIdx: 0 });
   a.start();
@@ -7484,7 +7866,7 @@ function weiterInDiePartie() {
   merkeTutorialGesehen();
   schliesseModal(dom);
   startschirm.verstecken();
-  neuesSpiel(w.bots + 1, w.stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, w.name);
+  neuesSpiel(w.bots + 1, w.stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, w.name, w.laenge);
   return true;
 }
 
@@ -8480,12 +8862,35 @@ function fuehreAus(aktion) {
   }
   // Vorher merken, wo die Karten liegen — beim Klauen sieht man sie danach wandern.
   const vorher = kartenLage();
+  const statsVorher = statsSchnapp();
   S.ablauf.spieleZug({ aktion });
+  meineStatsNachtragen(statsVorher);
   auswahlLeeren();
   S.kosmischGespielt = false;
   zeichne();
   tonZumZug(vorher);
   fliegeUm(vorher, bildDaten()).then(() => weiterLaufen());
+}
+
+/**
+ * Was DU getan hast, fuer die Bestenliste.
+ *
+ * Die Engine zaehlt nur fuer alle zusammen. Weil hier aber gerade genau ein
+ * Zug lief - deiner -, ist die Differenz vorher/nachher deine Bilanz.
+ */
+function statsSchnapp() {
+  const st = S.ablauf.spiel.stats;
+  return { klaus: st.klaus, gebaut: { ...st.sternbildGebaut } };
+}
+
+function meineStatsNachtragen(vorher) {
+  if (!S.meineStats) return;
+  const st = S.ablauf.spiel.stats;
+  S.meineStats.klaus += st.klaus - vorher.klaus;
+  for (const [typ, n] of Object.entries(st.sternbildGebaut)) {
+    const d = n - (vorher.gebaut[typ] ?? 0);
+    if (d > 0) S.meineStats.gebaut[typ] = (S.meineStats.gebaut[typ] ?? 0) + d;
+  }
 }
 
 function nachZug() {
@@ -8612,12 +9017,26 @@ function zeigeEnde() {
   if (erg.geteilterSieg) titel = binDabei ? 'Geteilter Sieg' : `Geteilter Sieg: ${siegerNamen.join(' und ')}`;
   else titel = binDabei ? 'Du gewinnst' : `${siegerNamen[0]} gewinnt`;
 
+  // Einmal je Partie in die Bestenliste - zeigeEnde() kann mehrfach laufen.
+  if (!S.eingetragen && !S.tutorial) {
+    S.eingetragen = true;
+    partieEintragen({
+      art: S.laenge,
+      spieler: S.spielerzahl,
+      punkte: z.spieler[S.menschIdx].punkte,
+      platz: erg.rangfolge.indexOf(S.menschIdx) + 1,
+      sieg: binDabei,
+      klaus: S.meineStats ? S.meineStats.klaus : 0,
+      gebaut: S.meineStats ? S.meineStats.gebaut : {},
+    });
+  }
+
   let fuss = '';
   if (erg.geteilterSieg) {
     fuss = `<p class="modal-fuss">Gleich viele Punkte <b>und</b> gleich starkes bestes Sternbild —
             ${siegerNamen.join(' und ')} teilen sich den Sieg.</p>`;
   } else if (erg.punktgleich) {
-    fuss = '<p class="modal-fuss">Punktgleich — entschieden hat das wertvollste einzelne Sternbild aus Runde 8.</p>';
+    fuss = '<p class="modal-fuss">Punktgleich — entschieden hat das wertvollste einzelne Sternbild aus Runde ' + CONFIG.spiel.runden + '.</p>';
   }
   zeigeModal(dom, titel,
     `<table class="stand">
@@ -8761,18 +9180,18 @@ const startschirm = baueStartschirm({
    * gewählt wurden — die werden dafür gemerkt. Wer überspringt, landet
    * ebenso direkt in dieser Partie.
    */
-  spielen: ({ bots, stufe, name }) => {
+  spielen: ({ bots, stufe, name, laenge }) => {
     S.tutorial = null;
     dom.tisch.classList.remove('tutorial');
     fuehrer.verstecken();
     startschirm.verstecken();
 
     if (!tutorialSchonGesehen()) {
-      S.nachTutorial = { bots, stufe, name };
+      S.nachTutorial = { bots, stufe, name, laenge };
       starteTutorial(true);
       return;
     }
-    neuesSpiel(bots + 1, stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, name);
+    neuesSpiel(bots + 1, stufe === 'normal', (Math.random() * 2 ** 32) >>> 0, name, laenge);
   },
   /** Aus den Einstellungen: nur ansehen, ohne Merker und ohne Partie danach. */
   tutorial: () => { S.nachTutorial = null; starteTutorial(false); },
@@ -8782,6 +9201,15 @@ const startschirm = baueStartschirm({
       [{ text: 'Alles klar', klasse: 'haupt', tun: () => schliesseModal(dom) }]);
   },
   regeln: () => zeigeRegeln(),
+
+  /** Ein Satz zu der gewaehlten Laenge - damit man weiss, worauf man sich einlaesst. */
+  laengeText: (l) => (l === 'kurz'
+    ? `${CONFIG.kurzesSpiel.runden} Runden, dafür längere: rund zwei Drittel der Züge `
+      + 'einer vollen Partie. Sechser-Sternbilder werden genauso oft fertig.'
+    : `${VOLLE_RUNDEN} Runden — die ganze Partie.`),
+
+  /** Deine Bestenliste - liegt nur auf diesem Geraet. */
+  bestenliste: () => bestenlisteEl(typText),
 
   /* ---- Einstellungen: der Startschirm fragt, start.js weiß Bescheid ---- */
   tonStand: () => tonEinstellungen(),
@@ -8804,9 +9232,9 @@ const startschirm = baueStartschirm({
   setzeBewegung: (b) => setzeBewegung(b),
   allesZuruecksetzen: (danach) => {
     zeigeModal(dom, 'Alles zurücksetzen?',
-      '<p>Gelöscht werden: Ton- und Tempo-Einstellungen, dein Name und der '
-      + 'Merker, dass du das Tutorial kennst. Danach verhält sich die Seite '
-      + 'wie beim ersten Besuch.</p>'
+      '<p>Gelöscht werden: Ton- und Tempo-Einstellungen, dein Name, der '
+      + 'Merker, dass du das Tutorial kennst, und <b>deine Bestenliste</b>. '
+      + 'Danach verhält sich die Seite wie beim ersten Besuch.</p>'
       + '<p>Eine laufende Partie bleibt, wie sie ist — gespeichert wird sie '
       + 'ohnehin nicht.</p>',
       [
@@ -8838,6 +9266,12 @@ window.sternenraub = {
   ablauf: () => S.ablauf,
   galaxie: () => sternenfeld,
   neuZeichnen: () => zeichne(),
+  weiter: () => weiterLaufen(),
+  // Laesst den Bot auch fuer dich ziehen - so kommt man im Test schnell ans Ende.
+  botZug: () => S.ablauf.botZug(botNormal),
+  // Zum Prüfen der Bestenliste, ohne acht Runden spielen zu müssen.
+  eintragen: (e) => partieEintragen(e),
+  bestenliste: () => bestenlisteEl(typText),
 };
 
 </script>
