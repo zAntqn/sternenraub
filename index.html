@@ -3888,6 +3888,54 @@ body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel { animation: rl-tut-puls
 .rl-deck-besondere-liste li { font-size: var(--t-neben); line-height: 1.35; color: var(--schrift); }
 .rl-deck-besondere-liste li b { color: var(--rl-gold); font-family: var(--display); font-weight: 400; }
 
+/* ---------- 25. Pflicht-Lesen in der Führung (Spieltest-Runde 3, Nachtrag) ---------- */
+/* „Weiter" steht schon da, füllt sich aber erst über die Lesezeit — vorher lässt er sich nicht drücken. */
+.rl-blase-weiter.liest { position: relative; overflow: hidden; cursor: wait; opacity: .85; }
+.rl-blase-weiter.liest::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 100%;
+  background: rgba(27, 34, 51, .55); transform-origin: right center;
+  animation: rl-lesezeit var(--rl-lesezeit, 2000ms) linear forwards;
+}
+@keyframes rl-lesezeit { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+/* Solange V2-A2 erklärt, ruht der Tisch, und die Fenster lassen sich nicht wegklicken. */
+body[data-rl-redet="1"] #feld { pointer-events: none; }
+body[data-rl-redet="1"] #modal .modal-knoepfe .knopf { pointer-events: none; opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .rl-blase-weiter.liest::after { animation-duration: 1ms; } }
+
+/* ---------- 26. Überspring-Prämie auf dem Planetenschirm (Spieltest-Runde 3) ---------- */
+/* Groß und leuchtend: man soll sehen, WAS das Überspringen bringt — und was es kostet. */
+.rl-skip { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--raum2); align-items: center; margin-top: var(--raum2); max-width: 640px; }
+.rl-skip-praemie {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "titel titel" "bild name" "bild text" "preis preis";
+  gap: 2px 14px; align-items: center; padding: 10px 16px 12px;
+  background: linear-gradient(180deg, #FFF3B0 0%, #F7D96B 100%); color: var(--tinte);
+  border: var(--rl-rand) solid var(--tinte); border-radius: 14px;
+  box-shadow: var(--rl-schatten), 0 0 0 0 rgba(242, 198, 64, .0);
+  animation: rl-skip-leuchten 1800ms ease-in-out infinite;
+}
+.rl-skip-titel { grid-area: titel; font-family: var(--display); letter-spacing: .1em; text-transform: uppercase; font-size: 13px; color: #6B5B2A; }
+.rl-skip-bild { grid-area: bild; display: block; line-height: 0; filter: drop-shadow(2px 2px 0 #000); }
+.rl-skip-bild svg { display: block; height: 58px; width: auto; }
+.rl-skip-name { grid-area: name; font-family: var(--display); font-weight: 400; font-size: 26px; letter-spacing: .03em; line-height: 1.05; }
+.rl-skip-text { grid-area: text; font-size: 15px; line-height: 1.3; }
+.rl-skip-preis { grid-area: preis; margin-top: 6px; padding-top: 6px; border-top: 2px dashed rgba(27, 34, 51, .45); font-size: 14px; font-weight: 700; color: #A2281C; }
+.rl-skip-knoepfe { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+@keyframes rl-skip-leuchten {
+  0%, 100% { box-shadow: var(--rl-schatten), 0 0 10px 0 rgba(242, 198, 64, .35); }
+  50%      { box-shadow: var(--rl-schatten), 0 0 26px 6px rgba(242, 198, 64, .85); }
+}
+/* Im geführten Tutorial ist Überspringen gesperrt — die Tafel tritt dann zurück. */
+#rl-schirm[data-fuehrung] .rl-skip-praemie { animation: none; opacity: .55; filter: grayscale(.5); }
+/* Gratis-Pack im Shop */
+.rl-pack-preis.gratis { background: var(--rl-gruen, #58B368); color: #fff; font-family: var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; }
+.rl-pack-gratis { display: inline-block; align-self: flex-start; margin-top: 4px; padding: 2px 10px; border: 2px solid var(--tinte); border-radius: 999px; background: #FFF3B0; color: var(--tinte); font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+@media (max-width: 720px) {
+  .rl-skip { grid-template-columns: minmax(0, 1fr); }
+  .rl-skip-name { font-size: 22px; }
+  .rl-skip-knoepfe { flex-direction: row; flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { .rl-skip-praemie { animation: none; box-shadow: var(--rl-schatten), 0 0 18px 3px rgba(242, 198, 64, .7); } }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -4036,6 +4084,488 @@ body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel { animation: rl-tut-puls
   .rl-details-vorschau { --karte-b: 96px; --karte-h: 134px; --t-karte: 40px; flex-direction: row; flex-wrap: wrap; justify-content: center; min-width: 0; }
   .rl-details-lang { font-size: var(--t-neben); }
 }
+
+</style>
+<style>
+/* Roguelike-Modus — das Spielbrett (Spieltest-Runde 4). Wird vom Einpacker wie rl-stil.css eingebettet und als
+   LETZTE Roguelike-Stildatei geladen: sie ordnet den Kampftisch im Modus neu, das Grundspiel bleibt unberührt
+   (jede Regel hängt an body[data-modus="roguelike"]).
+
+   Vorbild: Antons Skizze plus ein Brett wie in Hearthstone — jeder hat seine Hälfte.
+     oben    Gegnerhälfte: Bossleiste über die ganze Breite, der Gegner GROSS in der Mitte, vor ihm sein Kartenfächer,
+             darunter seine Auslage
+     Mitte   das Band mit der Naht: Himmelseffekt, die Mitte-Karten, rechts die drei Stapel
+     unten   eigene Hälfte: die eigene Auslage, darunter die Hand als Fächer
+
+   Themen: Das Brett liest seine Farben aus Variablen (--brett-*). Heute setzt sie der Planet; später kann ein
+   gesammeltes „Spielbrett" (Konzept in berichte/roguelike/Ideen-und-Verbesserungen.md) sie über
+   #tisch[data-brett="…"] überschreiben, ohne dass sich am Aufbau etwas ändert. */
+
+/* ---------- 0. Thema ---------- */
+
+body[data-modus="roguelike"] {
+  --brett-oben:  color-mix(in srgb, var(--planet) 34%, #0A0F20);
+  --brett-oben2: color-mix(in srgb, var(--planet) 14%, #070B18);
+  --brett-unten: color-mix(in srgb, #2C8C86 26%, #0A0F20);
+  --brett-unten2: color-mix(in srgb, #2C8C86 10%, #070B18);
+  --brett-band:  #080C18;
+  --brett-naht:  var(--rl-gold);
+  --brett-figur: clamp(118px, 25vh, 260px);
+  --brett-faecher-b: 34px;
+  --brett-faecher-h: 48px;
+}
+/* Beispiel-Themen für später (ein gesammeltes Spielbrett überschreibt nur Farben und Muster). */
+#tisch[data-brett="wald"]   { --brett-unten: #12301F; --brett-unten2: #0A1C12; --brett-naht: #9BD37A; }
+#tisch[data-brett="schmiede"] { --brett-unten: #3A1A10; --brett-unten2: #1E0D08; --brett-naht: #FF9B4A; }
+
+/* ---------- 1. Das Brett: Rahmen, zwei Hälften ---------- */
+
+body[data-modus="roguelike"] #tisch #feld {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* Die Gegnerhälfte bekommt, was Band, Auslage und Hand übrig lassen — die Figur füllt sie aus (Abschnitt 2). */
+  grid-template-rows: minmax(0, 1fr) auto minmax(min-content, .4fr) auto;
+  grid-template-areas: "gegner" "mitte" "ich" "hand";
+  gap: 0;
+  position: relative;
+  border: 3px solid var(--tinte);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 #000, inset 0 0 0 2px rgba(237, 230, 214, .08);
+  background:
+    radial-gradient(70% 46% at 50% 0%, color-mix(in srgb, var(--planet-hell) 22%, transparent) 0%, transparent 70%),
+    radial-gradient(80% 40% at 50% 100%, rgba(125, 220, 210, .14) 0%, transparent 70%),
+    linear-gradient(to bottom, var(--brett-oben) 0%, var(--brett-oben2) 44%, var(--brett-unten2) 56%, var(--brett-unten) 100%);
+  overflow: hidden;
+}
+/* Feiner Halbton über dem ganzen Brett (Comic-Druck) */
+body[data-modus="roguelike"] #tisch #feld::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image: radial-gradient(rgba(237, 230, 214, .07) 1px, transparent 1.4px);
+  background-size: 9px 9px;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 38%, transparent 62%, #000 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 38%, transparent 62%, #000 100%);
+}
+body[data-modus="roguelike"] #tisch #feld > * { position: relative; z-index: 1; min-width: 0; }
+
+/* ---------- 2. Gegnerhälfte ---------- */
+
+body[data-modus="roguelike"] #gegner-bereich {
+  grid-area: gegner;
+  display: grid;
+  grid-template-columns: repeat(var(--gegner-n, 1), minmax(0, 1fr));
+  gap: 2px var(--raum3);
+  align-items: start;
+  padding: var(--raum) var(--raum2) var(--raum-halb);
+  min-height: 0;
+}
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] { --gegner-n: 2; }
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] { --gegner-n: 3; --brett-faecher-b: 26px; --brett-faecher-h: 37px; }
+/* Breite Fenster: die Hälfte ist ein Größen-Container — die Figur nimmt genau die Höhe, die über Leiste, Fächer und
+   Auslage übrig bleibt (cqh), nie mehr als 280 px. Auf dem Handy scrollt die Seite, dort gilt die feste Höhe. */
+@media (min-width: 721px) {
+  body[data-modus="roguelike"] #gegner-bereich { container-type: size; }
+  body[data-modus="roguelike"] #gegner-bereich .gegner {
+    --brett-figur: clamp(64px, calc(100cqh - var(--g-karte-h) - var(--brett-faecher-h) * .3 - 76px), 280px);
+  }
+  body[data-modus="roguelike"] #gegner-bereich:not(:has(> .gegner-leben)) .gegner {
+    --brett-figur: clamp(64px, calc(100cqh - var(--g-karte-h) - var(--brett-faecher-h) * .3 - 46px), 280px);
+  }
+}
+
+/* Die Bossleiste liegt über der ganzen Hälfte, der Name steht darauf. */
+body[data-modus="roguelike"] #gegner-bereich > .gegner-leben {
+  grid-column: 1 / -1;
+  height: 28px;
+  margin: 0 auto 2px;
+  width: min(100%, 860px);
+  border-radius: 8px;
+  font-size: 15px;
+}
+body[data-modus="roguelike"] #gegner-bereich > .gegner-leben > div,
+body[data-modus="roguelike"] #gegner-bereich > .gegner-leben .leben-zahl { line-height: 22px; }
+.leben-name {
+  position: absolute; left: 10px; top: 0; line-height: 22px;
+  font-family: var(--display); letter-spacing: .08em; text-transform: uppercase; color: #fff;
+  -webkit-text-stroke: .8px var(--tinte); paint-order: stroke fill; text-shadow: 1px 1px 0 var(--tinte);
+  pointer-events: none; white-space: nowrap;
+}
+
+/* Ein Gegner: links Name und Eigenschaften, in der Mitte die Figur mit dem Kartenfächer, rechts die Punkte, darunter die Auslage. */
+body[data-modus="roguelike"] #gegner-bereich .gegner {
+  grid-area: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name  figur punkte"
+    "priv  figur dran"
+    ".     figur ."
+    "sb    sb    sb";
+  column-gap: var(--raum2);
+  row-gap: 2px;
+  align-items: start;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  min-height: 0;
+}
+body[data-modus="roguelike"] #gegner-bereich .gegner > * { grid-column: auto; grid-row: auto; min-width: 0; }
+body[data-modus="roguelike"] #gegner-bereich .gegner-kopf { display: contents; }
+body[data-modus="roguelike"] #gegner-bereich .gegner-hand { display: none; }          /* der Fächer vor der Figur ersetzt ihn */
+
+body[data-modus="roguelike"] #gegner-bereich .gegner-name {
+  grid-area: name; justify-self: end; text-align: right; align-self: end;
+  margin-top: var(--raum);
+  font-family: var(--display); font-size: clamp(18px, 2.6vh, 26px); letter-spacing: .04em; line-height: 1.05;
+  color: var(--schrift); -webkit-text-stroke: .6px var(--tinte); paint-order: stroke fill;
+  white-space: normal; overflow-wrap: anywhere;
+}
+body[data-modus="roguelike"] #gegner-bereich .gegner[data-boss] .gegner-name { display: none; }   /* steht auf der Leiste */
+body[data-modus="roguelike"] #gegner-bereich .gegner-privileg {
+  grid-area: priv; justify-self: end; text-align: right; max-width: 34ch;
+  font-size: var(--t-neben); color: var(--schrift);
+  padding: 3px 10px; border: 2px solid var(--tinte); border-radius: 10px;
+  background: color-mix(in srgb, var(--planet-tisch, #0B1020) 78%, transparent);
+  box-shadow: var(--rl-schatten-klein);
+}
+body[data-modus="roguelike"] #gegner-bereich .gegner[data-boss] .gegner-privileg { grid-row: 1 / span 2; align-self: center; }
+body[data-modus="roguelike"] #gegner-bereich .gegner-punkte {
+  grid-area: punkte; justify-self: start; align-self: end; margin-top: var(--raum);
+  min-width: 54px; padding: 2px 12px 0; text-align: center;
+  font-family: var(--display); font-size: clamp(22px, 3.4vh, 34px); line-height: 1.1; color: var(--tinte);
+  background: var(--papier); border: var(--rl-rand) solid var(--tinte); border-radius: 12px; box-shadow: var(--rl-schatten-klein);
+}
+body[data-modus="roguelike"] #gegner-bereich .gegner-punkte::after { content: " P."; font-size: .5em; letter-spacing: .06em; }
+body[data-modus="roguelike"] #gegner-bereich .gegner-dran {
+  grid-area: dran; justify-self: start; align-self: start;
+  padding: 1px 10px; border: 2px solid var(--tinte); border-radius: 999px;
+  background: var(--planet); color: var(--planet-schrift);
+  font-family: var(--display); letter-spacing: .08em; text-transform: uppercase; font-size: 13px;
+  animation: rl-brett-dran 1100ms ease-in-out infinite;
+}
+@keyframes rl-brett-dran { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+
+/* Die Figur: groß, in der Mitte, mit Lichtkegel in Planetenfarbe. */
+body[data-modus="roguelike"] #gegner-bereich .gegner > .gegner-figur {
+  grid-area: figur;
+  justify-self: center;
+  height: var(--brett-figur);
+  padding: 0 clamp(10px, 3vw, 46px);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--planet-hell) 34%, transparent) 0%, color-mix(in srgb, var(--planet) 14%, transparent) 55%, transparent 100%);
+  filter: drop-shadow(4px 4px 0 #000);
+}
+body[data-modus="roguelike"] #gegner-bereich .gegner.aktiv > .gegner-figur { filter: drop-shadow(4px 4px 0 #000) drop-shadow(0 0 14px color-mix(in srgb, var(--planet-hell) 70%, transparent)); }
+
+/* Der Kartenfächer: der Gegner hält seine Hand vor sich. */
+.rl-gegner-faecher { display: none; }
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-faecher {
+  grid-area: figur;
+  display: flex; justify-content: center; align-items: flex-end;
+  align-self: end; justify-self: center;
+  translate: 0 22%;
+  z-index: 2; pointer-events: auto;
+  --karte-b: var(--brett-faecher-b); --karte-h: var(--brett-faecher-h);
+}
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-faecher .karte {
+  width: var(--karte-b); height: var(--karte-h); flex: 0 0 auto;
+  margin-left: calc(var(--karte-b) * -.38);
+  transform-origin: 50% 120%;
+  rotate: calc((var(--i) - (var(--n) - 1) / 2) * 7deg);
+  box-shadow: 2px 2px 0 #000;
+}
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-faecher .karte:first-child { margin-left: 0; }
+.rl-gegner-faecher-zahl {
+  position: absolute; right: -14px; top: -10px;
+  min-width: 22px; padding: 0 5px; text-align: center;
+  font-family: var(--display); font-size: 14px; line-height: 20px; color: var(--tinte);
+  background: var(--rl-gold); border: 2px solid var(--tinte); border-radius: 999px;
+}
+
+/* Seine Auslage: eine Reihe unter ihm, mittig. */
+body[data-modus="roguelike"] #gegner-bereich .gegner > .sternbilder {
+  grid-area: sb;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+  gap: var(--raum) var(--raum2);
+  margin-top: calc(var(--brett-faecher-h) * .30);
+  min-height: calc(var(--g-karte-h, 42px) + 26px);
+  max-height: none; overflow: visible;
+}
+body[data-modus="roguelike"] #gegner-bereich .gegner > .sternbilder .leer { width: 100%; text-align: center; opacity: .75; }
+body[data-modus="roguelike"] #gegner-bereich .gegner { --g-karte-b: clamp(30px, 4.4vh, 44px); --g-karte-h: calc(var(--g-karte-b) * 1.4); }
+body[data-modus="roguelike"] #gegner-bereich .gegner .sternbild { --karte-b: var(--g-karte-b); --karte-h: var(--g-karte-h); }
+
+/* ---------- 3. Das Band in der Mitte ---------- */
+
+body[data-modus="roguelike"] #tisch #mitte-bereich {
+  grid-area: mitte;
+  display: block;
+  margin: 0;
+  padding: 10px var(--raum2) 8px;
+  border: 0;
+  border-top: 3px solid var(--tinte);
+  border-bottom: 3px solid var(--tinte);
+  border-radius: 0;
+  background:
+    linear-gradient(to bottom, rgba(242, 198, 64, .10), transparent 30%, transparent 70%, rgba(242, 198, 64, .10)),
+    var(--brett-band);
+  box-shadow: inset 0 6px 10px -6px #000, inset 0 -6px 10px -6px #000;
+  overflow: visible;
+}
+/* Die Naht: eine gestrichelte Goldlinie quer über das Band, hinter den Karten. */
+body[data-modus="roguelike"] #tisch #mitte-bereich::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: 58%; height: 0;
+  border-top: 3px dashed color-mix(in srgb, var(--brett-naht) 55%, transparent);
+  pointer-events: none;
+}
+/* Der Himmelseffekt hängt als Banner an der Oberkante des Bands (links), der Titel klein an der Unterkante. */
+body[data-modus="roguelike"] #mitte-bereich > #rl-himmel-effekt {
+  position: absolute; left: var(--raum2); top: 0; translate: 0 -62%; margin: 0; z-index: 3;
+  transform-origin: left center; scale: .82;
+}
+body[data-modus="roguelike"] #mitte-bereich > .bereich-titel {
+  position: absolute; left: var(--raum2); bottom: 2px; margin: 0; z-index: 2;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .8;
+}
+body[data-modus="roguelike"] #mitte-bereich > #mitte-zeile { position: relative; align-items: center; }
+body[data-modus="roguelike"] #mitte-karten { justify-content: center; flex: 1 1 auto; padding-bottom: 12px; }
+body[data-modus="roguelike"] #stapel {
+  padding: 4px 10px 2px; border-left: 0; gap: var(--raum);
+  border: 2px solid color-mix(in srgb, var(--brett-naht) 45%, transparent); border-radius: 12px;
+  background: rgba(0, 0, 0, .28);
+  align-self: center;
+}
+body[data-modus="roguelike"] #stapel .stapel { --karte-b: clamp(36px, 5.4vh, 54px); --karte-h: calc(var(--karte-b) * 1.4); }
+
+/* ---------- 4. Eigene Hälfte ---------- */
+
+body[data-modus="roguelike"] #tisch #ich-bereich,
+body[data-modus="roguelike"] #tisch #hand-bereich {
+  border: 0; border-radius: 0; background: none;
+  padding: 4px var(--raum2);
+}
+body[data-modus="roguelike"] #tisch #ich-bereich { grid-area: ich; padding-top: 8px; }
+body[data-modus="roguelike"] #tisch #hand-bereich { grid-area: hand; padding-bottom: 8px; }
+body[data-modus="roguelike"] #ich-bereich .bereich-titel { margin-bottom: 2px; font-size: var(--t-neben); opacity: .9; }
+/* „Deine Hand" als kleines Schild links unten — die Karten stehen mittig, der Platz darüber gehört ihnen. */
+body[data-modus="roguelike"] #hand-bereich { position: relative; }
+body[data-modus="roguelike"] #hand-bereich .bereich-titel {
+  position: absolute; left: var(--raum2); bottom: 6px; margin: 0; z-index: 2;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .8;
+}
+/* Titel und Stufenleiste teilen sich eine Zeile. */
+body[data-modus="roguelike"] #tisch #ich-bereich { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "titel stufen" "sb sb"; column-gap: var(--raum2); align-items: center; }
+body[data-modus="roguelike"] #ich-bereich > .bereich-titel { grid-area: titel; }
+body[data-modus="roguelike"] #ich-bereich > #rl-stufen { grid-area: stufen; margin: 0; justify-content: flex-end; }
+body[data-modus="roguelike"] #ich-bereich > #meine-sternbilder { grid-area: sb; }
+body[data-modus="roguelike"] #meine-sternbilder { justify-content: center; min-height: calc(var(--karte-h) * .62 + 24px); }
+body[data-modus="roguelike"] #meine-sternbilder .leer { width: 100%; text-align: center; opacity: .75; }
+/* Am Zug: die eigene Hälfte leuchtet von unten. */
+body[data-modus="roguelike"] #tisch #feld:has(#hand-bereich.aktiv) {
+  box-shadow: 6px 6px 0 #000, inset 0 0 0 2px rgba(237, 230, 214, .08), inset 0 -18px 28px -16px color-mix(in srgb, #7DDCD2 70%, transparent);
+}
+
+/* Die Hand als Fächer, mittig. (--i/--n setzt ansicht.js im Modus.) */
+body[data-modus="roguelike"] .kartenreihe.hand { justify-content: center; flex-wrap: nowrap; padding-top: 12px; gap: 6px; }
+body[data-modus="roguelike"] .kartenreihe.hand .karte:nth-child(n) {
+  transform-origin: 50% 140%;
+  rotate: calc((var(--i, 0) - (var(--n, 1) - 1) / 2) * 3deg);
+  translate: 0 calc((var(--i, 0) - (var(--n, 1) - 1) / 2) * (var(--i, 0) - (var(--n, 1) - 1) / 2) * 2.2px);
+  transition: rotate 140ms ease-out, translate 140ms ease-out, transform 140ms ease-out;
+}
+body[data-modus="roguelike"] .kartenreihe.hand .karte.gewaehlt:nth-child(n),
+body[data-modus="roguelike"] .kartenreihe.hand .karte:hover:nth-child(n) { rotate: 0deg; translate: 0 -4px; }
+
+/* ---------- 5. Seitenleiste als Logbuch ---------- */
+
+body[data-modus="roguelike"] #seitenleiste {
+  border: 3px solid var(--tinte); border-radius: 14px; box-shadow: 4px 4px 0 #000;
+  background: color-mix(in srgb, var(--planet-tisch, #0B1020) 70%, #05070F);
+  padding: var(--raum) var(--raum2);
+}
+
+/* ---------- 6. Flache und schmale Fenster ---------- */
+
+@media (max-height: 800px) {
+  body[data-modus="roguelike"] { --brett-faecher-b: 28px; --brett-faecher-h: 40px; }
+  body[data-modus="roguelike"] #gegner-bereich { padding-top: var(--raum-halb); }
+  body[data-modus="roguelike"] #gegner-bereich > .gegner-leben { height: 24px; font-size: 13px; }
+  body[data-modus="roguelike"] #gegner-bereich > .gegner-leben > div,
+  body[data-modus="roguelike"] #gegner-bereich > .gegner-leben .leben-zahl,
+  .leben-name { line-height: 18px; }
+  body[data-modus="roguelike"] #tisch #mitte-bereich { padding: 3px var(--raum2) 5px; }
+  body[data-modus="roguelike"] .kartenreihe.hand { padding-top: 8px; }
+}
+@media (max-width: 720px) {
+  body[data-modus="roguelike"] #tisch #feld { border-radius: 12px; box-shadow: 3px 3px 0 #000; overflow: visible; }
+  body[data-modus="roguelike"] { --brett-figur: 120px; }
+  body[data-modus="roguelike"] #gegner-bereich { grid-template-columns: minmax(0, 1fr); padding: var(--raum) var(--raum); }
+  body[data-modus="roguelike"] #gegner-bereich .gegner { column-gap: var(--raum); }
+  body[data-modus="roguelike"] #gegner-bereich .gegner-privileg { max-width: none; font-size: 11px; padding: 2px 6px; }
+  body[data-modus="roguelike"] #mitte-bereich > #rl-himmel-effekt { position: static; translate: 0 0; scale: 1; margin-bottom: 4px; }
+  body[data-modus="roguelike"] #mitte-bereich > .bereich-titel { position: static; }
+  body[data-modus="roguelike"] #hand-bereich .bereich-titel { position: static; }
+  body[data-modus="roguelike"] #tisch #ich-bereich { display: block; }
+  body[data-modus="roguelike"] .kartenreihe.hand { flex-wrap: nowrap; justify-content: flex-start; }
+  body[data-modus="roguelike"] .kartenreihe.hand .karte:nth-child(n) { rotate: 0deg; translate: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-modus="roguelike"] #gegner-bereich .gegner-dran { animation: none; }
+  body[data-modus="roguelike"] .kartenreihe.hand .karte:nth-child(n) { transition: none; }
+}
+
+/* ---------- 7. Wertungs-Angriff am Rundenende (rl-kampf-ui.js: rlKampfUiWertung) ---------- */
+
+.rl-wertung-stoss { position: relative; z-index: 5; animation: rl-wertung-stoss 430ms cubic-bezier(.3, .9, .4, 1) 1; }
+@keyframes rl-wertung-stoss {
+  0%   { translate: 0 0; scale: 1; filter: none; }
+  35%  { translate: 0 -30px; scale: 1.08; filter: brightness(1.3) drop-shadow(0 0 10px rgba(242, 198, 64, .9)); }
+  100% { translate: 0 0; scale: 1; filter: none; }
+}
+.rl-wertung-zahl {
+  position: fixed; z-index: 60; pointer-events: none;
+  font-family: var(--display); font-size: clamp(28px, 4.4vh, 44px); line-height: 1; letter-spacing: .02em;
+  color: #FFF3B0; -webkit-text-stroke: 1.4px var(--tinte); paint-order: stroke fill; text-shadow: 3px 3px 0 #000;
+}
+.gegner-leben.wertung-laeuft .leben-schaden,
+.gegner-leben.wertung-laeuft .leben-heilung { display: none; }
+.gegner-leben.wertung-treffer { animation: rl-wertung-leiste 260ms ease-out 1; }
+@keyframes rl-wertung-leiste {
+  0%   { translate: 0 0; filter: brightness(1.9); }
+  40%  { translate: 5px 0; }
+  70%  { translate: -3px 0; }
+  100% { translate: 0 0; filter: none; }
+}
+.gegner-leben.wertung-heilt .leben-balken { background-color: var(--rl-gruen, #58B368); transition: width .5s ease-out, background-color .2s; }
+.chip-punkte.rl-wertung-plus { display: inline-block; animation: rl-wertung-plus 320ms ease-out 1; }
+@keyframes rl-wertung-plus { 0% { scale: 1; } 40% { scale: 1.7; color: var(--rl-gold); } 100% { scale: 1; } }
+
+/* ---------- 8. Stimmung: der Gegner steht vor seinem Planeten, du sitzt im Cockpit ---------- */
+
+body[data-modus="roguelike"] #gegner-bereich::before {
+  content: ""; position: absolute; left: 50%; top: 0; translate: -50% -58%;
+  width: min(86%, 1100px); aspect-ratio: 1 / 1; border-radius: 50%; pointer-events: none; z-index: -1;
+  background:
+    radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--planet-hell) 34%, transparent) 0%, color-mix(in srgb, var(--planet) 26%, transparent) 26%, transparent 62%);
+  border-bottom: 3px solid color-mix(in srgb, var(--planet-hell) 38%, transparent);
+  opacity: .9;
+}
+body[data-modus="roguelike"] #tisch #hand-bereich::before {
+  content: ""; position: absolute; left: 50%; bottom: 0; translate: -50% 72%;
+  width: min(70%, 900px); aspect-ratio: 1 / 1; border-radius: 50%; pointer-events: none; z-index: -1;
+  border-top: 3px solid rgba(125, 220, 210, .28);
+  background: radial-gradient(circle at 50% 0%, rgba(125, 220, 210, .16) 0%, transparent 46%);
+}
+
+/* ---------- 9. Zwei oder drei Gegner: je Gegner eine Säule (Name · Figur · Eigenschaften · Auslage) ---------- */
+
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto;
+  grid-template-areas: "name" "figur" "priv" "sb";
+  justify-items: center;
+  row-gap: 3px;
+}
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner-name,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner-name {
+  display: block; justify-self: center; text-align: center; margin-top: 0;
+  font-size: clamp(15px, 2.2vh, 20px); overflow-wrap: break-word; white-space: nowrap;
+}
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner-privileg,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner-privileg {
+  grid-area: priv; grid-row: auto; justify-self: center; text-align: center; align-self: start;
+  max-width: 100%; font-size: 11px; padding: 1px 8px; margin-top: calc(var(--brett-faecher-h) * .26);
+}
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner-punkte,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner-punkte {
+  grid-area: figur; justify-self: end; align-self: start; margin: 0; z-index: 3;
+  font-size: clamp(18px, 2.8vh, 26px); min-width: 44px; padding: 1px 8px 0;
+}
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner-dran,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner-dran {
+  grid-area: figur; justify-self: start; align-self: start; z-index: 3; font-size: 11px;
+}
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner > .sternbilder,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner > .sternbilder { margin-top: 2px; justify-self: stretch; }
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner > .gegner-figur,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner > .gegner-figur { padding: 0 8px; max-width: 100%; }
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner > .gegner-figur .rl-gegner-figur-svg,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner > .gegner-figur .rl-gegner-figur-svg { max-width: 100%; }
+/* Der Boss mit zwei Sitzen (Zwillinge): der Name steht auf der Leiste — über den Figuren reicht die Nummer nicht, also zeigen. */
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner[data-boss] .gegner-name { display: block; }
+@media (min-width: 721px) {
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner,
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner {
+    --brett-figur: clamp(56px, calc(100cqh - var(--g-karte-h) - var(--brett-faecher-h) * .3 - 128px), 220px);
+  }
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"]:not(:has(> .gegner-leben)) .gegner,
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"]:not(:has(> .gegner-leben)) .gegner {
+    --brett-figur: clamp(56px, calc(100cqh - var(--g-karte-h) - var(--brett-faecher-h) * .3 - 98px), 220px);
+  }
+}
+/* Das Himmelsband ragt weniger weit in die Gegnerhälfte; darunter bleibt ein Streifen frei. */
+body[data-modus="roguelike"] #mitte-bereich > #rl-himmel-effekt { translate: 0 -46%; }
+body[data-modus="roguelike"] #gegner-bereich { padding-bottom: 12px; }
+
+/* ---------- 10. Viele Sternbilder beim Gegner: die Figur gibt eine Zeile ab ---------- */
+/* Die Auslage bricht um, sobald sie nicht mehr in eine Reihe passt. Damit sie nie unter dem Band verschwindet,
+   rechnet die Figurhöhe mit der Zeilenzahl (--brett-sb-zeilen); im Notfall scrollt die Auslage in sich. */
+@media (min-width: 721px) {
+  body[data-modus="roguelike"] #gegner-bereich .gegner {
+    --brett-figur: clamp(64px, calc(100cqh - var(--brett-sb-zeilen, 1) * (var(--g-karte-h) + 28px) - var(--brett-faecher-h) * .3 - 48px), 280px);
+  }
+  body[data-modus="roguelike"] #gegner-bereich:not(:has(> .gegner-leben)) .gegner {
+    --brett-figur: clamp(64px, calc(100cqh - var(--brett-sb-zeilen, 1) * (var(--g-karte-h) + 28px) - var(--brett-faecher-h) * .3 - 18px), 280px);
+  }
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner,
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner {
+    --brett-figur: clamp(56px, calc(100cqh - var(--brett-sb-zeilen, 1) * (var(--g-karte-h) + 28px) - var(--brett-faecher-h) * .3 - 100px), 220px);
+  }
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"]:not(:has(> .gegner-leben)) .gegner,
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"]:not(:has(> .gegner-leben)) .gegner {
+    --brett-figur: clamp(56px, calc(100cqh - var(--brett-sb-zeilen, 1) * (var(--g-karte-h) + 28px) - var(--brett-faecher-h) * .3 - 70px), 220px);
+  }
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="1"]:has(.sternbilder > .sternbild:nth-child(5)),
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"]:has(.sternbilder > .sternbild:nth-child(3)),
+  body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"]:has(.sternbilder > .sternbild:nth-child(2)) { --brett-sb-zeilen: 2; }
+  body[data-modus="roguelike"] #gegner-bereich .gegner > .sternbilder {
+    max-height: calc(2 * (var(--g-karte-h) + 30px)); overflow-y: auto; overflow-x: hidden;
+  }
+}
+
+/* ---------- 11. Nachträge: Eigenschaften-Schild in der Säule, Handy auch bei einem Gegner als Säule ---------- */
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner .gegner-privileg,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner .gegner-privileg,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="2"] .gegner[data-boss] .gegner-privileg,
+body[data-modus="roguelike"] #gegner-bereich[data-anzahl="3"] .gegner[data-boss] .gegner-privileg {
+  grid-area: auto; grid-row: 3; grid-column: 1; align-self: start; justify-self: center;
+}
+@media (max-width: 720px) {
+  body[data-modus="roguelike"] #gegner-bereich .gegner {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas: "name" "figur" "priv" "sb";
+    justify-items: center;
+    row-gap: 3px;
+  }
+  body[data-modus="roguelike"] #gegner-bereich .gegner .gegner-name { justify-self: center; text-align: center; margin-top: 0; font-size: 18px; }
+  body[data-modus="roguelike"] #gegner-bereich .gegner .gegner-privileg,
+  body[data-modus="roguelike"] #gegner-bereich .gegner[data-boss] .gegner-privileg {
+    grid-area: auto; grid-row: 3; grid-column: 1; align-self: start; justify-self: center; text-align: center;
+    margin-top: calc(var(--brett-faecher-h) * .26);
+  }
+  body[data-modus="roguelike"] #gegner-bereich .gegner .gegner-punkte { grid-area: figur; justify-self: end; align-self: start; margin: 0; z-index: 3; font-size: 22px; }
+  body[data-modus="roguelike"] #gegner-bereich .gegner .gegner-dran { grid-area: figur; justify-self: start; align-self: start; z-index: 3; }
+  body[data-modus="roguelike"] #gegner-bereich .gegner > .sternbilder { margin-top: 2px; justify-self: stretch; }
+}
+/* Das Himmelsband hängt an der Oberkante — die Mitte-Karten beginnen darunter. */
+body[data-modus="roguelike"] #tisch #mitte-bereich { padding-top: 18px; }
+@media (max-height: 800px) { body[data-modus="roguelike"] #tisch #mitte-bereich { padding-top: 14px; } }
 
 </style>
 </head>
@@ -9730,13 +10260,14 @@ const RL_TXT_FUEHRUNG = {
   planet: (k) => [
     'Auf jedem Planeten warten drei Lakaien und am Ende der Boss. Der dritte Lakai ist eine Elite mit eigener Fähigkeit.',
     'Rechts steht dein erster Gegner. Sein Verhalten sagt, wie er spielt, sein Privileg ist seine Sonderregel — lies beides vor jedem Kampf.',
-    `Später darfst du Lakaien überspringen, dann bekommt der Boss ${k.schuld ?? 12} Leben mehr. Heute nicht: Der erste Kampf ist ein Übungskampf, verlieren kannst du ihn nicht. Drück auf »Kampf beginnen«.`,
+    `Später darfst du Lakaien überspringen: Das bringt eine Prämie, aber der Boss bekommt ${k.schuld ?? 12} Leben mehr. Heute nicht — der erste Kampf ist ein Übungskampf, verlieren kannst du ihn nicht. Drück auf »Kampf beginnen«.`,
   ],
   kampf: {
     aufgabeKopf: (n, von) => `Aufgabe ${n} von ${von}: `,
     bestaetigen: 'Passt genau — jetzt unten bestätigen.',
     falscheKarte: 'Das gehört nicht zur Aufgabe — tipp es noch einmal an, dann ist es wieder abgewählt.',
     abgelehnt: 'Das wäre im Spiel erlaubt — im Übungskampf geht es gerade nur um den einen Zug, den V2-A2 ansagt.',
+    erstLesen: 'V2-A2 erklärt den nächsten Zug — lies mit, danach bist du dran.',
     nochmal: 'Noch mal erklären',
     frei: 'Freier Zug: Spiel, was du für richtig hältst.',
     bauen: {
@@ -9893,7 +10424,23 @@ const RL_TXT_SCHIRM = {
   bossHeilt: 'Heilung',
   bossSchuld: (n) => `Bossschuld +${n} Leben`,
   runden: (n) => `${n} Runden`,
-  ueberspringenHinweis: (schuld) => `Überspringen: der Boss bekommt +${schuld} Leben, die nächste Umlaufbahn hat sicher ein Angebot 2. Größe oder besser.`,
+  ueberspringenHinweis: (schuld) => `Überspringen: der Boss bekommt +${schuld} Leben, dafür gibt es eine Prämie.`,
+  // Überspring-Prämien (Spieltest-Runde 3): die Tafel auf dem Planetenschirm, Hinweise im Shop.
+  skip: {
+    titel: 'Überspringen bringt',
+    preis: (n) => `Preis: Der Boss bekommt ${n} Leben mehr.`,
+    garantie: { name: 'Seltenes Angebot', text: 'Im nächsten Shop liegt sicher ein Angebot 2. Größe oder besser.' },
+    sternbilderpack: { name: 'Gratis-Sternbilderpack', text: 'Das Sternbilderpack im nächsten Shop kostet nichts.' },
+    planetenpack: { name: 'Gratis-Planetenpack', text: 'Das Planetenpack im nächsten Shop kostet nichts.' },
+    modul: { name: 'Gutes Modul', text: 'Im nächsten Shop liegt sicher ein Modul 3. Größe oder besser.' },
+    geld: { name: (n) => `${n} Münzen sofort`, text: 'Das Geld wird dir sofort gutgeschrieben.' },
+    gratis: 'gratis',
+    gratisOeffnen: 'Gratis öffnen',
+    gratisStempel: 'Überspring-Prämie',
+    modulGarantie: 'Überspring-Prämie: Hier liegt sicher ein gutes Modul.',
+    modulGarantieFehlt: 'Überspring-Prämie: Kein passendes Modul mehr zu haben.',
+    bekommen: (name) => `Übersprungen. Deine Prämie: ${name}.`,
+  },
   notrufHinweis: 'Mit Notruf: überspringen ohne Bossschuld.',
   notrufNutzen: 'Notruf einsetzen',
   zurKarteGesperrt: 'Zur Karte geht es erst nach dem Boss.',
@@ -10093,7 +10640,7 @@ const RL_TXT_KAMPF = {
   laufVerwerfenText: 'Ein Lauf ist gespeichert. Ein neuer Lauf löscht ihn — ein Leben, ein Lauf.',
   verwerfen: 'Verwerfen und neu beginnen',
   ueberspringenFrage: 'Diesen Lakaien überspringen?',
-  ueberspringenText: (schuld) => `Der Boss dieses Planeten bekommt +${schuld} Leben. Dafür hat die nächste Umlaufbahn sicher ein Angebot 2. Größe oder besser.`,
+  ueberspringenText: (schuld, praemie = '') => `Der Boss dieses Planeten bekommt +${schuld} Leben.${praemie ? ' Deine Prämie: ' + praemie + '.' : ''}`,
   fehler: 'Das ging nicht',
   weiterZurKarte: 'Zur Sternkarte',
 };
@@ -10337,7 +10884,7 @@ function rlPrivilegEl(info) {
 function rlZahlMarke(buehne, daten, klasse, vorzeichen) {
   if (!daten || !(daten.betrag > 0)) return;
   let platz = document.querySelector('.gegner[data-idx="' + daten.idx + '"]');
-  if (platz && klasse === 'schaden') platz = platz.querySelector('.gegner-leben') || platz;
+  if (platz && klasse === 'schaden') platz = platz.querySelector('.gegner-leben') || document.querySelector('#gegner-bereich > .gegner-leben') || platz;
   if (!platz && daten.idx === 0) platz = document.getElementById('ich-bereich');
   if (!platz) return;
   const b = platz.getBoundingClientRect();
@@ -10621,6 +11168,17 @@ function zeichneGegner(dom, s) {
   const infos = rl && rl.gegnerInfo ? rl.gegnerInfo : null;
   const boss = rl && rl.boss && Array.isArray(rl.boss.idx) && rl.boss.idx.length ? rl.boss : null;
   const bossLeisteBei = boss ? Math.min(...boss.idx) : -1;
+  // Spielbrett (Spieltest-Runde 4): im Modus liegt die Bossleiste ÜBER der ganzen Gegnerhälfte — auch über beiden
+  // Zwillingen —, nicht mehr im Platz des ersten Boss-Sitzes.
+  if (rl) dom.gegnerBereich.dataset.brett = '1'; else delete dom.gegnerBereich.dataset.brett;
+  if (rl && boss) {
+    const leiste = rlBossLeisteEl(boss);
+    leiste.classList.add('rl-brett-leben');
+    leiste.dataset.idx = String(bossLeisteBei);
+    const name = el('span', 'leben-name', boss.name || '');
+    leiste.appendChild(name);
+    dom.gegnerBereich.appendChild(leiste);
+  }
 
   for (const sp of s.z.spieler) {
     if (sp.idx === s.menschIdx) continue;
@@ -10665,7 +11223,20 @@ function zeichneGegner(dom, s) {
     if (info && (info.verhalten || (info.privilegien && info.privilegien.length) || info.boss || info.elite)) {
       art.appendChild(rlPrivilegEl(info));
     }
-    if (boss && sp.idx === bossLeisteBei) art.appendChild(rlBossLeisteEl(boss));
+    if (boss && sp.idx === bossLeisteBei && !rl) art.appendChild(rlBossLeisteEl(boss));
+    // Spielbrett: der Gegner hält seine Handkarten als Fächer vor sich (Rücken in Planetenfarbe).
+    if (rl && info) {
+      const faecher = el('div', 'rl-gegner-faecher');
+      faecher.title = sp.handAnzahl + ' Handkarten';
+      faecher.style.setProperty('--n', String(sp.handAnzahl));
+      for (let i = 0; i < sp.handAnzahl; i++) {
+        const r = rueckseiteEl({ planet: info.ruecken || info.planet });
+        r.style.setProperty('--i', String(i));
+        faecher.appendChild(r);
+      }
+      faecher.appendChild(el('span', 'rl-gegner-faecher-zahl', String(sp.handAnzahl)));
+      art.appendChild(faecher);
+    }
 
     // Gegnerische Sternbilder liegen IMMER offen mit ihren Karten da.
     // Es gab hier einmal eine kompakte Zeilenansicht — die hat das Spiel
@@ -10692,6 +11263,18 @@ function zeichneGegner(dom, s) {
     }
     art.appendChild(box);
     dom.gegnerBereich.appendChild(art);
+  }
+  // Spielbrett: bricht eine gegnerische Auslage in eine zweite Zeile um, gibt die Figur diese Zeile ab
+  // (rl-brett.css rechnet die Figurhöhe mit --brett-sb-zeilen). Gemessen, nicht geschätzt.
+  if (rl) {
+    let zeilen = 1;
+    for (const auslage of dom.gegnerBereich.querySelectorAll('.gegner > .sternbilder')) {
+      const kinder = auslage.querySelectorAll(':scope > .sternbild');
+      if (kinder.length > 1 && kinder[kinder.length - 1].offsetTop > kinder[0].offsetTop + 4) zeilen = 2;
+    }
+    dom.gegnerBereich.style.setProperty('--brett-sb-zeilen', String(zeilen));
+  } else {
+    dom.gegnerBereich.style.removeProperty('--brett-sb-zeilen');
   }
 }
 
@@ -10872,14 +11455,19 @@ function zeichneIch(dom, s) {
   rlStufenZeichnen(dom, s);
 
   leere(dom.meineHand);
-  for (const k of ich.hand || []) {
-    dom.meineHand.appendChild(karteEl(k, 'hand', {
+  const handKarten = ich.hand || [];
+  // Spielbrett (Roguelike): die Hand liegt als Fächer — rl-brett.css dreht jede Karte nach ihrem Platz (--i von --n).
+  if (s.rl) dom.meineHand.style.setProperty('--n', String(handKarten.length)); else dom.meineHand.style.removeProperty('--n');
+  handKarten.forEach((k, i) => {
+    const e = karteEl(k, 'hand', {
       gewaehlt: s.auswahlHand.has(k.id),
       spielbar: s.spielbareHand.has(k.id),
       tot: !s.spielbareHand.has(k.id) && !s.auswahlHand.has(k.id),
       frisch: s.frischeKarten.has(k.id),
-    }));
-  }
+    });
+    if (s.rl) e.style.setProperty('--i', String(i));
+    dom.meineHand.appendChild(e);
+  });
 }
 
 function zeichneTipps(dom, s) {
@@ -11218,6 +11806,7 @@ function fliegeUm(vorher, opt = {}) {
         const figur = document.querySelector('.gegner[data-idx="' + opt.schaden.idx + '"] .gegner-figur');
         const platz = figur
           || document.querySelector('.gegner[data-idx="' + opt.schaden.idx + '"] .gegner-leben')
+          || document.querySelector('#gegner-bereich > .gegner-leben')
           || document.querySelector('.gegner[data-idx="' + opt.schaden.idx + '"]');
         if (platz) {
           const b = platz.getBoundingClientRect();
@@ -12584,14 +13173,18 @@ class Erzaehler {
     this._ganzerText = '';
     this._seitBlip = 0;       // Zeichen seit dem letzten Blip
     this._weiterAuf = null;   // löst auf, wenn „Weiter" gedrückt wurde
+    // Roguelike-Pflicht-Tutorial: solange true, lässt sich das Tippen des Textes NICHT überspringen
+    // (weder durch Antippen der Blase noch über den Knopf). Im Grundspiel bleibt es false.
+    this.keinUeberspringen = false;
 
     // Ein Tippen auf den Kasten überspringt das Tippen des Textes.
     dom.erz.addEventListener('click', (e) => {
       if (e.target.closest('.knopf')) return;
+      if (this.keinUeberspringen) return;
       this.sofortFertig();
     });
     dom.erzWeiter.addEventListener('click', () => {
-      if (this._timer) { this.sofortFertig(); return; }
+      if (this._timer) { if (!this.keinUeberspringen) this.sofortFertig(); return; }
       const f = this._weiterAuf;
       this._weiterAuf = null;
       if (f) f();
@@ -13308,6 +13901,19 @@ const RL_KONFIG = {
       3: { 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0] },
     },
   },   // eliteBossRueckenAb gestrichen: Lakaien und Boss tragen ohnehin denselben Planetenrücken
+  // Überspring-Prämien (Spieltest-Runde 3): wer einen Lakaien überspringt, bekommt eine dieser Prämien (Gewichte wie
+  // Lose); der Planetenschirm zeigt sie vorher. garantie = Angebot 2. Größe oder besser im nächsten Shop,
+  // sternbilderpack / planetenpack = das Pack im nächsten Shop kostet nichts, modul = dort liegt sicher ein Modul
+  // 3. Größe oder besser, geld = `betrag` Münzen sofort. Der Preis bleibt `boss.schuldProUebersprungenem`.
+  ueberspringen: {
+    praemien: [
+      { key: 'garantie', gewicht: 28 },
+      { key: 'sternbilderpack', gewicht: 24 },
+      { key: 'planetenpack', gewicht: 20 },
+      { key: 'modul', gewicht: 16 },
+      { key: 'geld', gewicht: 12, betrag: 6 },
+    ],
+  },
   // Regeln, die im Raubzug für ALLE Sitze gelten (Spieltest-Runde 1): Drachenklau — ein fertiger, unversiegelter
   // Sechser-Pfeil des Gegners darf geklaut werden, wenn er den eigenen fertigen Sechser-Pfeil zum Drachen ergänzt.
   regeln: { drachenKlau: true },
@@ -14048,6 +14654,12 @@ const RL_TUTORIAL_KAMPF_AUSLOESER = { bossSchaden: 'ersterSchaden' };
 const RL_TUTORIAL_HINWEIS_DAUER = 4000;
 /** Grundton des V2-A2 (Hz) — der Erzähler des Grundspiels spricht mit 500. */
 const RL_TUTORIAL_STIMME = 650;
+/**
+ * Pflicht-Lesezeit der Führung (Millisekunden): Der Text lässt sich nicht überspringen, und „Weiter" wird erst frei,
+ * wenn seit Satzbeginn `jeZeichen` × Textlänge vergangen sind (mindestens `min`, höchstens `max`). Antons Freunde
+ * hatten das Tutorial weggeklickt, ohne zu lesen — jetzt geht das nicht mehr.
+ */
+const RL_TUTORIAL_LESEZEIT = { jeZeichen: 42, min: 1500, max: 8000 };
 
 /** Pose je Auslöser; `ende` hängt vom Ergebnis ab (siehe rlTutorialSchritte). */
 const RL_TUTORIAL_POSE = { start: 'freut', ernst: 'warnt', vorBoss: 'warnt', ersterSchaden: 'freut', imflug: 'neutral' };
@@ -14156,12 +14768,33 @@ class RlSextant {
     this.zeigen(opt.pose, opt.seite);
     if (opt.bleibt) this.figur.dataset.aufgabe = '1'; else delete this.figur.dataset.aufgabe;
     this.erz.knopfWeg();
+    // Pflicht-Lesen (Führung): kein Überspringen des Tippens, „Weiter" erst nach der Mindest-Lesezeit.
+    this.erz.keinUeberspringen = !!opt.pflicht;
+    const knopfEl = this.figur.querySelector('.rl-blase-weiter');
+    if (knopfEl) { knopfEl.disabled = false; knopfEl.classList.remove('liest'); }
+    const beginn = Date.now();
     const abgeloest = new Promise((fertig) => { this.abbruch = () => fertig(false); });
     const ablauf = (async () => {
       await this.erz.sag(text);
       if (nr !== this.nr) return false;
       if (opt.bleibt) return true;
       if (opt.knopf) {
+        if (opt.pflicht && knopfEl) {
+          const L = RL_TUTORIAL_LESEZEIT;
+          const rest = Math.min(L.max, Math.max(L.min, text.length * L.jeZeichen)) - (Date.now() - beginn);
+          if (rest > 0) {
+            // Der Knopf steht schon da, füllt sich aber erst — man sieht, dass es gleich weitergeht.
+            knopfEl.textContent = opt.knopf;
+            knopfEl.hidden = false;
+            knopfEl.disabled = true;
+            knopfEl.style.setProperty('--rl-lesezeit', Math.round(rest) + 'ms');
+            knopfEl.classList.add('liest');
+            await new Promise((fertig) => { this.timer = setTimeout(fertig, rest); });
+            knopfEl.disabled = false;
+            knopfEl.classList.remove('liest');
+            if (nr !== this.nr) return false;
+          }
+        }
         await this.erz.warteAufWeiter(opt.knopf);
         if (nr !== this.nr) return false;
         this.abbruch = null;         // der Satz stand bis zum Ende — das Wegräumen ist keine Ablösung
@@ -14267,7 +14900,7 @@ class RlTutorial {
     const saetze = schritt.saetze(kontext);
     if (!saetze.length) return Promise.resolve(false);
     this.offen++;
-    const lauf = this.schlange.then(() => this.sextant.erzaehle(saetze, { pose: schritt.pose(kontext), seite: schritt.seite })).catch(() => false);
+    const lauf = this.schlange.then(() => this.sextant.erzaehle(saetze, { pose: schritt.pose(kontext), seite: schritt.seite, pflicht: !!kontext.pflicht })).catch(() => false);
     this.schlange = lauf.then(() => { this.offen--; });
     return lauf;
   }
@@ -14308,6 +14941,7 @@ class RlFuehrung {
     this.detailsOffen = false;
     this.beobachter = null;
     this.gescrollt = '';          // Schritt, zu dessen Ziel schon gescrollt wurde
+    this.redeNr = 0;              // laufende Nummer der Erklärungen (die jüngste räumt `data-rl-redet` ab)
     this.reihenfolge = [];        // gesprochene Schritte in ihrer Reihenfolge (für Tests)
   }
 
@@ -14385,11 +15019,21 @@ class RlFuehrung {
     }
   }
 
-  /** Sätze sprechen (mit Weiter / Alles klar). Liefert true, wenn bis zum Ende bestätigt. */
+  /**
+   * Sätze sprechen (mit Weiter / Alles klar). Liefert true, wenn bis zum Ende bestätigt.
+   * Die Führung liest vor und lässt sich nicht wegklicken (`pflicht`, außer bei `opt.pflicht === false`): solange
+   * sie spricht, trägt der body `data-rl-redet` — Tisch und Fensterknöpfe sind dann gesperrt (rl-stil.css).
+   */
   sprich(key, saetze, opt = {}) {
     if (!this.sextant || !this.sextant.bereit) return Promise.resolve(false);
     this.reihenfolge.push(key);
-    return this.sextant.erzaehle(saetze, opt);
+    const pflicht = opt.pflicht !== false;
+    const nr = ++this.redeNr;
+    if (pflicht && typeof document !== 'undefined') document.body.dataset.rlRedet = '1';
+    return this.sextant.erzaehle(saetze, { ...opt, pflicht }).then((ok) => {
+      if (nr === this.redeNr && typeof document !== 'undefined') delete document.body.dataset.rlRedet;
+      return ok;
+    });
   }
 
   /**
@@ -14416,18 +15060,25 @@ class RlFuehrung {
 
   /** Sternkarte und Planetenschirm: einmal erklären, dabei ist nur der Weg nach vorn bedienbar. */
   redeAufSchirm(key, saetze, opt) {
-    this.frei = opt.frei;
-    this.ziel = opt.ziel;
+    const stand = this.stand;
+    const gesagt = stand.gesagt.includes(key);
+    // Erst lesen, dann weiter: bis die Erklärung bestätigt ist, ist auch der Weg nach vorn gesperrt.
+    this.frei = gesagt ? opt.frei : () => false;
+    this.ziel = gesagt ? opt.ziel : null;
     this.seite = '';
     this.markiere();
-    const stand = this.stand;
-    if (stand.gesagt.includes(key) || this.redet === key) return;
+    if (gesagt || this.redet === key) return;
     this.redet = key;
     this.sprich(key, saetze, { pose: 'neutral' }).then((ok) => {
       if (this.redet === key) this.redet = null;
       if (!ok) return;
       if (!stand.gesagt.includes(key)) stand.gesagt.push(key);
       this.speichern();
+      if (this.ansicht === key || (key === 'karte' && this.ansicht === 'karte') || (key === 'planet' && this.ansicht === 'planet')) {
+        this.frei = opt.frei;
+        this.ziel = opt.ziel;
+        this.markiere();
+      }
     });
   }
 
@@ -14587,7 +15238,7 @@ class RlFuehrung {
     const spiel = kampf.spiel;
     const m = kampf.menschIdx;
     const schritte = uebung.schritte();
-    const st = { angesagt: -1, kommentiert: -1, wertung: false };
+    const st = { angesagt: -1, bereit: -1, kommentiert: -1, wertung: false };   // bereit: Ansage bestätigt → der Zug ist frei
     const sortiert = (werte) => [...werte].sort((a, b) => a - b);
 
     /** Das eigene Sternbild mit genau diesen Werten (nach einem Schritt: das Ergebnis). */
@@ -14609,13 +15260,14 @@ class RlFuehrung {
       }
       return k;
     };
-    const ansage = (i) => {
+    const ansage = (i, pflicht = true) => {
       const schritt = schritte[i];
       if (!schritt || !T[schritt.key]) return Promise.resolve(false);
-      // Nach der Ansage den Tisch neu zeichnen: dann steht „Noch mal erklären" in der Fußleiste.
-      return fuehrung.sprich('kampf:' + schritt.key, T[schritt.key].vor(kontextFuer(schritt, false)), { pose: 'neutral', seite: 'rechts' })
-        .then((ok) => { if (ok) fuehrung.tischZeichnen(); return ok; });
+      // Erst wenn die Ansage gelesen und bestätigt ist, wird der Zug frei (Karten leuchten, Aufgabe in der Leiste).
+      return fuehrung.sprich('kampf:' + schritt.key, T[schritt.key].vor(kontextFuer(schritt, false)), { pose: 'neutral', seite: 'rechts', pflicht })
+        .then((ok) => { st.bereit = Math.max(st.bereit, i); fuehrung.tischZeichnen(); return ok; });
     };
+    const wartetAufAnsage = () => uebung.intakt && !!uebung.schritt() && st.bereit < uebung.schrittNr();
 
     return {
       uebung,
@@ -14623,6 +15275,8 @@ class RlFuehrung {
 
       /** Nur der angesagte Zug bleibt übrig — solange der Aufbau intakt ist. */
       optionenFiltern(optionen) {
+        // Solange V2-A2 den Zug noch ansagt, geht gar nichts — lesen kommt vor dem Ziehen.
+        if (wartetAufAnsage()) return { ...optionen, aktionen: [], kosmische: [], nova: [], jokerTausch: [], versiegelnFrei: [], spiegel: [] };
         const a = uebung.erlaubteAktion(optionen.aktionen);
         if (!a) return optionen;
         return { ...optionen, aktionen: [a], kosmische: [], nova: [], jokerTausch: [], versiegelnFrei: [], spiegel: [] };
@@ -14658,6 +15312,7 @@ class RlFuehrung {
       sichtErweitern(s) {
         const schritt = uebung.schritt();
         if (!s.dranMensch || !schritt || !uebung.intakt) return;
+        if (wartetAufAnsage()) { s.hinweis = T.erstLesen; s.hinweisIstFehler = false; return; }
         const z = uebung.ziele();
         if (!z) return;
         const hand = s.z.spieler[m].hand || [];
@@ -14731,7 +15386,8 @@ class RlFuehrung {
       /** Knopf „Noch mal erklären" in der Fußleiste, solange eine Aufgabe läuft und V2-A2 schweigt. */
       knoepfe(s) {
         if (!s.dranMensch || !this.nurGefuehrt() || fuehrung.sextant.sichtbar) return [];
-        return [{ text: T.nochmal, klasse: '', tun: () => { ansage(uebung.schrittNr()); } }];
+        if (wartetAufAnsage()) return [];
+        return [{ text: T.nochmal, klasse: '', tun: () => { ansage(uebung.schrittNr(), false); } }];
       },
 
       /** Neben dem Rundenende-Fenster: die Wertung erklären (einmal). */
@@ -15342,20 +15998,40 @@ function rlPlanetZeigen(wurzel, lauf, rueckrufe = {}, opt = {}) {
 
   const knoepfe = rlSchirmEl('div', 'rl-planet-knoepfe');
   knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.kampfBeginnen, 'haupt gross', { rl: 'kampf' }));
+  // Überspringen (Spieltest-Runde 3): eine leuchtende Tafel zeigt, WAS es bringt — die Prämie wechselt je Lakai.
+  let skipBox = null;
   if (!boss) {
     const schuld = RL_KONFIG.boss.schuldProUebersprungenem;
-    knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.ueberspringen, 'gefahr', { rl: 'ueberspringen' }, { titel: RL_TXT_SCHIRM.ueberspringenHinweis(schuld) }));
+    const praemie = lauf.skipPraemie();
+    const T = RL_TXT_SCHIRM.skip;
+    const eintrag = T[praemie.key] || T.garantie;
+    const name = typeof eintrag.name === 'function' ? eintrag.name(praemie.betrag) : eintrag.name;
+    skipBox = rlSchirmEl('div', 'rl-skip');
+    skipBox.dataset.praemie = praemie.key;
+    const tafel = rlSchirmEl('div', 'rl-skip-praemie');
+    tafel.appendChild(rlSchirmEl('span', 'rl-skip-titel', T.titel));
+    const bild = rlSchirmEl('span', 'rl-skip-bild');
+    bild.innerHTML = praemie.key === 'sternbilderpack' ? rlPackSvg('sternbilder', null, 58)
+      : praemie.key === 'planetenpack' ? rlPackSvg('planet', key, 58)
+      : praemie.key === 'geld' ? rlMuenzeSvg(46)
+      : rlGroesseSvg(praemie.key === 'modul' ? 3 : 2, 46);
+    tafel.appendChild(bild);
+    tafel.appendChild(rlSchirmEl('b', 'rl-skip-name', name));
+    tafel.appendChild(rlSchirmEl('span', 'rl-skip-text', eintrag.text));
+    tafel.appendChild(rlSchirmEl('span', 'rl-skip-preis', T.preis(schuld)));
+    skipBox.appendChild(tafel);
+    const skipKnoepfe = rlSchirmEl('div', 'rl-skip-knoepfe');
+    skipKnoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.ueberspringen, 'gefahr', { rl: 'ueberspringen' }, { titel: name + ' — ' + T.preis(schuld) }));
     if (lauf.hatVorrat('notruf') && rueckrufe.notruf) {
-      knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.notrufNutzen, 'klein', { rl: 'notruf' }, { titel: RL_TXT_SCHIRM.notrufHinweis }));
+      skipKnoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.notrufNutzen, 'klein', { rl: 'notruf' }, { titel: RL_TXT_SCHIRM.notrufHinweis }));
     }
+    skipBox.appendChild(skipKnoepfe);
   }
   const zurueckFrei = d.kampfIndex === 0 && d.uebersprungen === 0 && !!rueckrufe.zurKarte;
   knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.zurKarte, 'klein', { rl: 'karte' }, { aus: !zurueckFrei, titel: zurueckFrei ? '' : RL_TXT_SCHIRM.zurKarteGesperrt }));
   rechts.appendChild(knoepfe);
-  if (!boss) {
-    rechts.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.ueberspringenHinweis(RL_KONFIG.boss.schuldProUebersprungenem)
-      + (lauf.hatVorrat('notruf') ? ' ' + RL_TXT_SCHIRM.notrufHinweis : '')));
-  }
+  if (skipBox) rechts.appendChild(skipBox);
+  if (!boss && lauf.hatVorrat('notruf')) rechts.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.notrufHinweis));
   raster.appendChild(rechts);
   innen.appendChild(raster);
 
@@ -15621,7 +16297,14 @@ function rlUmlaufbahnFuellen(lauf, shop, rng) {
     const pool = rng() < 0.5 ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
     angebote.push(rlZieheAusPool(rng, lauf, pool, rlNeueId(shop), ausser));
   }
-  angebote.push(rlZieheAusPool(rng, lauf, rlPoolDrittes(lauf), rlNeueId(shop), ausser));
+  // Überspring-Prämie „gutes Modul": der letzte Platz ist sicher ein Modul 3. Größe oder besser (solange es eines gibt).
+  let letztes = null;
+  if (shop.modulGarantie) {
+    const module = rlPoolDrittes(lauf, { mitVorrat: false, mitSternwarte: false, mitAufwertung: false }).filter((p) => p.klasse <= 3);
+    letztes = rlZieheAusPool(rng, lauf, module, rlNeueId(shop), ausser, 3);
+    shop.modulGarantieErfuellt = !!letztes;
+  }
+  angebote.push(letztes ?? rlZieheAusPool(rng, lauf, rlPoolDrittes(lauf), rlNeueId(shop), ausser));
   shop.garantieErfuellt = false;
   if (shop.garantie && !angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2)) {
     const pool = rlPoolKosmisch(lauf).filter((p) => p.klasse <= 2);
@@ -15642,6 +16325,14 @@ function rlPacksNeu(lauf) {
   const packs = {};
   if (K.sternbilder) packs.sternbilder = { art: 'sternbilder', preis: K.sternbilder.preis, wahl: K.sternbilder.wahl, zustand: 'zu', karten: [], gewaehlt: null };
   if (K.planet) packs.planet = { art: 'planet', planet: lauf.planetAktuell(), preis: K.planet.preis, wahl: K.planet.wahl, zustand: 'zu', karten: [], gewaehlt: null };
+  // Überspring-Prämie (Spieltest-Runde 3): ein Gratis-Pack gilt für den nächsten Shop und ist damit verbraucht.
+  const gratis = lauf.daten.gratisPacks ?? {};
+  for (const art of Object.keys(packs)) {
+    if (!gratis[art]) continue;
+    packs[art].preis = 0;
+    packs[art].gratis = true;
+    gratis[art] = false;
+  }
   return packs;
 }
 
@@ -15705,8 +16396,10 @@ function rlUmlaufbahn(lauf, rng = null, opt = {}) {
   const shop = {
     art: 'UMLAUFBAHN', angebote: [], rerolls: 0, rerollPreis: RL_KONFIG.shop.reroll.start,
     garantie: !!d.garantie, garantieErfuellt: false, naechsteId: 1, packs: rlPacksNeu(lauf),
+    modulGarantie: !!d.modulGarantie, modulGarantieErfuellt: false,
   };
   d.garantie = false;
+  d.modulGarantie = false;
   // Pflicht-Tutorial: der erste Shop zeigt feste Angebote (`opt.angebote` = Katalogschlüssel), damit die Führung
   // weiß, was da liegt und was es kostet. Ein Reroll würfelt danach wie immer.
   const fest = Array.isArray(opt.angebote) ? opt.angebote.map((key) => RL_KATALOG[key]).filter(Boolean) : [];
@@ -16658,15 +17351,22 @@ function rlShopPackEl(lauf, pack) {
   const knoepfe = rlSchirmEl('div', 'rl-pack-knoepfe');
   if (pack.zustand === 'zu') {
     const preis = rlSchirmEl('span', 'rl-preis rl-pack-preis');
-    preis.appendChild(document.createTextNode(String(pack.preis)));
-    preis.insertAdjacentHTML('beforeend', rlMuenzeSvg(20));
+    if (pack.gratis) {
+      // Überspring-Prämie: das Pack kostet nichts — groß dranschreiben.
+      preis.classList.add('gratis');
+      preis.appendChild(document.createTextNode(RL_TXT_SCHIRM.skip.gratis));
+      info.appendChild(rlSchirmEl('span', 'rl-pack-gratis', RL_TXT_SCHIRM.skip.gratisStempel));
+    } else {
+      preis.appendChild(document.createTextNode(String(pack.preis)));
+      preis.insertAdjacentHTML('beforeend', rlMuenzeSvg(20));
+    }
     kopf.appendChild(preis);
     let aus = false, titel = '';
     if (d.geld < pack.preis) { aus = true; titel = RL_TXT_SCHIRM.nichtGenugGeld; }
     else if (pack.art === 'sternbilder' && RL_SHOP_TYPEN.every((t) => ((d.stufen[t] || {}).stufe ?? 0) >= max)) { aus = true; titel = RL_TXT_SCHIRM.packAlleVoll; }
     else if (pack.art === 'planet' && d.deck.length >= RL_KONFIG.deck.maxGroesse) { aus = true; titel = RL_TXT_SCHIRM.packDeckVoll; }
-    const b = rlSchirmKnopf(RL_TXT_SCHIRM.packOeffnen(pack.preis), 'haupt', { rl: 'pack-oeffnen', pack: pack.art }, { aus, titel });
-    b.insertAdjacentHTML('beforeend', rlMuenzeSvg(16));
+    const b = rlSchirmKnopf(pack.gratis ? RL_TXT_SCHIRM.skip.gratisOeffnen : RL_TXT_SCHIRM.packOeffnen(pack.preis), 'haupt', { rl: 'pack-oeffnen', pack: pack.art }, { aus, titel });
+    if (!pack.gratis) b.insertAdjacentHTML('beforeend', rlMuenzeSvg(16));
     knoepfe.appendChild(b);
     if (titel) info.appendChild(rlSchirmEl('span', 'rl-pack-sperre', titel));
   } else if (pack.zustand === 'offen') {
@@ -16795,6 +17495,11 @@ function rlUmlaufbahnZeigen(wurzel, lauf, shop, rueckrufe = {}) {
 
   const shopEl = rlSchirmEl('div', 'rl-shop');
   if (gratis) shopEl.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.gratisRerolls(d.gratisRerolls)));
+  if (shop.modulGarantie) {
+    const mg = rlSchirmEl('p', 'rl-hinweis rl-garantie', shop.modulGarantieErfuellt ? RL_TXT_SCHIRM.skip.modulGarantie : RL_TXT_SCHIRM.skip.modulGarantieFehlt);
+    mg.dataset.erfuellt = shop.modulGarantieErfuellt ? '1' : '0';
+    shopEl.appendChild(mg);
+  }
   if (shop.garantie) {
     const g = rlSchirmEl('p', 'rl-hinweis rl-garantie', shop.garantieErfuellt ? RL_TXT_SCHIRM.garantie : RL_TXT_SCHIRM.garantieFehlt);
     g.dataset.erfuellt = shop.garantieErfuellt ? '1' : '0';
@@ -17474,6 +18179,10 @@ class RlLauf {
     if (d.sternwarten === undefined) d.sternwarten = 0;
     if (d.sternwarte === undefined) d.sternwarte = null;
     if (!d.bosseBekannt) d.bosseBekannt = [];
+    // Spieltest-Runde 3: Überspring-Prämien (Gratis-Packs, Modul-Garantie) für den nächsten Shop.
+    if (!d.gratisPacks || typeof d.gratisPacks !== 'object') d.gratisPacks = {};
+    if (d.modulGarantie === undefined) d.modulGarantie = false;
+    if (d.letztePraemie === undefined) d.letztePraemie = null;
     // Spieltest-Runde 1: gekaufte Stufen (Sternbilderpack) je Typ.
     for (const t of RL_STUFEN_TYPEN) {
       if (!d.stufen[t]) d.stufen[t] = { gespielt: 0, stufe: 0, gekauft: 0 };
@@ -17660,13 +18369,45 @@ class RlLauf {
     d.phase = 'PLANET';
   }
 
-  /** Lakai überspringen: Garantie für die nächste Umlaufbahn, Bossschuld (außer per Notruf). */
-  ueberspringen(ohneSchuld = false) {
+  /**
+   * Die Prämie fürs Überspringen eines Kampfplatzes (Spieltest-Runde 3, wie die Marken in Balatro): je Lakai eine
+   * von mehreren — seltenes Angebot (die alte Garantie), Gratis-Sternbilderpack, Gratis-Planetenpack, gutes Modul
+   * oder Geld sofort. Deterministisch aus Seed, Platz und Kampfplatz, damit der Planetenschirm sie vorher zeigen
+   * kann und ein Reload nichts ändert. Boss: null. Sind alle Module an Bord, wird aus „Modul" die Garantie.
+   * @returns {{key:string, betrag:number}|null}
+   */
+  skipPraemie(kampfIndex = this.d.kampfIndex) {
+    const d = this.d;
+    if (kampfIndex >= RL_KONFIG.lauf.lakaienProPlanet) return null;
+    const liste = (RL_KONFIG.ueberspringen && RL_KONFIG.ueberspringen.praemien) || [{ key: 'garantie', gewicht: 1 }];
+    const rng = rngVon((d.seed ^ (d.platz * 48271) ^ ((kampfIndex + 1) * 69621) ^ 0x51ed270b) >>> 0);
+    const summe = liste.reduce((n, p) => n + (p.gewicht ?? 1), 0);
+    let z = rng() * summe;
+    let wahl = liste[liste.length - 1];
+    for (const p of liste) { z -= (p.gewicht ?? 1); if (z < 0) { wahl = p; break; } }
+    let key = wahl.key;
+    if (key === 'modul' && !Object.values(RL_KATALOG).some((e) => e.sorte === 'modul' && e.groesse <= 3 && !this.hatModul(e.key))) key = 'garantie';
+    return { key, betrag: key === 'geld' ? (wahl.betrag ?? 0) : 0 };
+  }
+
+  /**
+   * Lakai überspringen: die Prämie des Kampfplatzes (`skipPraemie`, oder `praemieKey` ausdrücklich) für den
+   * nächsten Shop bzw. sofort, dazu die Bossschuld (außer per Notruf).
+   */
+  ueberspringen(ohneSchuld = false, praemieKey = null) {
     const d = this.d;
     if (d.phase !== 'PLANET') throw new Error('Überspringen nur auf dem Planetenschirm');
     if (this.istBossKampf()) throw new Error('Der Boss lässt sich nicht überspringen');
     if (this.istGefuehrt()) throw new Error('Der Übungskampf lässt sich nicht überspringen');
-    d.garantie = true;
+    const praemie = praemieKey ? { key: praemieKey, betrag: praemieKey === 'geld' ? ((RL_KONFIG.ueberspringen.praemien.find((p) => p.key === 'geld') || {}).betrag ?? 0) : 0 } : this.skipPraemie();
+    switch (praemie.key) {
+      case 'sternbilderpack': d.gratisPacks.sternbilder = true; break;
+      case 'planetenpack': d.gratisPacks.planet = true; break;
+      case 'modul': d.modulGarantie = true; break;
+      case 'geld': this.geldPlus(praemie.betrag); break;
+      default: d.garantie = true;
+    }
+    d.letztePraemie = praemie.key;
     if (!ohneSchuld) d.bossSchuld += RL_KONFIG.boss.schuldProUebersprungenem;
     d.uebersprungen++;
     d.kampfIndex++;
@@ -18147,6 +18888,100 @@ function rlKampfUiSchild(text, farbe, platz) {
   setTimeout(() => buehne.remove(), 800);
 }
 
+/**
+ * Der Wertungs-Angriff (Spieltest-Runde 4): Am Rundenende stößt jedes eigene Sternbild nach vorn, seine Punkte fliegen
+ * als Zahl zum Ziel — im Bosskampf zur Figur (sie zuckt, die Lebensleiste sinkt Stück für Stück, danach wächst die
+ * Heilung grün nach), sonst zum eigenen Punktestand in der Kopfzeile (er zählt hoch). Reine Anzeige: gewertet hat die
+ * Engine schon. Ohne Bewegung (Einstellung „aus", „Bewegung reduzieren") oder ohne Sternbild passiert nichts.
+ * @returns {Promise<void>} löst auf, wenn die Folge durch ist — danach zeigt start.js das Rundenende-Fenster
+ */
+function rlKampfUiWertung(kampf) {
+  const faktor = bewegungsFaktor();
+  if (!faktor || typeof document === 'undefined') return Promise.resolve();
+  const m = kampf.menschIdx;
+  const spiel = kampf.spiel;
+  const treffer = spiel.spieler[m].sternbilder
+    .map((sb) => ({ sb, punkte: spiel.punkteVon(sb, m), el: document.querySelector('#meine-sternbilder .sternbild[data-sb="' + sb.id + '"]') }))
+    .filter((t) => t.punkte > 0 && t.el);
+  if (!treffer.length) return Promise.resolve();
+
+  const bz = kampf.boss;
+  const leiste = bz ? document.querySelector('#gegner-bereich .gegner-leben') : null;
+  const figur = bz ? document.querySelector('#gegner-bereich .gegner[data-boss] .gegner-figur') : null;
+  const chip = document.querySelector('#kopf-punkte .spieler-chip.mensch .chip-punkte');
+  const ziel = bz ? (figur || leiste) : chip;
+  if (!ziel) return Promise.resolve();
+  const warte = (ms) => new Promise((fertig) => setTimeout(fertig, ms));
+  const dauer = Math.round((treffer.length > 4 ? 300 : 430) * faktor);
+
+  // Ausgangsstand: Bossleben vor dem Schaden bzw. Punktestand vor der Wertung.
+  const summe = treffer.reduce((n, t) => n + t.punkte, 0);
+  let leben = bz ? (bz.lebenVorWertung ?? Math.min(bz.lebenMax, bz.leben + summe)) : 0;
+  let stand = chip ? Math.max(0, spiel.spieler[m].punkte - summe) : 0;
+  const balken = leiste ? leiste.querySelector('.leben-balken') : null;
+  const zahl = leiste ? leiste.querySelector('.leben-zahl') : null;
+  const zeigeLeben = () => {
+    if (balken) balken.style.setProperty('--anteil', (Math.max(0, leben) / Math.max(1, bz.lebenMax)).toFixed(4));
+    if (zahl) zahl.textContent = Math.max(0, leben) + ' / ' + bz.lebenMax;
+  };
+  if (leiste) { leiste.classList.add('wertung-laeuft'); zeigeLeben(); }
+  if (chip && !bz) chip.textContent = String(stand);
+
+  const schlag = async (t) => {
+    const von = t.el.getBoundingClientRect();
+    const nach = ziel.getBoundingClientRect();
+    t.el.classList.add('rl-wertung-stoss');
+    const marke = document.createElement('div');
+    marke.className = 'rl-wertung-zahl';
+    marke.textContent = '+' + t.punkte;
+    marke.style.left = Math.round(von.left + von.width / 2) + 'px';
+    marke.style.top = Math.round(von.top) + 'px';
+    document.body.appendChild(marke);
+    const dx = Math.round(nach.left + nach.width / 2 - (von.left + von.width / 2));
+    const dy = Math.round(nach.top + nach.height / 2 - von.top);
+    const flug = marke.animate(
+      [{ transform: 'translate(-50%, -50%) scale(.7)', opacity: 0 }, { transform: 'translate(-50%, -120%) scale(1.25)', opacity: 1, offset: .25 },
+        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.9)', opacity: 1 }],
+      { duration: dauer, easing: 'cubic-bezier(.5, 0, .7, 1)', fill: 'forwards' });
+    await Promise.race([flug.finished.catch(() => {}), warte(dauer + 120)]);
+    marke.remove();
+    t.el.classList.remove('rl-wertung-stoss');
+    if (bz) {
+      leben -= t.punkte;
+      zeigeLeben();
+      if (figur) { figur.classList.remove('getroffen'); void figur.offsetWidth; figur.classList.add('getroffen'); }
+      if (leiste) { leiste.classList.remove('wertung-treffer'); void leiste.offsetWidth; leiste.classList.add('wertung-treffer'); }
+    } else if (chip) {
+      stand += t.punkte;
+      chip.textContent = String(stand);
+      chip.classList.remove('rl-wertung-plus'); void chip.offsetWidth; chip.classList.add('rl-wertung-plus');
+    }
+    await warte(Math.round(140 * faktor));
+  };
+
+  return (async () => {
+    await warte(Math.round(250 * faktor));
+    for (const t of treffer) await schlag(t);
+    if (bz && leiste) {
+      // Die Heilung wächst sichtbar nach — dann steht die Leiste wieder auf dem echten Wert.
+      const heilung = bz.letzteAenderung ? bz.letzteAenderung.heilung : 0;
+      if (heilung > 0 && !bz.tot) {
+        await warte(Math.round(200 * faktor));
+        leben = bz.leben;
+        leiste.classList.add('wertung-heilt');
+        zeigeLeben();
+        await warte(Math.round(520 * faktor));
+        leiste.classList.remove('wertung-heilt');
+      }
+      leben = bz.leben;
+      zeigeLeben();
+      leiste.classList.remove('wertung-laeuft', 'wertung-treffer');
+    }
+    if (figur) figur.classList.remove('getroffen');
+    if (chip) { chip.textContent = String(spiel.spieler[m].punkte); chip.classList.remove('rl-wertung-plus'); }
+  })().catch(() => {});
+}
+
 /** Ein Satz zu einer Elite-Fähigkeit aus der Ereignisliste des Kampfes. */
 function rlKampfUiFaehigkeitText(e, name) {
   const T = RL_TXT_KAMPF.faehigkeit;
@@ -18257,6 +19092,9 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       return zielart ? { zielart, hinweis: RL_TXT_ZIEL[art] || '' } : null;
     },
 
+    /** Wertungs-Angriff vor dem Rundenende-Fenster: start.js wartet auf die Promise (S.modus-Vertrag: wertungZeigen). */
+    wertungZeigen() { return rlKampfUiWertung(kampf); },
+
     beiRundenende(a) {
       const zeilen = [];
       const runde = a.runde;
@@ -18300,7 +19138,7 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       if (zaehler.endeGemeldet) return;
       zaehler.endeGemeldet = true;
       if (kampf.boss && kampf.boss.tot) {
-        const platz = document.querySelector('.gegner[data-idx="' + kampf.boss.idx[0] + '"] .gegner-leben');
+        const platz = document.querySelector('#gegner-bereich .gegner-leben');
         rlKampfUiSchild(RL_TXT_UI.schild.krach, 'rot', platz);
       }
       if (kontext.beiEnde) kontext.beiEnde(kampf);
@@ -19077,6 +19915,7 @@ class RlKampf {
     const bz = this.bossZustand;
     if (bz && !bz.tot) {
       const schaden = Math.max(0, e.zuwachs[this.menschIdx] ?? 0);
+      bz.lebenVorWertung = bz.leben;                  // für den Wertungs-Angriff der Oberfläche (Leiste sinkt Stück für Stück)
       bz.leben = Math.max(0, bz.leben - schaden);
       bz.letzteAenderung = { schaden, heilung: 0 };
       bz.aenderungNr = (bz.aenderungNr ?? 0) + 1;     // Kennung für die Oberfläche: jede Änderung wird einmal animiert
@@ -19515,7 +20354,7 @@ function rlUebungKampf(lauf, gegner, seed, opts = {}) {
  * Top-Level-Namen dieser Datei: RL_START_TUTORIAL_SEED, rlS,
  *   rlStartEsc, rlStartSpeichern, rlStartFehler, rlStartFrage, rlStartSchirmAn, rlStartTischAn,
  *   rlStartZurueckZurEbene, rlStartZuruecksetzen, rlStartSextantWeg, rlStartHaken, rlStartHakenNeu, rlStartFuehrung,
- *   rlStartTutorialGeschafft, rlStartStationen,
+ *   rlStartTutorialGeschafft, rlStartPraemieName, rlStartStationen,
  *   rlStartStationSetzen, rlStartTu, rlStartZeigeAktuell, rlStartZeigeKarte, rlStartZeigePlanet,
  *   rlStartZeigeSternwarte, rlStartZeigeUmlaufbahn, rlStartZeigeImFlug, rlStartZeigeEnde,
  *   rlStartProfilFortschreiben, rlStartKampfStarten, rlStartKampfBeendet, rlStartNachKampf,
@@ -19662,6 +20501,13 @@ function rlStartTutorialGeschafft() {
 /*  Stationen des Planetenschirms                                       */
 /* ------------------------------------------------------------------ */
 
+/** Anzeigename einer Überspring-Prämie (`lauf.skipPraemie()`), z. B. „Gratis-Sternbilderpack" oder „6 Münzen sofort". */
+function rlStartPraemieName(praemie) {
+  if (!praemie) return '';
+  const e = RL_TXT_SCHIRM.skip[praemie.key] || RL_TXT_SCHIRM.skip.garantie;
+  return typeof e.name === 'function' ? e.name(praemie.betrag) : e.name;
+}
+
 /** Zustände der vier Stationen des aktuellen Planeten (aus `lauf.daten.stationen`). */
 function rlStartStationen() {
   const lauf = rlS.lauf;
@@ -19733,12 +20579,17 @@ function rlStartZeigePlanet() {
   const rueckrufe = {
     kampf: () => rlStartKampfStarten(true),
     ueberspringen: () => rlStartFrage(RL_TXT_KAMPF.ueberspringenFrage,
-      RL_TXT_KAMPF.ueberspringenText(RL_KONFIG.boss.schuldProUebersprungenem), RL_TXT_UI.ueberspringen,
-      () => rlStartTu(() => {
-        const i = lauf.daten.kampfIndex;
-        lauf.ueberspringen();
-        rlStartStationSetzen(lauf.planetAktuell(), i, 'uebersprungen');
-      })),
+      RL_TXT_KAMPF.ueberspringenText(RL_KONFIG.boss.schuldProUebersprungenem, rlStartPraemieName(lauf.skipPraemie())), RL_TXT_UI.ueberspringen,
+      () => {
+        const praemie = lauf.skipPraemie();
+        rlStartTu(() => {
+          const i = lauf.daten.kampfIndex;
+          lauf.ueberspringen();
+          rlStartStationSetzen(lauf.planetAktuell(), i, 'uebersprungen');
+        });
+        // V2-A2 bestätigt kurz, was es gebracht hat (Spieltest-Runde 3).
+        if (praemie && lauf.daten.letztePraemie === praemie.key) rlStartHaken().satz(RL_TXT_SCHIRM.skip.bekommen(rlStartPraemieName(praemie)), { pose: 'freut' });
+      }),
     deckAnsehen: () => rlDeckAnsicht(rlS.schirm, lauf.daten.deck, {}, rlStartDeckOpt(lauf)),
   };
   if (lauf.hatVorrat('notruf')) {
@@ -20106,7 +20957,13 @@ function rlStartStand() {
   if (pflicht && !rlS.startGesagt) {
     rlS.startGesagt = true;
     const haken = rlS.lauf ? rlTutorialHaken(null, profil, { sextant: rlS.sextant, profilSpeichern: rlProfilSpeichern }) : rlStartHaken();
-    haken.sag('start');
+    // Erst lesen, dann starten: solange V2-A2 begrüßt, ist „Raubzug beginnen" gesperrt (Pflicht-Lesen wie in der Führung).
+    const knopf = document.getElementById('btn-rl-neu');
+    const begruessung = haken.sag('start', { pflicht: true });
+    if (knopf && rlS.sextant && rlS.sextant.bereit) {
+      setTimeout(() => { knopf.disabled = true; knopf.title = RL_TXT_FUEHRUNG.gesperrt; }, 0);   // nach dem Aufbau der Ebene
+      begruessung.then(() => { knopf.disabled = false; knopf.title = ''; });
+    }
   }
   return {
     // Pflicht-Tutorial: die Ebene zeigt dann nur „Raubzug beginnen" (Deck- und Stufenwahl kommen danach).
@@ -20227,7 +21084,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '19.09.2026 00:41';
+const BAU_STAND = '19.09.2026 01:25';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -20336,6 +21193,7 @@ function neuesSpielAus(optionen) {
     S.eingetragen = false;
   }
   S.wertungGezeigt = 0;
+  S.wertungAnimiert = 0;
   S.ablauf = a;
   S.ablauf.start();
   merkeRundenStart();
@@ -20576,6 +21434,20 @@ function tonZumZug(vorher) {
   else if (gelegt) spieleTon('legen');
 }
 
+/**
+ * Rundenende: im Roguelike-Modus zeigt der Modus erst den Wertungs-Angriff (S.modus-Vertrag: `wertungZeigen(a)` liefert
+ * eine Promise), dann kommt das Fenster. Je Runde einmal; im Grundspiel geht es direkt zum Fenster.
+ */
+function rundenendeMitWertung(gilt) {
+  const a = S.ablauf;
+  if (S.modus && S.modus.wertungZeigen && S.wertungAnimiert !== a.runde) {
+    S.wertungAnimiert = a.runde;
+    Promise.resolve(S.modus.wertungZeigen(a)).then(() => { if (gilt() && S.wertungGezeigt !== a.runde) zeigeRundenende(); });
+    return;
+  }
+  zeigeRundenende();
+}
+
 /** Punktestand zu Rundenbeginn festhalten — nur so stimmt die Rundenbilanz. */
 function merkeRundenStart() {
   S.punkteRundenStart = S.ablauf.spiel.spieler.map((sp) => sp.punkte);
@@ -20603,7 +21475,7 @@ function weiterLaufen() {
     if (S.modus) {
       // Im Modus endet die Partie mit der letzten Wertung (Rundenzahl oder Boss
       // besiegt). Die Wertung soll man noch sehen; danach übernimmt der Modus.
-      if (S.wertungGezeigt !== a.runde) { zeigeRundenende(); return; }
+      if (S.wertungGezeigt !== a.runde) { rundenendeMitWertung(gilt); return; }
       S.modus.beiEnde(a);
       return;
     }
@@ -20611,7 +21483,7 @@ function weiterLaufen() {
     return;
   }
   if (a.phase === 'HIMMELWAHL') return;      // wartet darauf, dass du ein Ziel anklickst
-  if (a.phase === 'RUNDENENDE') { zeigeRundenende(); return; }
+  if (a.phase === 'RUNDENENDE') { rundenendeMitWertung(gilt); return; }
   if (a.istMensch()) { S.kosmischGespielt = false; zeichne(); return; }
 
   S.botTimer = setTimeout(() => {
@@ -21473,7 +22345,7 @@ function baueKnoepfe(s) {
     }
   }
 
-  if (opt.aktionen.length === 0) {
+  if (opt.aktionen.length === 0 && !nurGefuehrt) {
     knoepfe.push({ text: 'Zug aussetzen', klasse: 'haupt' });
     tun.push(() => { S.ablauf.spieleZug({ aktion: null }); nachZug(); });
   }
