@@ -2390,6 +2390,16 @@ body[data-modus="roguelike"] #galaxie {
 body[data-modus="roguelike"] #tisch {
   background: color-mix(in srgb, var(--planet-tisch) 55%, transparent);
 }
+/* Spieltest-Runde 2: Die Mitte darf nie über „Vor dir" malen — wird ihre Rasterzeile zu klein, scrollt sie in sich. */
+body[data-modus="roguelike"] #mitte-bereich { overflow: hidden; }
+/* Planetenkarten: Rand in der Planetenfarbe, Name als Band unten, Typ-Bonus als Marke. */
+.karte.planetkarte { box-shadow: inset 0 0 0 2px var(--ruecken, var(--rl-gold)), var(--rl-schatten-klein); }
+
+.karte .karte-marke[data-marke="typbonus"] { background: #FFF3B0; color: var(--tinte); font-size: 8px; }
+@media (max-height: 800px) {
+  #rl-stufen.rl-stufen-leiste { font-size: 11px; margin-bottom: 4px; gap: 3px 6px; }
+  .rl-stufen-chip { font-size: 11px; line-height: 1.4; }
+}
 body[data-modus="roguelike"] .gegner.aktiv,
 body[data-modus="roguelike"] #ich-bereich.aktiv,
 body[data-modus="roguelike"] #hand-bereich.aktiv { border-color: var(--planet); }
@@ -3718,21 +3728,121 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
   .rl-kopfzeile .rl-rechts .rl-knopf { flex: 1 1 auto; }
 }
 
+/* ---------- 22. Packs und Details-Knöpfe (Spieltest-Runde 2) ----------
+   Je Shop zwei Packs (`section.rl-packs .rl-pack[data-pack][data-zustand]`): zu = Beutel mit Preis und „Öffnen",
+   offen = aufgerissen, drei Karten fächern auf (Klasse .frisch nur direkt nach dem Öffnen), fertig = Wahl markiert.
+   DOM aus rl-shop-ui.js (rlShopPacksEl). Die alten Regeln für .rl-pack-typ (Sternbilderpack der Runde 1) sind tot. */
+.rl-shop > .rl-packs { margin-top: 8px; }
+.rl-imflug .rl-packs { grid-column: 1 / -1; }
+.rl-packs-reihe { display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch; padding: 4px 6px 8px 2px; }
+.rl-packs .rl-pack {
+  grid-column: auto; flex: 1 1 380px; min-width: 0; margin: 0; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 12px; padding: 14px;
+  background: rgba(8, 12, 23, .55); border: var(--rl-rand) solid var(--tinte); border-radius: 8px; box-shadow: 4px 4px 0 #000;
+}
+.rl-packs .rl-pack[data-pack="planet"] { border-color: color-mix(in srgb, var(--ruecken, var(--planet)) 65%, var(--tinte)); }
+.rl-packs .rl-pack-kopf { position: relative; display: flex; flex-direction: row; align-items: flex-start; gap: 16px; }
+.rl-pack-bild { flex: 0 0 auto; line-height: 0; filter: drop-shadow(4px 4px 0 #000); transform-origin: 50% 90%; transition: rotate .2s ease, translate .2s ease; }
+.rl-pack-bild svg { display: block; }
+.rl-pack[data-zustand="zu"] .rl-pack-bild { rotate: -4deg; }
+.rl-pack[data-zustand="zu"]:hover .rl-pack-bild { rotate: 2deg; translate: 0 -4px; }
+.rl-pack[data-zustand="offen"] .rl-pack-bild,
+.rl-pack[data-zustand="fertig"] .rl-pack-bild { rotate: -14deg; scale: .8; opacity: .55; filter: grayscale(.4) drop-shadow(3px 3px 0 #000); }
+.rl-pack-info { display: flex; flex-direction: column; gap: 6px; min-width: 0; color: var(--schrift); }
+.rl-packs .rl-pack-name { font-family: var(--display); font-size: 24px; line-height: 1.05; letter-spacing: .04em; color: var(--papier); text-shadow: 2px 2px 0 var(--tinte); }
+.rl-pack-text { color: var(--schrift-leise); font-size: var(--t-neben); line-height: 1.4; }
+.rl-pack-wahl { font-family: var(--display); font-size: 18px; letter-spacing: .06em; color: var(--rl-gold); }
+.rl-pack-naechster { font-size: var(--t-neben); color: var(--schrift-leise); font-style: italic; }
+.rl-pack-sperre { font-size: var(--t-neben); color: var(--stern-heiss); }
+.rl-pack-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.rl-packs .rl-pack-preis { position: absolute; top: -22px; right: -18px; left: auto; }
+.rl-packs .rl-pack-geoeffnet { position: absolute; top: 40px; left: 0; right: auto; rotate: -12deg; }
+.rl-pack-karten { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; padding: 4px 2px 2px; }
+.rl-pack-karte {
+  position: relative; flex: 1 1 132px; max-width: 176px; min-width: 0; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 10px;
+  background: var(--papier); color: var(--tinte); border: var(--rl-rand) solid var(--tinte); border-radius: 6px;
+  box-shadow: 4px 4px 0 #000; text-align: center; font-family: var(--grotesk); font-size: var(--t-neben);
+}
+.rl-pack-karte:nth-child(odd)  { rotate: -1.2deg; }
+.rl-pack-karte:nth-child(even) { rotate: 1deg; }
+.rl-pack-karte[data-groesse="4"] { border-top: 6px solid var(--rl-g4); }
+.rl-pack-karte[data-groesse="3"] { border-top: 6px solid var(--rl-g3); }
+.rl-pack-karte[data-groesse="2"] { border-top: 6px solid var(--rl-g2); }
+.rl-pack-karte[data-groesse="1"] { border-top: 6px solid var(--rl-g1); }
+.rl-pack-karte-bild { --karte-b: 78px; --karte-h: 109px; display: flex; justify-content: center; align-items: center; min-height: 84px; }
+.rl-pack-typkarte { width: 84px; height: 84px; border: 2px solid var(--tinte); border-radius: 50%; background: var(--papier-tief); background-image: var(--rl-halbton); box-shadow: 2px 2px 0 var(--tinte); }
+.rl-pack-karte-name { font-family: var(--display); font-size: 17px; line-height: 1.05; letter-spacing: .02em; max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
+.rl-pack-karte-stufe { font-family: var(--display); font-size: 13px; letter-spacing: .05em; color: #5D5A4E; }
+.rl-pack-pfeil { font-weight: 400; color: #2E6E3A; }
+.rl-pack-karte-text { color: #4B4839; line-height: 1.3; }
+.rl-pack-karte .rl-kachel-groesse { font-size: 12px; }
+.rl-pack-karte-knoepfe { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: auto; padding-top: 4px; }
+.rl-pack-karte.gewaehlt { box-shadow: 4px 4px 0 #000, 0 0 0 4px var(--rl-gold); }
+.rl-pack-karte.verfallen { opacity: .45; filter: grayscale(.5); }
+.rl-pack-karte .rl-pack-genommen { position: static; rotate: -3deg; opacity: 1; }
+/* Aufreißen: der Beutel kippt weg, die Karten springen nacheinander heraus. */
+.rl-pack.frisch .rl-pack-bild { animation: rl-pack-reissen 520ms ease-out 1; }
+.rl-pack.frisch .rl-pack-karte { animation: rl-pack-karte-auf 520ms cubic-bezier(.2, .9, .3, 1.2) both; animation-delay: calc(180ms + var(--nr, 0) * 140ms); }
+@keyframes rl-pack-reissen {
+  0%   { rotate: -4deg; scale: 1; opacity: 1; filter: drop-shadow(4px 4px 0 #000); }
+  25%  { rotate: 7deg; scale: 1.08; }
+  50%  { rotate: -9deg; scale: 1.1; }
+  100% { rotate: -14deg; scale: .8; opacity: .55; }
+}
+@keyframes rl-pack-karte-auf {
+  0%   { translate: 0 -46px; scale: .4; opacity: 0; }
+  100% { translate: 0 0; scale: 1; opacity: 1; }
+}
+/* Der Details-Knopf: leiser als „Kaufen", überall gleich. */
+.rl-knopf.rl-details-knopf { background: transparent; color: inherit; border-style: dashed; box-shadow: none; font-size: 12px; padding: 2px 10px; }
+.rl-kachel .rl-knopf.rl-details-knopf, .rl-pack-karte .rl-knopf.rl-details-knopf, .rl-angebot .rl-knopf.rl-details-knopf { color: var(--tinte); border-color: var(--tinte); }
+.rl-knopf.rl-details-knopf:hover { background: rgba(242, 198, 64, .25); translate: 0 0; }
+.rl-angebot .rl-knopf.rl-details-knopf { color: var(--schrift); border-color: var(--schrift-leise); }
+@media (max-width: 720px) {
+  .rl-packs .rl-pack { flex-basis: 100%; }
+  .rl-pack-bild svg { height: 104px; width: auto; }
+  .rl-pack-karte { flex: 1 1 130px; }
+}
+@media (max-width: 430px) {
+  .rl-packs .rl-pack-kopf { flex-direction: column; align-items: center; text-align: center; }
+  .rl-pack-knoepfe { justify-content: center; }
+  .rl-packs .rl-pack-preis { left: auto; right: 4px; top: -8px; }
+  .rl-pack-karte { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rl-pack.frisch .rl-pack-bild, .rl-pack.frisch .rl-pack-karte { animation: none; }
+  .rl-pack-bild { transition: none; }
+}
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
    Die Figuren kommen als Inline-SVG aus rl-figuren.js (rlGegnerFigurSvg); hier steht nur, wie sie
    im Gegnerplatz (.gegner-kopf) und in der Gegnervorschau (Planetenschirm) sitzen und wie sie zucken. */
 
-/* ---------- 1. Figur im Gegnerplatz: links vom Namen, steht auf der Kopfzeilen-Linie ---------- */
+/* ---------- 1. Figur im Gegnerplatz: eigene Spalte links neben Kopf, Privilegzeile, Leiste und Auslage ----------
+   Spieltest-Runde 2: Die Figur saß in der Kopfzeile und machte sie 96–124 px hoch; bei flachen Fenstern
+   (728 px) drückte das die Mitte auf null und deren Karten malten über „Vor dir". Jetzt spannt sie sich als
+   Rasterspalte über alle Zeilen des Platzes — die Höhe des Platzes bestimmt weiter die Auslage. */
+
+.gegner.mit-figur {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-auto-rows: auto;
+  column-gap: var(--raum);
+  row-gap: var(--raum-halb);
+  align-items: start;
+}
+.gegner.mit-figur > .gegner-figur { grid-column: 1; grid-row: 1 / -1; align-self: start; }
+.gegner.mit-figur > :not(.gegner-figur) { grid-column: 2; min-width: 0; }
+.gegner.mit-figur > .sternbilder { min-height: 0; }
 
 .gegner-figur {
-  flex: 0 0 auto;
-  align-self: flex-end;
   display: block;
-  height: 96px;
+  height: 92px;
   width: auto;
-  margin-bottom: -3px;               /* die Füße auf der Linie unter dem Kopf */
   line-height: 0;
   filter: drop-shadow(3px 3px 0 #000);
   transform-origin: 50% 100%;
@@ -3744,9 +3854,25 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
   width: auto;
   overflow: visible;
 }
-/* Mit Figur richten sich Name, Hand und Punkte an der Mitte der Zeile aus statt an der Grundlinie. */
-.gegner-kopf:has(.gegner-figur) { align-items: center; }
-.gegner[data-boss] .gegner-figur { height: 124px; }
+.gegner[data-boss] .gegner-figur { height: 116px; }
+
+/* Seitenplätze (schmale Spalten): die Figur klein in einer eigenen Zeile über dem Kopf. */
+.gegner[data-sitz="links"].mit-figur,
+.gegner[data-sitz="rechts"].mit-figur { grid-template-columns: minmax(0, 1fr); }
+.gegner[data-sitz="links"].mit-figur > .gegner-figur,
+.gegner[data-sitz="rechts"].mit-figur > .gegner-figur { grid-column: 1; grid-row: auto; height: 52px; justify-self: start; }
+.gegner[data-sitz="links"].mit-figur > :not(.gegner-figur),
+.gegner[data-sitz="rechts"].mit-figur > :not(.gegner-figur) { grid-column: 1; }
+
+/* Flache Fenster: kleinere Figuren, damit Mitte und Auslage Platz behalten. */
+@media (max-height: 800px) {
+  .gegner-figur { height: 72px; }
+  .gegner[data-boss] .gegner-figur { height: 88px; }
+}
+@media (max-height: 700px) {
+  .gegner-figur { height: 56px; }
+  .gegner[data-boss] .gegner-figur { height: 68px; }
+}
 
 /* ---------- 2. Treffer und Zucken ---------- */
 
@@ -3781,7 +3907,7 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
 /* ---------- 4. Kleine Bildschirme ---------- */
 
 @media (max-width: 720px) {
-  .gegner-figur { height: 56px; margin-bottom: -2px; filter: drop-shadow(2px 2px 0 #000); }
+  .gegner-figur { height: 56px; filter: drop-shadow(2px 2px 0 #000); }
   .gegner[data-boss] .gegner-figur { height: 72px; }
   .rl-gegner-figur-halter { height: 96px; }
 }
@@ -3793,6 +3919,49 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
 
 @media (prefers-reduced-motion: reduce) {
   .gegner-figur.getroffen, .gegner-figur.zueckt { animation: none; }
+}
+
+</style>
+<style>
+/* Roguelike-Modus — Details-Fenster (Spieltest-Runde 2). Wird vom Einpacker wie rl-stil.css eingebettet.
+   DOM aus rl-details.js: .rl-ebene.rl-details > .rl-details-kasten mit Überschrift, .rl-details-vorschau (große Karte,
+   Modulbild, Beispiel-Sternbild oder Pack), .rl-details-text (Zeile mit Chips, lange Erklärung, Beispielkasten, Marken). */
+
+.rl-ebene.rl-details { z-index: 60; position: fixed; inset: 0; align-items: center; }
+.rl-details-kasten {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px 26px; align-items: start;
+  width: min(780px, 100%); box-sizing: border-box; color: var(--schrift);
+}
+.rl-details-kasten > .rl-ueberschrift { grid-column: 1 / -1; margin: 0; }
+.rl-details-vorschau {
+  --karte-b: 132px; --karte-h: 185px; --t-karte: 56px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 150px;
+  filter: drop-shadow(5px 5px 0 #000);
+}
+.rl-details-vorschau .karte { cursor: default; }
+.rl-details-vorschau .karte .karte-marke { font-size: 12px; }
+.rl-details-vorschau svg { display: block; }
+.rl-details-form { --karte-b: 44px; --karte-h: 62px; --t-karte: 20px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; max-width: 210px; }
+.rl-details-text { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.rl-details-zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; font-family: var(--display); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--schrift-leise); }
+.rl-details-chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; border: 2px solid var(--tinte); border-radius: 4px; background: var(--papier); color: var(--tinte); box-shadow: 2px 2px 0 #000; }
+.rl-details-chip[data-groesse="4"] { background: var(--rl-g4); }
+.rl-details-chip[data-groesse="3"] { background: var(--rl-g3); }
+.rl-details-chip[data-groesse="2"] { background: var(--rl-g2); color: #fff; }
+.rl-details-chip[data-groesse="1"] { background: var(--rl-g1); color: #fff; }
+.rl-details-chip.preis { background: var(--rl-gold); }
+.rl-details-lang { margin: 0; font-size: var(--t-text); line-height: 1.55; }
+.rl-details-beispiel { margin: 0; padding: 10px 14px; border: 2px dashed var(--tisch-linie); border-radius: 6px; background: rgba(237, 230, 214, .07); line-height: 1.5; }
+.rl-details-beispiel b { display: block; margin-bottom: 2px; font-family: var(--display); font-weight: 400; letter-spacing: .08em; color: var(--rl-gold); }
+.rl-details-marken { margin: 0; padding-left: 18px; font-size: var(--t-neben); line-height: 1.55; color: var(--schrift-leise); }
+.rl-details-marken b { color: var(--schrift); font-weight: 500; }
+.rl-details-kasten .rl-ende-knoepfe { grid-column: 1 / -1; margin-top: 4px; }
+
+@media (max-width: 720px) {
+  .rl-ebene.rl-details { align-items: flex-start; }
+  .rl-details-kasten { grid-template-columns: 1fr; gap: 12px; }
+  .rl-details-vorschau { --karte-b: 96px; --karte-h: 134px; --t-karte: 40px; flex-direction: row; flex-wrap: wrap; justify-content: center; min-width: 0; }
+  .rl-details-lang { font-size: var(--t-neben); }
 }
 
 </style>
@@ -4357,6 +4526,9 @@ function mitteGroesse(runde) {
  * @property {true} [spiegel]    darf in der Hand zwischen wert und 13-wert gedreht werden
  * @property {true} [leucht]     +1 Punkt je Wertung im gültigen Sternbild
  * @property {true} [anker]      das Sternbild, in dem sie liegt, ist nicht klaubar
+ * @property {Object<string,number>} [typBonus]  Roguelike: Punkte je Wertung, wenn sie in einem Sternbild dieses Typs liegt
+ * @property {string} [planet]   Roguelike: Planetenkarte (nur Anzeige)
+ * @property {string} [name]     Roguelike: eigener Name der Karte (nur Anzeige)
  * @property {string} [uid]      Kennung aus der Deck-Spezifikation (nie für Vergleiche)
  */
 
@@ -4403,8 +4575,8 @@ function baueDeck() {
 
 /**
  * Kartenobjekte aus einer Deck-Spezifikation (Roguelike). Kopiert `art, wert, stufe,
- * spiegel, leucht, anker`, vergibt Karten-IDs ab `idStart` fortlaufend, setzt `herkunft`
- * und reicht `uid` als reine Kennung durch.
+ * spiegel, leucht, anker, typBonus, planet, name`, vergibt Karten-IDs ab `idStart` fortlaufend,
+ * setzt `herkunft` und reicht `uid` als reine Kennung durch.
  * @param {{art:string, wert?:number, stufe?:number, spiegel?:true, leucht?:true, anker?:true, uid?:string}[]} spec
  * @param {number} idStart
  * @param {number|'HIMMEL'} herkunft
@@ -4419,6 +4591,9 @@ function baueKartenAusSpec(spec, idStart, herkunft) {
     if (s.spiegel) k.spiegel = true;
     if (s.leucht) k.leucht = true;
     if (s.anker) k.anker = true;
+    if (s.typBonus) k.typBonus = { ...s.typBonus };
+    if (s.planet) k.planet = s.planet;
+    if (s.name) k.name = s.name;
     if (s.uid !== undefined) k.uid = s.uid;
     karten.push(k);
   }
@@ -5625,8 +5800,8 @@ class Spiel {
 
   /**
    * Punkte eines ausliegenden Sternbilds für seinen Besitzer: Rohpunkte aus `bewerte`
-   * plus Roguelike-Boni (Riese, Überriese, Leucht, Drachenatem, Ausrichtung,
-   * punkteModifikator), zuletzt Rote Riesin (×2). Ungültig = 0.
+   * plus Roguelike-Boni (Riese, Überriese, Leucht, Typ-Bonus der Planetenkarten, Drachenatem,
+   * Ausrichtung, punkteModifikator), zuletzt Rote Riesin (×2). Ungültig = 0.
    */
   punkteVon(sb, besitzerIdx) {
     const b = bewerte(sb.karten);
@@ -5638,6 +5813,8 @@ class Spiel {
       if (k.stufe === 1) summe += kb.riese;
       else if (k.stufe === 2) summe += kb.ueberriese;
       if (k.leucht) summe += kb.leucht;
+      // Planetenkarten (Roguelike, Spieltest-Runde 2): Bonus, wenn die Karte in einem Sternbild dieses Typs liegt.
+      if (k.typBonus && k.typBonus[b.typ]) summe += k.typBonus[b.typ];
     }
     const sp = this.spieler[besitzerIdx];
     if (sp) {
@@ -6505,7 +6682,7 @@ function spielePartie(spielerzahl, bots, seed, opts = {}) {
  *
  * Top-Level-Namen dieser Datei: Ablauf.
  *
- * Roguelike: `opts.runden` (Rundenzahl), `opts.abbruch(ablauf)` (nach jeder Wertung
+ * Roguelike: `opts.runden` (Rundenzahl), `opts.zuegeJeRunde` (feste Züge je Spieler und Runde), `opts.abbruch(ablauf)` (nach jeder Wertung
  * geprüft), Zugreihenfolge mit Extrazügen (`zusatzZuege`), erweiterter `zustand()`.
  */
 
@@ -6533,6 +6710,9 @@ class Ablauf {
     this.menschIdx = menschIdx;
 
     this.runden = opts.runden ?? CONFIG.spiel.runden;   // Rundenzahl dieser Partie
+    // Roguelike (Spieltest-Runde 2): feste Züge je Spieler und Runde — Zahl oder Funktion (runde, spielerzahl);
+    // ohne Angabe wie im Grundspiel aus zuegeInRunde().
+    this.zuegeJeRunde = opts.zuegeJeRunde ?? null;
     this.abbruch = typeof opts.abbruch === 'function' ? opts.abbruch : null;
 
     this.runde = 0;             // 1..runden; 0 = noch nicht gestartet
@@ -6653,7 +6833,9 @@ class Ablauf {
   _starteRunde() {
     this.spiel.starteRunde();               // setzt auch spiel.starterIdx neu
     this.runde = this.spiel.runde;
-    this.zuegeProRunde = zuegeInRunde(this.runde, this.spielerzahl);
+    this.zuegeProRunde = this.zuegeJeRunde == null
+      ? zuegeInRunde(this.runde, this.spielerzahl)
+      : Math.max(1, Math.floor(typeof this.zuegeJeRunde === 'function' ? this.zuegeJeRunde(this.runde, this.spielerzahl) : this.zuegeJeRunde));
     this.spiel.zuegeProSpieler = this.zuegeProRunde;
     this.reihenfolge = zugReihenfolge(this.spiel, this.zuegeProRunde);
     this.pos = 0;
@@ -7948,13 +8130,13 @@ function formenTafel() {
  *   RL_BILD_TINTE, RL_BILD_PAPIER, RL_BILD_PAPIER_TIEF, RL_BILD_WEISS,
  *   RL_BILD_KALT, RL_BILD_WARM, RL_BILD_HEISS, RL_BILD_GOLD, RL_BILD_GRUEN,
  *   RL_BILD_LEISE, RL_BILD_GROESSE_FARBE, RL_BILD_PLANET, RL_BILD_REIHE, RL_BILD_SCHILD_FARBE,
- *   RL_BILD_MODUL_KEYS, RL_BILD_NEUE_ARTEN, RL_BILD_T,
+ *   RL_BILD_MODUL_KEYS, RL_BILD_NEUE_ARTEN, RL_BILD_T, RL_BILD_PACK_STERNE,
  *   rlBildZaehler, rlBildId, rlBildRund, rlBildInnenR, rlBildSternPfad,
  *   rlBildFarbe, rlBildRaster, rlBildStrahlen, rlBildKreisPfad, rlBildGlanz,
  *   rlBildPlanetKoerper, rlBildZustand, rlBildRahmen, rlBildEckSterne,
  *   rlBildTextAttr, rlBildEsc,
  *   rlPlanetSvg, rlRueckenSvg, rlRueckenUri, rlFigurSvg, rlSchildSvg,
- *   rlGroesseSvg, rlKartenbild, rlModulSvg, rlStrahlenkranzSvg, rlMuenzeSvg,
+ *   rlGroesseSvg, rlKartenbild, rlModulSvg, rlStrahlenkranzSvg, rlMuenzeSvg, rlPackSvg,
  *   rlDefsSvg, rlDefsEinfuegen, rlKartenbildRegistrieren, rlPlanetFarben
  */
 
@@ -8351,6 +8533,58 @@ function rlGroesseSvg(klasse, g) {
   else if (klasse === 2) inner = `<circle r="13" fill="none" stroke="${RL_BILD_TINTE}" stroke-width="1.4" stroke-dasharray="2.5 2.5"/><path d="${rlBildSternPfad(6, 10.5, rlBildInnenR(6, 10.5), 0)}" fill="${F}" ${T} stroke-width="2.2"/>`;
   else inner = `${rlBildStrahlen(12, 15, 8, 1.8, 0)}<path d="${rlBildSternPfad(8, 12, rlBildInnenR(8, 12), 0)}" fill="${F}" ${T} stroke-width="2.4"/><ellipse cx="-4" cy="-5" rx="2.4" ry="1.1" transform="rotate(-40 -4 -5)" fill="${RL_BILD_WEISS}"/>`;
   return `<svg class="rl-groesse-bild" width="${g}" height="${g}" viewBox="-16 -16 32 32" style="overflow:visible" role="img" aria-label="${klasse}. Größe" data-groesse="${klasse}">${inner}</svg>`;
+}
+
+/* ---------------- Packs (Spieltest-Runde 2) ---------------- */
+
+/** Das kleine Sternbild auf dem Sternbilderpack: Punkte im Feld 48 × 36, in dieser Reihenfolge verbunden. */
+const RL_BILD_PACK_STERNE = [[2, 32], [13, 16], [25, 24], [36, 4], [46, 17]];
+
+/**
+ * Ein Booster-Pack als Folienbeutel mit gezackten Kanten (viewBox 100 × 140): das Sternbilderpack
+ * nachtblau mit goldenem Sternbild, das Planetenpack in der Planetenfarbe mit der Planetenminiatur.
+ * @param {'sternbilder'|'planet'} art
+ * @param {string} [planetKey]  beim Planetenpack: Farbe und Miniatur dieses Planeten
+ * @param {number} [g]          Höhe in px (Breite = 100/140 der Höhe)
+ */
+function rlPackSvg(art, planetKey, g) {
+  g = g || 120;
+  const T = RL_BILD_T;
+  const p = art === 'planet' ? (RL_BILD_PLANET[planetKey] || RL_BILD_PLANET.nest) : null;
+  const grund = p ? p.farbe : '#22305A';
+  const tief = p ? p.tisch : '#0E1630';
+  const hell = p ? p.hell : RL_BILD_GOLD;
+  const titel = p ? p.name : 'Sternbilder';
+  const raster = rlBildRaster('dicht');
+  let oben = '', unten = '';
+  for (let i = 0; i <= 12; i++) {
+    const x = 8 + i * 7;
+    oben += ` L${x} ${i % 2 ? 6 : 12}`;
+    unten = ` L${x} ${i % 2 ? 134 : 128}` + unten;
+  }
+  const umriss = `M8 12${oben} L92 128${unten} Z`;
+  let emblem, defs = raster.defs;
+  if (p) {
+    const k = rlBildPlanetKoerper(planetKey, 23, 3);
+    defs += k.defs;
+    emblem = `<circle cx="50" cy="64" r="31" fill="${tief}" ${T} stroke-width="3"/><g transform="translate(50 64)">${k.svg}</g>`;
+  } else {
+    const linie = RL_BILD_PACK_STERNE.map((q, i) => (i ? 'L' : 'M') + q[0] + ' ' + q[1]).join(' ');
+    const sterne = RL_BILD_PACK_STERNE.map((q, i) => `<path d="${rlBildSternPfad(4, i === 3 ? 7 : 5, i === 3 ? 2.6 : 2, 0)}" transform="translate(${q[0]} ${q[1]})" fill="${RL_BILD_GOLD}" stroke="${RL_BILD_TINTE}" stroke-width="1.4" stroke-linejoin="round"/>`).join('');
+    emblem = `<circle cx="50" cy="64" r="31" fill="${tief}" ${T} stroke-width="3"/>`
+      + `<g transform="translate(26 46)"><path d="${linie}" fill="none" stroke="${RL_BILD_PAPIER}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>${sterne}</g>`
+      + `<circle cx="34" cy="84" r="1.4" fill="${RL_BILD_WEISS}"/><circle cx="68" cy="80" r="1.1" fill="${RL_BILD_WEISS}"/><circle cx="60" cy="42" r="1.1" fill="${RL_BILD_WEISS}"/>`;
+  }
+  const naht = (y) => { let s = ''; for (let x = 13; x <= 87; x += 5) s += `M${x} ${y} v6 `; return `<path d="${s}" stroke="${RL_BILD_TINTE}" stroke-width="1.2" opacity=".45" fill="none"/>`; };
+  return `<svg class="rl-pack-svg" viewBox="0 0 100 140" width="${rlBildRund(g * 100 / 140)}" height="${g}" style="overflow:visible" role="img" aria-label="${rlBildEsc(titel)}-Pack" data-pack="${art === 'planet' ? 'planet' : 'sternbilder'}">${defs}
+  <path d="${umriss}" fill="${grund}" ${T} stroke-width="3.5"/>
+  <path d="M92 66 L92 126 L36 126Z" fill="${raster.url}"/>
+  <path d="M8 14 H92 V24 H8Z M8 116 H92 V126 H8Z" fill="${tief}" opacity=".35"/>${naht(16)}${naht(118)}
+  <path d="M15 28 L27 28 L19 112 L13 112Z" fill="${RL_BILD_WEISS}" opacity=".2"/>
+  ${emblem}
+  <path d="M12 98 H88 V113 H12Z" fill="${hell}" ${T} stroke-width="2.4"/>
+  <text x="50" y="109.5" text-anchor="middle" ${rlBildTextAttr(10, RL_BILD_TINTE)} letter-spacing=".08em">${rlBildEsc(titel.toUpperCase())}</text>
+  <path d="${rlBildSternPfad(4, 6, 2.4, 0)}" transform="translate(80 34)" fill="${hell}" ${T} stroke-width="1.6"/></svg>`;
 }
 
 /* ---------------- Strahlenkranz (Stilboard B) ---------------- */
@@ -9238,14 +9472,14 @@ const RL_TXT_PRIVILEG = {
 /** Elites (dritter Kampf je Planet). */
 const RL_TXT_ELITE = {
   kartograph:     { name: 'Der Kartograph',     text: 'Kennt deine Hand und baut daran vorbei.' },
-  sonde:          { name: 'Die Sonde',          text: 'Ihr Pfeil wächst zu jedem Rundenbeginn von selbst.' },
+  sonde:          { name: 'Die Sonde',          text: 'Ihr Pfeil wächst jede Runde einmal von selbst.' },
   echo:           { name: 'Das Echo',           text: 'Bekommt die halben Punkte jedes Sternbilds, das du neu baust.' },
   trabant:        { name: 'Die Trabanten',      text: 'Zwei schwache Gegner mit je drei Handkarten.' },
   schrotthaendler:{ name: 'Der Schrotthändler', text: 'Fischt seine Ablage und nimmt vier aus der Mitte.' },
   magnet:         { name: 'Der Magnet',         text: 'Zieht am Rundenende die zwei höchsten Zahlen der Mitte in sein Deck.' },
   schleier:       { name: 'Der Schleier',       text: 'Verdeckte Auslage, immun gegen das Loch.' },
   sturm:          { name: 'Der Sturm',          text: 'Reißt jede Runde eine Karte aus einem offenen Sternbild.' },
-  zoellner:       { name: 'Der Zöllner',        text: 'Nimmt dir am Rundenende die höchste Handkarte.' },
+  zoellner:       { name: 'Der Zöllner',        text: 'Nimmt dir jede Runde einmal die höchste Handkarte.' },
   herold:         { name: 'Der Herold',         text: 'Jede Runde mit gültigem Sternbild macht den Boss stärker.' },
   frueherBoss:    { name: 'Ein alter Bekannter', text: 'Ein Boss, den du schon besiegt hast — ohne Lebensleiste, mit einem Nest-Privileg.' },
   schwarm:        { name: 'Der Schwarm',        text: 'Drei Diebe mit je drei Handkarten.' },
@@ -9321,6 +9555,8 @@ const RL_TXT_MARKE = {
   leucht:     { kurz: 'Leucht', titel: 'Leuchtkarte: +1 Punkt je Wertung im gültigen Sternbild' },
   anker:      { kurz: 'Anker', titel: 'Ankerkarte: dieses Sternbild ist nicht klaubar' },
   spiegel:    { kurz: 'Spiegel', titel: 'Spiegelkarte: auf der Hand drehbar (x oder 13 − x)' },
+  name:       { kurz: '', titel: 'Planetenkarte' },
+  typbonus:   { kurz: '', titel: 'Punkte je Wertung, wenn die Karte in einem Sternbild dieses Typs liegt' },
 };
 
 /** Sternbildstufen (span.sb-stufe, Stufenleiste unter „Vor dir", Formentafel, Sternbilderpack). */
@@ -9332,7 +9568,7 @@ const RL_TXT_STUFE = {
   chipTitel: (name, n, bonus, max) => `${name}: Stufe ${n} von ${max} — +${n * bonus} Punkte bei jeder Wertung dieses Typs`,
   formen: (n, bonus, max) => (n > 0 ? `Stufe ${n} von ${max}: +${n * bonus} Punkte je Wertung` : `Stufe 0 von ${max} — kaufbar im Sternbilderpack`),
   pack: 'Sternbilderpack',
-  packText: (bonus, max) => `Eine Stufe für einen Sternbildtyp kaufen. Jede Stufe bringt +${bonus} Punkte bei jeder Wertung dieses Typs, höchstens Stufe ${max}.`,
+  packText: (bonus, max, wahl = 3) => `Öffnen deckt ${wahl} Sternbilder auf, eines davon steigt eine Stufe. Jede Stufe bringt +${bonus} Punkte bei jeder Wertung dieses Typs, höchstens Stufe ${max}.`,
   packStufe: (n, max) => `Stufe ${n} von ${max}`,
   packBonus: (n, bonus) => (n > 0 ? `+${n * bonus} je Wertung` : 'noch kein Bonus'),
   packKaufen: (preis) => `Stufe kaufen · ${preis}`,
@@ -9367,7 +9603,7 @@ const RL_TXT_SEXTANT = {
   ],
   kampfbeginn: (k) => [
     'Jetzt spielst du mit deinem eigenen Deck. Die Mitte kommt aus dem Himmel-Stapel, der gehört niemandem.',
-    `${k.runden ? k.runden + ' Runden' : 'Vier Runden'}. Wer am Ende mehr Punkte hat, gewinnt — Gleichstand reicht dir. Verlierst du, ist der Lauf vorbei.`,
+    `${k.runden === 1 ? 'Eine Runde' : k.runden ? k.runden + ' Runden' : 'Eine Runde'} mit ${k.zuege ?? 9} Zügen. Wer am Ende mehr Punkte hat, gewinnt — Gleichstand reicht dir. Verlierst du, ist der Lauf vorbei.`,
   ],
   ersterKlau: (k) => [
     `Geklaut! Das gibt Geld: ${k.proKarte === 1 || !k.proKarte ? 'eine Münze' : k.proKarte + ' Münzen'} je Karte. Damit kaufst du nach dem Kampf ein.`,
@@ -9377,7 +9613,8 @@ const RL_TXT_SEXTANT = {
   ],
   umlaufbahn: [
     'Die Umlaufbahn: vier Angebote. Der Stern zeigt die Größenklasse — grau ist häufig, grün, blau und lila werden seltener und stärker.',
-    'Neu würfeln kostet Geld und wird jedes Mal teurer. Unten im Sternbilderpack kaufst du Stufen: Jede Stufe eines Typs bringt Punkte bei jeder Wertung.',
+    'Neu würfeln kostet Geld und wird jedes Mal teurer. Unten liegen zwei Packs: Das Sternbilderpack deckt drei Sternbilder auf, eines steigt eine Stufe. Das Planetenpack bringt Karten, die es nur hier gibt.',
+    'Bei jedem Angebot steht ein Details-Knopf — dort ist genau erklärt, was die Karte tut.',
   ],
   vorBoss: (k) => [
     `${k.bossName ? k.bossName + '. ' : ''}Der Boss hat eine Lebensleiste — jede deiner Rundenwertungen ist Schaden.`,
@@ -9560,8 +9797,23 @@ const RL_TXT_SCHIRM = {
   lakaien: 'Lakaien',
   gegnerVorschau: 'Nächster Gegner',
   zuZweit: (n) => `Du kämpfst gegen ${n} Gegner zugleich.`,
-  bossZeile: (leben, runden) => `Leben ${leben} · ${runden} Runden`,
-  lakaiZeile: (runden) => `${runden} Runden · Sieg bei mindestens gleich vielen Punkten`,
+  bossZeile: (leben, runden) => `Leben ${leben} · ${runden === 1 ? '1 Runde' : runden + ' Runden'}`,
+  lakaiZeile: (runden) => `${runden === 1 ? '1 Runde' : runden + ' Runden'} · Sieg bei mindestens gleich vielen Punkten`,
+  // Packs (Spieltest-Runde 2)
+  packSternbilder: 'Sternbilderpack',
+  packPlanet: (name) => `${name}-Pack`,
+  packPlanetText: (name, wahl) => `${wahl} Karten, die es nur auf ${name} gibt. Eine davon kommt in dein Deck.`,
+  packOeffnen: (preis) => `Öffnen · ${preis}`,
+  packWahl: 'Wähle eine Karte',
+  packNehmen: 'Nehmen',
+  packGeoeffnet: 'geöffnet',
+  packGenommen: (name) => `${name} genommen`,
+  packNaechster: 'Das nächste Pack gibt es im nächsten Shop.',
+  packAlleVoll: 'Alle Sternbilder haben die Höchststufe.',
+  packDeckVoll: 'Das Deck ist voll.',
+  packsTitel: 'Packs',
+  packsHinweis: 'Je Shop ein Sternbilderpack und ein Planetenpack — einmal öffnen, eine Karte nehmen.',
+  details: 'Details',
   beobachtungNutzen: 'Beobachtung einsetzen',
   gratisRerolls: (n) => `${n} Gratis-Reroll aus dem Sprungantrieb`,
   reroll: 'Reroll',
@@ -9681,7 +9933,8 @@ const RL_TXT_REGELN = {
     { titel: 'Kämpfe', html:
       `<p>Auf jedem Planeten warten <b>${k.lakaien} Lakaien</b> und der <b>Boss</b>. Der dritte Lakai ist eine <b>Elite</b> mit eigener Fähigkeit.</p>
       <ul>
-        <li><b>Lakai:</b> ${k.lakaiRunden} Runden. Du gewinnst, wenn du am Ende <b>mindestens gleich viele Punkte</b> hast wie jeder Gegner.</li>
+        <li><b>Lakai:</b> ${k.lakaiRunden} Runden (Lakai 1 / Lakai 2 / Elite), jede Runde ${k.zuegeJeRunde} Züge je Spieler. Du gewinnst, wenn du am Ende
+        <b>mindestens gleich viele Punkte</b> hast wie jeder Gegner.</li>
         <li><b>Boss:</b> ${k.bossRunden} Runden und eine Lebensleiste. <b>Jede deiner Rundenwertungen ist Schaden.</b> Steht sein Leben nach der
         letzten Runde nicht auf null, hat er gewonnen — auch wenn du mehr Punkte hast. Jeder Boss heilt sich auf seine Art:</li>
       </ul>
@@ -9698,8 +9951,10 @@ const RL_TXT_REGELN = {
       `<ul>
         <li><b>Umlaufbahn</b> (nach jedem Lakaien): ${k.angebote} Angebote — eine Zahl, eine kosmische Karte, eine Zahl oder kosmische Karte,
         dazu Modul, Vorrat, Sternwarte oder Aufwertung. <b>Neu würfeln</b> kostet ${k.rerollStart}, jedes weitere Mal ${k.rerollPlus} mehr.</li>
-        <li><b>Sternbilderpack</b> (in beiden Shops): eine Stufe für einen Sternbildtyp kaufen — ${k.stufenPreise} Geld für die Stufen
-        1 / 2 / 3. Nicht rerollbar, immer da.</li>
+        <li><b>Packs</b> (in beiden Shops, je einmal): das <b>Sternbilderpack</b> (${k.packSternbilder} Geld) deckt drei Sternbilder auf, eines
+        davon steigt eine Stufe; das <b>Planetenpack</b> (${k.packPlanet} Geld) deckt drei Karten auf, die es nur auf diesem Planeten gibt,
+        eine kommt in dein Deck. Das nächste Pack gibt es im nächsten Shop.</li>
+        <li>Jedes Angebot hat einen <b>Details</b>-Knopf mit der langen Erklärung und einem Beispiel.</li>
         <li><b>Im Flug</b> (nach dem Boss): <b>Kartenmarkt</b> (${k.kartenmarkt} Zahlen), <b>Kosmisches Kabinett</b> (${k.kabinett} kosmische),
         ein <b>Schiffsmodul</b> (nicht rerollbar) und die <b>Luftschleuse</b>: bis zu ${k.luftschleuse} Karten aus dem Deck werfen. Dazu die
         Aufwertung zum Riesen.</li>
@@ -9712,9 +9967,13 @@ const RL_TXT_REGELN = {
       Module den Größenpreis plus ${k.preise.modulAufschlag}.</p>` },
     { titel: 'Sternbildstufen', html:
       `<p>Jeder Sternbildtyp hat eine Stufe (höchstens ${k.sternbildStufenMax}). Jede Stufe bringt <b>+${k.bonusProStufe} Punkte</b> bei jeder
-      Wertung eines Sternbilds dieses Typs — für den ganzen Lauf. Stufen kaufst du im <b>Sternbilderpack</b>; zusätzlich zählt jedes Sternbild,
+      Wertung eines Sternbilds dieses Typs — für den ganzen Lauf. Stufen gibt es im <b>Sternbilderpack</b>; zusätzlich zählt jedes Sternbild,
       das du <b>neu baust oder klaust</b>: ab ${k.schwellen.join(' / ')} gezählten Sternbildern eines Typs gibt es eine Stufe gratis.
       Die Stufen stehen im Kampf unter „Vor dir", in der Formentafel und in der Deckansicht.</p>` },
+    { titel: 'Planetenkarten', html:
+      `<p>Jeder Planet hat vier eigene Karten, die es nur in seinem Planetenpack gibt. Zahlen davon tragen einen <b>Typ-Bonus</b>:
+      Punkte je Wertung, wenn die Karte in einem Sternbild dieses Typs liegt (steht als Marke auf der Karte).</p>
+      <table class="regel-tabelle">${k.planetKarten.map((p) => `<tr><td>${p.planet}</td><td>${p.karten}</td></tr>`).join('')}</table>` },
     { titel: 'Drachenklau', html:
       `<p>Liegt bei dir ein fertiger Sechser-Pfeil (1–6 oder 7–12) und bei einem Gegner das <b>unversiegelte Gegenstück</b>, darfst du es klauen:
       Wirf mindestens so viele Handkarten ab, wie du zum Klauen brauchst, und tippe seinen Pfeil an — beide Pfeile werden sofort zum
@@ -9954,13 +10213,22 @@ function karteEl(k, ort, opt = {}) {
     const andere = (k.art === 'ZAHL' && k.wert != null) ? String(13 - k.wert) : undefined;
     e.appendChild(rlMarkeEl('spiegel', andere));
   }
+  // Planetenkarten (Roguelike, Spieltest-Runde 2): Planetenrand, Name und Typ-Bonus als Marken.
+  if (k.planet) { e.dataset.planet = k.planet; e.classList.add('planetkarte'); }
+  if (k.typBonus) {
+    const text = Object.entries(k.typBonus).map(([typ, b]) => '+' + b + ' ' + typText(typ)).join(' ');
+    e.appendChild(rlMarkeEl('typbonus', text));
+  }
+  // Der Name der Planetenkarte steht nicht auf der Karte (er verdeckte Stern oder Ziffer), sondern im Tooltip
+  // und überall daneben, wo die Karte groß gezeigt wird (Pack, Details, Deckansicht).
+  if (k.name) e.dataset.name = k.name;
 
   if (opt.gewaehlt) e.classList.add('gewaehlt');
   if (opt.spielbar) e.classList.add('spielbar');
   if (opt.tot) e.classList.add('tot');
   if (opt.frisch) e.classList.add('frisch');
   if (opt.tot && klickbar) e.disabled = true;
-  e.title = opt.titel ?? karteText(k);
+  e.title = opt.titel ?? (k.name ? k.name + (k.planet ? ' (' + rlText(RL_TXT_PLANET, k.planet) + ')' : '') + ' — ' + karteText(k) : karteText(k));
   return e;
 }
 
@@ -10167,15 +10435,17 @@ function zeichneGegner(dom, s) {
       if (info.elite) art.dataset.elite = '1';
     }
 
-    const kopf = el('header', 'gegner-kopf');
-    // Roguelike: die Gegnerfigur steht links vom Namen (Spieltest-Runde 1).
+    // Roguelike: die Gegnerfigur steht als eigene Spalte neben Name und Auslage (Spieltest-Runde 2: kostet keine
+    // Höhe mehr — bei flachen Fenstern hatte sie die Mitte auf null gedrückt).
     if (info && (info.verhalten || info.boss || info.elite)) {
       const fig = el('span', 'gegner-figur');
       fig.dataset.figur = rlGegnerFigurKey(info);
-      fig.innerHTML = rlGegnerFigurSvg(info, { hoehe: info.boss ? 124 : 96 });
+      fig.innerHTML = rlGegnerFigurSvg(info, { hoehe: info.boss ? 116 : 92 });
       if (info.name) fig.title = info.name;
-      kopf.appendChild(fig);
+      art.classList.add('mit-figur');
+      art.appendChild(fig);
     }
+    const kopf = el('header', 'gegner-kopf');
     kopf.appendChild(el('span', 'gegner-name', sp.name));
     if (sp.idx === s.z.amZug) kopf.appendChild(el('span', 'gegner-dran', 'am Zug'));
 
@@ -12761,24 +13031,28 @@ function bestenlisteEl(typName) {
  * Top-Level-Namen dieser Datei: RL_KONFIG.
  */
 const RL_KONFIG = {
-  lauf: { planetenProLauf: 3, lakaienProPlanet: 3, startgeld: { 1: 6, 2: 4, 3: 2 } },
-  partie: { lakaiRunden: 4, bossRunden: 5, spielart: 'kurz' },
+  lauf: { planetenProLauf: 3, lakaienProPlanet: 3, startgeld: { 1: 8, 2: 5, 3: 3 } },   // Spieltest-Runde 2: ein Pack schon nach dem ersten Lakaien
+  // Spieltest-Runde 2: kurze Kämpfe — Runden je Kampfplatz [Lakai 1, Lakai 2, Elite] und für den Boss, jede Runde mit
+  // festen `zuegeJeRunde` Zügen je Spieler (statt der mit der Rundennummer wachsenden Züge des kurzen Spiels).
+  partie: { runden: { lakai: [1, 1, 2], boss: 3 }, zuegeJeRunde: 9, spielart: 'kurz' },
   geld: {
     proGeklauterKarte: 1, bossSiegBonus: 5, zweiterBossSieg: 12,   // zweiter Sieg über denselben Boss: Geld statt Deck
-    lakaiSiegBonus: { 1: 3, 2: 2, 3: 1 },                        // Spieltest-Runde 1: Prämie je besiegtem Lakaien, damit der erste Shop erreichbar ist
+    lakaiSiegBonus: { 1: 4, 2: 3, 3: 2 },                        // Prämie je besiegtem Lakaien (Spieltest-Runde 2: kürzere Kämpfe bringen weniger Klau-Geld)
   },
   boss: {
     // Balance-Runde 12.9.2026 (berichte/roguelike/Balance-Runde.md): Ein Spieler-Bot ohne Käufe macht in einem
     // Bosskampf 170+ Punkte in 5 Runden, die Bosse heilen real wenig. 130 Leben fielen zu 100 %; bei 210 gewinnt
     // der Bot auf Platz 1 rund 70 %, ein Mensch mit Käufen entsprechend öfter.
-    lebenBasis: { 1: 210, 2: 225, 3: 240 },         // Duell, Stufe 1
-    lebenDuo:   { 1: 140, 2: 150, 3: 160 },         // Zwillinge (1 gegen 2)
+    // Spieltest-Runde 2: drei Bossrunden zu je neun Zügen statt fünf wachsender Runden — ein Spieler-Bot macht
+    // noch rund 140 Punkte je Bosskampf; 210 Leben fielen zu 8 %. Ziel wie zuvor: rund 80 % auf Platz 1.
+    lebenBasis: { 1: 105, 2: 115, 3: 125 },         // Duell, Stufe 1
+    lebenDuo:   { 1: 130, 2: 140, 3: 150 },         // Zwillinge (1 gegen 2; zwei Sitze bauen dem Bot weniger weg)
     stufenFaktor: { 1: 1.0, 2: 1.1, 3: 1.2 },
     schuldProUebersprungenem: 12, heroldBonus: 10,
     heilDeckel: { lotse: 8, zwillinge: 8, aasfresser: 10, nova: 10, kronentraeger: 9, elster: 5 },
     // Spieltest-Runde 1: Bosse, die dem Spieler die Auslage zerlegen (Nova) oder leerräumen (Elster), fielen in der
     // Simulation weit seltener als die übrigen (15 % / 52 % gegen 88–100 %) — ihr Leben wird je Boss skaliert.
-    lebenFaktor: { nova: 0.7, elster: 0.9 },
+    lebenFaktor: { lotse: 0.9, nova: 0.6, elster: 0.75, kronentraeger: 1.15 },
   },
   deck: { startgroesse: 26, minGroesse: 20, maxGroesse: 40, himmel: { kopienProZahl: 4 } },
   // Sternbildstufen: gezählt werden Neubauten und Klaus (Balance-Runde 12.9.: 5/12/20 waren nach 1–2 Kämpfen voll).
@@ -12793,6 +13067,9 @@ const RL_KONFIG = {
     ersteGroesseProLaufMax: 2,
     umlaufbahn: { angebote: 4 }, imFlug: { kartenmarkt: 4, kabinett: 3, luftschleuse: 3 },   // Umlaufbahn: Zahl, kosmisch, Zahl-oder-kosmisch, Drittes
     sternwarte: { aufdecken: 5, nehmen: 2 },
+    // Spieltest-Runde 2: je Shop einmal ein Sternbilderpack (drei Sternbilder aufgedeckt, eines steigt eine Stufe)
+    // und ein Planetenpack (drei Karten, die es nur auf diesem Planeten gibt, eine kommt ins Deck).
+    packs: { sternbilder: { preis: 6, wahl: 3 }, planet: { preis: 7, wahl: 3 } },
   },
   schwierigkeit: {
     zweitesPrivilegAb: 2,                            // ab dieser Stufe steht im Gegnerplan ein zweites Privileg
@@ -12800,8 +13077,9 @@ const RL_KONFIG = {
     // Aussetzer (Spieltest-Runde 1): Wahrscheinlichkeit je Zug, dass ein Lakai nur eine Karte abwirft statt zu spielen —
     // je Schwierigkeit und Platz, Liste nach Kampfplatz [Lakai 1, Lakai 2, Elite]. Bosse setzen nie aus.
     aussetzer: {
-      1: { 1: [0.35, 0.25, 0.15], 2: [0.12, 0.08, 0.04], 3: [0.05, 0, 0] },
-      2: { 1: [0.20, 0.12, 0.06], 2: [0.05, 0, 0], 3: [0, 0, 0] },
+      // Spieltest-Runde 2: Ein-Runden-Kämpfe entscheidet eine einzige Hand — mehr Aussetzer, auch auf Platz 2 und 3.
+      1: { 1: [0.45, 0.35, 0.25], 2: [0.25, 0.20, 0.12], 3: [0.20, 0.15, 0.10] },
+      2: { 1: [0.25, 0.18, 0.10], 2: [0.10, 0.06, 0.03], 3: [0.05, 0, 0] },
       3: { 1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0] },
     },
   },   // eliteBossRueckenAb gestrichen: Lakaien und Boss tragen ohnehin denselben Planetenrücken
@@ -12817,13 +13095,17 @@ const RL_KONFIG = {
  * Alles hier sind Deck-SPEZIFIKATIONEN (KartenSpec mit `uid`), keine Kartenobjekte —
  * die entstehen erst beim Kampf über `baueKartenAusSpec` (cards.js).
  *
- * Exporte: RL_KATALOG (Objekt nach key), RL_MODULE, RL_VORRAT, RL_DECKS,
+ * Exporte: RL_KATALOG (Objekt nach key), RL_MODULE, RL_VORRAT, RL_DECKS, RL_PLANET_KARTEN,
  *   rlStartdeck(deckKey, uidStart), rlHimmelDeck(), rlGegnerDeck(spec, rng, schwierigkeit),
- *   rlKartenSpecText(spec), rlAngebotText(angebot).
+ *   rlPlanetKarten(planetKey), rlKartenSpecText(spec), rlAngebotText(angebot).
  *
- * Top-Level-Namen dieser Datei: RL_KATALOG, RL_MODULE, RL_VORRAT, RL_DECKS, RL_KOSMISCH_GROESSE,
- *   RL_MODUL_LISTE, RL_VORRAT_LISTE, RL_KOSMISCH_NAME, rlPreisFuerGroesse, rlKatalogBauen,
- *   rlZahlSpecs, rlKosmischSpecs, rlMitUids, rlStartdeck, rlHimmelDeck, rlGegnerDeck,
+ * Planetenkarten (Spieltest-Runde 2): je Planet vier Karten, die es nur im Planetenpack dieses Planeten gibt
+ * (Katalog-Sorte 'planet', nie in den Angebotspools). Ihre Specs tragen `planet` und `name` (Anzeige) und
+ * bei Zahlen ggf. `typBonus` — Punkte je Wertung, wenn die Karte in einem Sternbild dieses Typs liegt (game.js).
+ *
+ * Top-Level-Namen dieser Datei: RL_KATALOG, RL_MODULE, RL_VORRAT, RL_DECKS, RL_PLANET_KARTEN, RL_KOSMISCH_GROESSE,
+ *   RL_MODUL_LISTE, RL_VORRAT_LISTE, RL_PLANET_KARTEN_LISTE, RL_KOSMISCH_NAME, rlPreisFuerGroesse, rlKatalogBauen,
+ *   rlZahlSpecs, rlKosmischSpecs, rlMitUids, rlStartdeck, rlHimmelDeck, rlGegnerDeck, rlPlanetKarten,
  *   rlKartenSpecText, rlAngebotText.
  */
 
@@ -12902,8 +13184,40 @@ const RL_VORRAT_LISTE = [
 ];
 
 /**
+ * Planetenkarten: `{ key, planet, name, groesse, text, spec }` — `spec` bekommt im Katalog `planet` und `name` dazu.
+ * Vier je Planet, passend zu Himmelseffekt und Boss: Frostpfad Pfeile, Doppelstern Paare, Schrottring Wagen und
+ * Mitte, Nebelwelt kosmische Karten, Kronwelt Krone und Kreuz, Das Nest Diebesgut.
+ */
+const RL_PLANET_KARTEN_LISTE = [
+  { key: 'frost-eiszapfen', planet: 'frost', name: 'Eiszapfen', groesse: 3, text: 'Eine 3, die in einem Pfeil zwei Punkte mehr bringt.', spec: { art: 'ZAHL', wert: 3, typBonus: { PFEIL: 2 } } },
+  { key: 'frost-nordlicht', planet: 'frost', name: 'Nordlicht', groesse: 3, text: 'Eine 5 mit Leuchtkraft: ein Punkt mehr je Wertung, in einem Pfeil noch einer dazu.', spec: { art: 'ZAHL', wert: 5, leucht: true, typBonus: { PFEIL: 1 } } },
+  { key: 'frost-gletscher', planet: 'frost', name: 'Gletscherbrocken', groesse: 3, text: 'Eine 7 mit Anker: das Sternbild, in dem sie liegt, ist nicht klaubar.', spec: { art: 'ZAHL', wert: 7, anker: true } },
+  { key: 'frost-polarstern', planet: 'frost', name: 'Polarstern', groesse: 2, text: 'Eine Sternschnuppe vom Frostpfad: der Joker, vertritt jeden Wert.', spec: { art: 'STERNSCHNUPPE' } },
+  { key: 'doppel-zwillingsstern', planet: 'doppel', name: 'Zwillingsstern', groesse: 2, text: 'Eine 5, die in einem Zwilling oder Doppelstier drei Punkte mehr bringt.', spec: { art: 'ZAHL', wert: 5, typBonus: { ZWILLING: 3, DOPPELSTIER: 3 } } },
+  { key: 'doppel-doppelgaenger', planet: 'doppel', name: 'Doppelgänger', groesse: 3, text: 'Eine Spiegelkarte 4/9: auf der Hand drehbar, kostet keinen Zug.', spec: { art: 'ZAHL', wert: 4, spiegel: true } },
+  { key: 'doppel-partner', planet: 'doppel', name: 'Partnerkarte', groesse: 3, text: 'Eine 8 mit Leuchtkraft, in einem Zwilling noch ein Punkt dazu.', spec: { art: 'ZAHL', wert: 8, leucht: true, typBonus: { ZWILLING: 1 } } },
+  { key: 'doppel-sternenstaub', planet: 'doppel', name: 'Sternenstaub', groesse: 3, text: 'Kosmische Karte: eine Zahlenkarte deiner Hand bekommt einen neuen Wert, für den Rest des Kampfes.', spec: { art: 'STERNENSTAUB' } },
+  { key: 'schrott-schrottteil', planet: 'schrott', name: 'Schrottteil', groesse: 3, text: 'Eine 6, die in einem Wagen zwei Punkte mehr bringt.', spec: { art: 'ZAHL', wert: 6, typBonus: { WAGEN: 2 } } },
+  { key: 'schrott-magnetsplitter', planet: 'schrott', name: 'Magnetsplitter', groesse: 3, text: 'Eine 10 mit Anker: das Sternbild, in dem sie liegt, ist nicht klaubar.', spec: { art: 'ZAHL', wert: 10, anker: true } },
+  { key: 'schrott-ersatzteil', planet: 'schrott', name: 'Ersatzteil', groesse: 3, text: 'Eine 2 als Riese: zwei Punkte mehr bei jeder Wertung.', spec: { art: 'ZAHL', wert: 2, stufe: 1 } },
+  { key: 'schrott-gravitation', planet: 'schrott', name: 'Gravitation', groesse: 3, text: 'Kosmische Karte: eine Karte aus der Mitte auf die Hand ziehen.', spec: { art: 'GRAVITATION' } },
+  { key: 'nebel-nebelkern', planet: 'nebel', name: 'Nebelkern', groesse: 3, text: 'Eine 7 mit Leuchtkraft: ein Punkt mehr je Wertung im gültigen Sternbild.', spec: { art: 'ZAHL', wert: 7, leucht: true } },
+  { key: 'nebel-komet', planet: 'nebel', name: 'Komet', groesse: 3, text: 'Kosmische Karte: eine Karte aus einem fremden Sternbild fliegt auf die Ablage ihres Besitzers.', spec: { art: 'KOMET' } },
+  { key: 'nebel-weisser-zwerg', planet: 'nebel', name: 'Weißer Zwerg', groesse: 3, text: 'Kosmische Karte: drei Karten ziehen, zwei abwerfen.', spec: { art: 'WEISSER_ZWERG' } },
+  { key: 'nebel-nebel', planet: 'nebel', name: 'Nebel', groesse: 2, text: 'Kosmische Karte: diese Runde kann dir niemand klauen.', spec: { art: 'NEBEL' } },
+  { key: 'kron-juwel', planet: 'kron', name: 'Juwel', groesse: 2, text: 'Eine 9, die in einer Krone zwei und in einem Kreuz drei Punkte mehr bringt.', spec: { art: 'ZAHL', wert: 9, typBonus: { KRONE: 2, KREUZ: 3 } } },
+  { key: 'kron-zepter', planet: 'kron', name: 'Zepter', groesse: 3, text: 'Eine 11 als Riese: zwei Punkte mehr bei jeder Wertung.', spec: { art: 'ZAHL', wert: 11, stufe: 1 } },
+  { key: 'kron-siegelring', planet: 'kron', name: 'Siegelring', groesse: 3, text: 'Eine 5 mit Anker, in einer Krone noch ein Punkt dazu.', spec: { art: 'ZAHL', wert: 5, anker: true, typBonus: { KRONE: 1 } } },
+  { key: 'kron-rote-riesin', planet: 'kron', name: 'Rote Riesin', groesse: 2, text: 'Kosmische Karte: ein eigenes Sternbild zählt diese Runde doppelt.', spec: { art: 'ROTE_RIESIN' } },
+  { key: 'nest-beute', planet: 'nest', name: 'Beute', groesse: 3, text: 'Eine 12 mit Leuchtkraft: ein Punkt mehr je Wertung im gültigen Sternbild.', spec: { art: 'ZAHL', wert: 12, leucht: true } },
+  { key: 'nest-dietrich', planet: 'nest', name: 'Dietrich', groesse: 3, text: 'Eine 1 mit Anker: das Sternbild, in dem sie liegt, ist nicht klaubar.', spec: { art: 'ZAHL', wert: 1, anker: true } },
+  { key: 'nest-hehlerware', planet: 'nest', name: 'Hehlerware', groesse: 3, text: 'Eine 6, die in einem Wagen oder Pfeil einen Punkt mehr bringt.', spec: { art: 'ZAHL', wert: 6, typBonus: { WAGEN: 1, PFEIL: 1 } } },
+  { key: 'nest-eklipse', planet: 'nest', name: 'Eklipse', groesse: 2, text: 'Kosmische Karte: ein sicheres fremdes Sternbild verdunkeln und im selben Zug rauben.', spec: { art: 'EKLIPSE' } },
+];
+
+/**
  * Baut den kompletten Katalog. Eintrag:
- * `{ key, sorte, name, text, groesse (0 = außerhalb), preis, spec?, regeln?, effekt?, maxProLauf? }`
+ * `{ key, sorte, name, text, groesse (0 = außerhalb), preis, spec?, regeln?, effekt?, maxProLauf?, planet? }`
  */
 function rlKatalogBauen() {
   const P = RL_KONFIG.shop.preise;
@@ -12962,6 +13276,12 @@ function rlKatalogBauen() {
   lege({ key: 'sternwarte', sorte: 'sternwarte', name: 'Sternwarte', text: 'Fünf zufällige Karten aufdecken, bis zu zwei davon nehmen.',
     groesse: 3, preis: P.sternwarte, effekt: 'sternwarte' });
 
+  // Planetenkarten (nur im Planetenpack; Preis 0, weil das Pack bezahlt wird)
+  for (const e of RL_PLANET_KARTEN_LISTE) {
+    lege({ key: e.key, sorte: 'planet', planet: e.planet, name: e.name, text: e.text, groesse: e.groesse, preis: 0,
+      spec: { ...e.spec, planet: e.planet, name: e.name } });
+  }
+
   return K;
 }
 
@@ -12973,6 +13293,21 @@ const RL_MODULE = Object.fromEntries(Object.values(RL_KATALOG).filter((e) => e.s
 
 /** Nur der Vorrat (Teilmenge des Katalogs, nach key). */
 const RL_VORRAT = Object.fromEntries(Object.values(RL_KATALOG).filter((e) => e.sorte === 'vorrat').map((e) => [e.key, e]));
+
+/** Planetenkarten je Planet: `{ frost: [Katalogeintrag, …], … }` (Reihenfolge der Liste). */
+const RL_PLANET_KARTEN = (() => {
+  const out = {};
+  for (const e of Object.values(RL_KATALOG)) {
+    if (e.sorte !== 'planet') continue;
+    (out[e.planet] ??= []).push(e);
+  }
+  return out;
+})();
+
+/** Die Planetenkarten eines Planeten (leere Liste für unbekannte Schlüssel). */
+function rlPlanetKarten(planetKey) {
+  return RL_PLANET_KARTEN[planetKey] ?? [];
+}
 
 /* ------------------------------------------------------------------ */
 /*  Freischalt-Decks                                                    */
@@ -13082,9 +13417,10 @@ function rlGegnerDeck(spec, rng = null, schwierigkeit = 1) {
 /*  Texte                                                               */
 /* ------------------------------------------------------------------ */
 
-/** Kurztext einer Karten-Spezifikation: "7", "Spiegel 3/10", "Riese 7", "Schwarzes Loch". */
+/** Kurztext einer Karten-Spezifikation: "7", "Spiegel 3/10", "Riese 7", "Schwarzes Loch", "Eiszapfen (3)". */
 function rlKartenSpecText(spec) {
   if (!spec) return '';
+  if (spec.name && spec.art === 'ZAHL') return spec.name + ' (' + spec.wert + ')';
   if (spec.art !== 'ZAHL') return RL_KOSMISCH_NAME[spec.art] ?? spec.art;
   const teile = [];
   if (spec.stufe === 2) teile.push('Überriese');
@@ -14137,12 +14473,12 @@ function rlPlanetGegnerEl(lauf, gegner) {
     const bossKey = haupt.gruppeVon || haupt.key;
     if (RL_TXT_BOSS[bossKey]) zeile(RL_TXT_UI.boss, rlText(RL_TXT_BOSS, bossKey, 'text'));
     const leben = haupt.leben ?? lauf.bossLeben();
-    zeile(RL_TXT_UI.leben, RL_TXT_SCHIRM.bossZeile(leben, RL_KONFIG.partie.bossRunden));
+    zeile(RL_TXT_UI.leben, RL_TXT_SCHIRM.bossZeile(leben, lauf.rundenFuer()));
     const heil = RL_BOSSE[bossKey] && RL_BOSSE[bossKey].heilText;
     if (heil) zeile(RL_TXT_SCHIRM.bossHeilt, heil);
     if (d.bossSchuld > 0) rechts.appendChild(rlSchirmEl('p', 'rl-gegner-zeile rl-schuld', RL_TXT_SCHIRM.bossSchuld(d.bossSchuld)));
   } else {
-    zeile(RL_TXT_UI.kampf, RL_TXT_SCHIRM.lakaiZeile(RL_KONFIG.partie.lakaiRunden));
+    zeile(RL_TXT_UI.kampf, RL_TXT_SCHIRM.lakaiZeile(lauf.rundenFuer()));
   }
   if (liste.length > 1) {
     if (gruppe) rechts.appendChild(rlSchirmEl('p', 'rl-gegner-zeile rl-duo', RL_TXT_SCHIRM.gruppe(liste.length) + ' — ' + RL_TXT_SCHIRM.zuZweit(liste.length)));
@@ -14367,6 +14703,805 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   });
 }
 
+/* ===== engine\src\roguelike\rl-shop.js ===== */
+/**
+ * Roguelike-Modus — Shops (Spezifikation §4.7): Umlaufbahn (nach einem Lakaien), Im Flug
+ * (nach dem Boss), Reroll, Kauf, Sternwarte, Luftschleuse.
+ *
+ * Reine Daten und Funktionen. Der Zufall ist deterministisch aus dem Laufzustand abgeleitet:
+ * gleicher Zustand → gleiche Angebote; ein Reload stellt den gespeicherten `lauf.daten.shop`
+ * wieder her. Angebotsgrößen werden nach RL_KONFIG.shop.gewichte gezogen; die erste Größe
+ * erscheint je Lauf höchstens `ersteGroesseProLaufMax`-mal; die Garantie (nach dem
+ * Überspringen) erzwingt ein Angebot 2. Größe oder besser in der Umlaufbahn.
+ *
+ * Zahlenkarten tragen im Katalog Größe 0; für die Ziehung bekommen sie hier eine Ziehklasse
+ * (Kopie 4, Spiegel/Leucht/Sternschnuppe 3, Anker 2) — das Angebot behält Größe 0 (Preis 3–5).
+ *
+ * Packs (Spieltest-Runde 2): jeder Shop trägt `shop.packs = { sternbilder, planet }` — je Shop einmal.
+ * `rlPackOeffnen` bezahlt und deckt `wahl` Karten auf (Sternbilderpack: Sternbildtypen unter der Höchststufe;
+ * Planetenpack: die Planetenkarten des aktuellen Planeten), `rlPackWaehlen` nimmt eine davon (Stufe +1 bzw.
+ * Karte ins Deck). Zustand zu → offen → fertig, Reload-fest im Shop-Zustand.
+ *
+ * Exporte: rlUmlaufbahn, rlImFlug, rlReroll, rlKaufen, rlSternwarte, rlSternwarteNehmen,
+ *   rlSternwarteSchliessen, rlLuftschleuse, rlShopAngebote, rlShopRng, rlShopPacks, rlPackOeffnen, rlPackWaehlen.
+ *
+ * Top-Level-Namen dieser Datei: RL_SHOP_BEREICH_NR, RL_ZAHL_ZIEHKLASSE, rlShopRng, rlAngebotAus,
+ *   rlPoolZahl, rlPoolKosmisch, rlPoolDrittes, rlZieheGroesse, rlZieheAusPool, rlNeueId,
+ *   rlUmlaufbahnFuellen, rlPacksNeu, rlPackKandidaten, rlShopPacks, rlPackOeffnen, rlPackWaehlen,
+ *   rlUmlaufbahn, rlImFlug, rlShopAngebote, rlReroll, rlKaufen,
+ *   rlSternwarte, rlSternwarteNehmen, rlSternwarteSchliessen, rlLuftschleuse.
+ */
+
+/** Nummern der Bereiche für die Seed-Ableitung (verschiedene Bereiche, verschiedene Angebote). */
+const RL_SHOP_BEREICH_NR = { angebote: 1, kartenmarkt: 2, kabinett: 3, modul: 4, sternwarte: 5, 'pack-sternbilder': 6, 'pack-planet': 7 };
+
+/** Ziehklasse der Zahlenkarten-Sorten (Katalog-Größe 0) für die Größenverteilung. */
+const RL_ZAHL_ZIEHKLASSE = { zahl: 4, spiegel: 3, leucht: 3, sternschnuppe: 3, anker: 2 };
+
+/**
+ * Deterministischer Zufall je Laufzustand (§4.7):
+ * seed ^ (kampfIndex+1)·7919 ^ platz·104729 ^ rerolls·31, plus Bereich und Sternwartenzähler.
+ */
+function rlShopRng(lauf, bereich = 'angebote', rerolls = 0) {
+  const d = lauf.daten;
+  const nr = RL_SHOP_BEREICH_NR[bereich] ?? 0;
+  const seed = (d.seed ^ ((d.kampfIndex + 1) * 7919) ^ (d.platz * 104729) ^ (rerolls * 31)
+    ^ (nr * 65537) ^ (d.sternwarten * 2654435761)) >>> 0;
+  return rngVon(seed);
+}
+
+/** Angebot aus einem Katalogeintrag (Preis kann überlagert werden). */
+function rlAngebotAus(eintrag, id, preis = null) {
+  const a = {
+    id, katalogKey: eintrag.key, sorte: eintrag.sorte, name: eintrag.name, text: eintrag.text,
+    groesse: eintrag.groesse, preis: preis ?? eintrag.preis, gekauft: false,
+  };
+  if (eintrag.spec) a.spec = { ...eintrag.spec };
+  return a;
+}
+
+/** Pool der Zahlenkarten: `{eintrag, klasse, preis}` — Sternschnuppe nur ohne Deckschwäche. */
+function rlPoolZahl(lauf) {
+  const schwaeche = lauf.deckSchwaeche();
+  const out = [];
+  for (const e of Object.values(RL_KATALOG)) {
+    if (e.sorte !== 'zahl') continue;
+    const sorte = e.key.split('-')[0];
+    if (sorte === 'sternschnuppe' && schwaeche.keineSternschnuppe) continue;
+    out.push({ eintrag: e, klasse: RL_ZAHL_ZIEHKLASSE[sorte] ?? 4, preis: e.preis });
+  }
+  return out;
+}
+
+/** Pool der kosmischen Karten (maxProLauf beachtet; Lotse: Kabinettfaktor auf den Preis). */
+function rlPoolKosmisch(lauf) {
+  const d = lauf.daten;
+  const faktor = lauf.deckSchwaeche().kabinettFaktor ?? 1;
+  const out = [];
+  for (const e of Object.values(RL_KATALOG)) {
+    if (e.sorte !== 'kosmisch') continue;
+    if (e.maxProLauf && d.deck.filter((k) => k.art === e.spec.art).length >= e.maxProLauf) continue;
+    out.push({ eintrag: e, klasse: e.groesse, preis: e.preis * faktor });
+  }
+  return out;
+}
+
+/** Pool des dritten Platzes: Module (nicht an Bord), Vorrat (nicht an Bord), Sternwarte, Aufwertungen. */
+function rlPoolDrittes(lauf, { mitModule = true, mitVorrat = true, mitSternwarte = true, mitAufwertung = true } = {}) {
+  const d = lauf.daten;
+  const out = [];
+  for (const e of Object.values(RL_KATALOG)) {
+    if (e.sorte === 'modul') {
+      if (mitModule && !lauf.hatModul(e.key)) out.push({ eintrag: e, klasse: e.groesse, preis: e.preis });
+    } else if (e.sorte === 'vorrat') {
+      if (mitVorrat && !lauf.hatVorrat(e.key)) out.push({ eintrag: e, klasse: e.groesse, preis: e.preis });
+    } else if (e.sorte === 'sternwarte') {
+      if (mitSternwarte) out.push({ eintrag: e, klasse: e.groesse, preis: e.preis });
+    } else if (e.sorte === 'aufwertung') {
+      if (!mitAufwertung) continue;
+      const stufe = e.key === 'ueberriese' ? 2 : 1;
+      const ziel = d.deck.some((k) => k.art === 'ZAHL' && (k.stufe ?? 0) === stufe - 1);
+      if (ziel) out.push({ eintrag: e, klasse: e.groesse, preis: lauf.aufwertungsPreis(stufe) });
+    }
+  }
+  return out;
+}
+
+/**
+ * Größenklasse ziehen (Gewichte aus RL_KONFIG) unter den im Pool vorhandenen Klassen.
+ * Klasse 1 nur, solange der Lauf-Zähler unter `ersteGroesseProLaufMax` liegt; wird sie
+ * gezogen, zählt der Lauf mit.
+ */
+function rlZieheGroesse(rng, lauf, klassen, hoechstens = 4) {
+  const d = lauf.daten;
+  const G = RL_KONFIG.shop.gewichte;
+  const erlaubt = [...klassen].filter((k) => k <= hoechstens && (k !== 1 || d.ersteGroesseAngeboten < RL_KONFIG.shop.ersteGroesseProLaufMax));
+  if (!erlaubt.length) return null;
+  const gew = erlaubt.map((k) => G['groesse' + k] ?? 1);
+  const summe = gew.reduce((a, b) => a + b, 0);
+  let z = rng() * summe;
+  let wahl = erlaubt[erlaubt.length - 1];
+  for (let i = 0; i < erlaubt.length; i++) { z -= gew[i]; if (z < 0) { wahl = erlaubt[i]; break; } }
+  if (wahl === 1) d.ersteGroesseAngeboten++;
+  return wahl;
+}
+
+/** Ein Angebot aus einem Pool ziehen (ohne schon angebotene Katalogschlüssel). */
+function rlZieheAusPool(rng, lauf, pool, id, ausser = new Set(), hoechstens = 4) {
+  const frei = pool.filter((p) => !ausser.has(p.eintrag.key));
+  if (!frei.length) return null;
+  const klasse = rlZieheGroesse(rng, lauf, new Set(frei.map((p) => p.klasse)), hoechstens);
+  if (klasse === null) return null;
+  const kandidaten = frei.filter((p) => p.klasse === klasse);
+  const p = rng.pick(kandidaten);
+  ausser.add(p.eintrag.key);
+  return rlAngebotAus(p.eintrag, id, p.preis);
+}
+
+/** Fortlaufende Angebots-Id innerhalb eines Shops. */
+function rlNeueId(shop) { return 'a' + (shop.naechsteId++); }
+
+/**
+ * Die Umlaufbahn-Angebote würfeln (RL_KONFIG.shop.umlaufbahn.angebote, Spieltest-Runde 1: vier):
+ * [Zahl] + [kosmisch] + [je zur Hälfte Zahl oder kosmisch]… + [Modul|Vorrat|Sternwarte|Aufwertung].
+ */
+function rlUmlaufbahnFuellen(lauf, shop, rng) {
+  const ausser = new Set();
+  const n = Math.max(3, RL_KONFIG.shop.umlaufbahn.angebote ?? 3);
+  const angebote = [
+    rlZieheAusPool(rng, lauf, rlPoolZahl(lauf), rlNeueId(shop), ausser),
+    rlZieheAusPool(rng, lauf, rlPoolKosmisch(lauf), rlNeueId(shop), ausser),
+  ];
+  for (let i = 2; i < n - 1; i++) {
+    const pool = rng() < 0.5 ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
+    angebote.push(rlZieheAusPool(rng, lauf, pool, rlNeueId(shop), ausser));
+  }
+  angebote.push(rlZieheAusPool(rng, lauf, rlPoolDrittes(lauf), rlNeueId(shop), ausser));
+  shop.garantieErfuellt = false;
+  if (shop.garantie && !angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2)) {
+    const pool = rlPoolKosmisch(lauf).filter((p) => p.klasse <= 2);
+    const ersatz = rlZieheAusPool(rng, lauf, pool, rlNeueId(shop), new Set(), 2);
+    if (ersatz) angebote[1] = ersatz;
+  }
+  if (shop.garantie) shop.garantieErfuellt = angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2);
+  shop.angebote = angebote.filter(Boolean);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Packs (Spieltest-Runde 2)                                           */
+/* ------------------------------------------------------------------ */
+
+/** Die beiden Packs eines neuen Shops (je Shop einmal; Zustand zu → offen → fertig). */
+function rlPacksNeu(lauf) {
+  const K = RL_KONFIG.shop.packs ?? {};
+  const packs = {};
+  if (K.sternbilder) packs.sternbilder = { art: 'sternbilder', preis: K.sternbilder.preis, wahl: K.sternbilder.wahl, zustand: 'zu', karten: [], gewaehlt: null };
+  if (K.planet) packs.planet = { art: 'planet', planet: lauf.planetAktuell(), preis: K.planet.preis, wahl: K.planet.wahl, zustand: 'zu', karten: [], gewaehlt: null };
+  return packs;
+}
+
+/** Was ein Pack aufdecken kann: Sternbildtypen unter der Höchststufe bzw. die Planetenkarten des Planeten. */
+function rlPackKandidaten(lauf, pack) {
+  const d = lauf.daten;
+  if (pack.art === 'sternbilder') {
+    const max = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
+    return Object.entries(d.stufen).filter(([, st]) => (st.stufe ?? 0) < max).map(([typ, st]) => ({ typ, stufe: st.stufe ?? 0 }));
+  }
+  return rlPlanetKarten(pack.planet).map((e) => ({ katalogKey: e.key, name: e.name, text: e.text, groesse: e.groesse, planet: e.planet, spec: { ...e.spec } }));
+}
+
+/** Die Packs eines Shops (ältere Speicherstände bekommen sie nachgezogen). */
+function rlShopPacks(lauf, shop) {
+  if (!shop) throw new Error('Kein Shop');
+  if (!shop.packs) shop.packs = rlPacksNeu(lauf);
+  return shop.packs;
+}
+
+/**
+ * Ein Pack öffnen: bezahlen, `wahl` Karten aufdecken — deterministisch aus dem Laufzustand.
+ * Wirft, wenn das Pack schon offen ist, nichts aufzudecken wäre, das Deck voll ist oder das Geld fehlt.
+ */
+function rlPackOeffnen(lauf, shop, art, rng = null) {
+  const d = lauf.daten;
+  if (!shop || d.shop !== shop) throw new Error('Kein offener Shop');
+  const pack = rlShopPacks(lauf, shop)[art];
+  if (!pack) throw new Error('Unbekanntes Pack: ' + art);
+  if (pack.zustand !== 'zu') throw new Error('Das Pack ist schon geöffnet');
+  const kandidaten = rlPackKandidaten(lauf, pack);
+  if (!kandidaten.length) throw new Error(art === 'sternbilder' ? 'Alle Sternbilder haben die Höchststufe' : 'Keine Karten für dieses Pack');
+  if (art === 'planet' && d.deck.length >= RL_KONFIG.deck.maxGroesse) throw new Error('Das Deck ist voll');
+  lauf.bezahle(pack.preis);
+  const r = rng ?? rlShopRng(lauf, 'pack-' + art, 0);
+  const gemischt = r.shuffle([...kandidaten]);
+  pack.karten = gemischt.slice(0, pack.wahl).map((k, i) => ({ ...k, id: 'p' + (i + 1) }));
+  pack.zustand = 'offen';
+  d.statistik.gekauft++;
+  return pack;
+}
+
+/** Aus dem offenen Pack eine Karte wählen: Sternbildstufe +1 bzw. Karte ins Deck. Liefert Stufe bzw. Deckkarte. */
+function rlPackWaehlen(lauf, shop, art, id) {
+  const pack = rlShopPacks(lauf, shop)[art];
+  if (!pack || pack.zustand !== 'offen') throw new Error('Kein offenes Pack');
+  const k = pack.karten.find((x) => x.id === id);
+  if (!k) throw new Error('Karte nicht im Pack: ' + id);
+  const ergebnis = art === 'sternbilder' ? lauf.stufeGeben(k.typ) : lauf.deckHinzu(k.spec, k.katalogKey);
+  pack.gewaehlt = id;
+  pack.zustand = 'fertig';
+  return ergebnis;
+}
+
+/**
+ * Umlaufbahn-Shop nach einem Lakaien-Sieg. Verbraucht `lauf.daten.garantie` (sie gilt für
+ * diesen Shop samt Rerolls) und legt den Zustand in `lauf.daten.shop`.
+ */
+function rlUmlaufbahn(lauf, rng = null) {
+  const d = lauf.daten;
+  const shop = {
+    art: 'UMLAUFBAHN', angebote: [], rerolls: 0, rerollPreis: RL_KONFIG.shop.reroll.start,
+    garantie: !!d.garantie, garantieErfuellt: false, naechsteId: 1, packs: rlPacksNeu(lauf),
+  };
+  d.garantie = false;
+  rlUmlaufbahnFuellen(lauf, shop, rng ?? rlShopRng(lauf, 'angebote', 0));
+  d.shop = shop;
+  return shop;
+}
+
+/**
+ * Im-Flug-Shop nach einem Boss-Sieg: Kartenmarkt (4 Zahlen), Kosmisches Kabinett (3), ein
+ * Schiffsmodul (nicht rerollbar, null wenn alle an Bord), Luftschleuse (bis 3 Karten).
+ */
+function rlImFlug(lauf, rng = null) {
+  const d = lauf.daten;
+  const K = RL_KONFIG.shop.imFlug;
+  const shop = {
+    art: 'IMFLUG', kartenmarkt: [], kabinett: [], modul: null,
+    luftschleuse: { frei: K.luftschleuse, entfernt: [] },
+    rerolls: { kartenmarkt: 0, kabinett: 0 },
+    rerollPreis: { kartenmarkt: RL_KONFIG.shop.reroll.start, kabinett: RL_KONFIG.shop.reroll.start },
+    naechsteId: 1, packs: rlPacksNeu(lauf),
+  };
+  const rngMarkt = rng ?? rlShopRng(lauf, 'kartenmarkt', 0);
+  const rngKab = rng ?? rlShopRng(lauf, 'kabinett', 0);
+  const rngModul = rng ?? rlShopRng(lauf, 'modul', 0);
+  const ausserM = new Set();
+  for (let i = 0; i < K.kartenmarkt; i++) {
+    const a = rlZieheAusPool(rngMarkt, lauf, rlPoolZahl(lauf), rlNeueId(shop), ausserM);
+    if (a) shop.kartenmarkt.push(a);
+  }
+  const ausserK = new Set();
+  for (let i = 0; i < K.kabinett; i++) {
+    const a = rlZieheAusPool(rngKab, lauf, rlPoolKosmisch(lauf), rlNeueId(shop), ausserK);
+    if (a) shop.kabinett.push(a);
+  }
+  shop.modul = rlZieheAusPool(rngModul, lauf, rlPoolDrittes(lauf, { mitVorrat: false, mitSternwarte: false, mitAufwertung: false }), rlNeueId(shop));
+  d.shop = shop;
+  return shop;
+}
+
+/** Alle Angebote eines Shops als flache Liste. */
+function rlShopAngebote(shop) {
+  if (!shop) return [];
+  if (shop.art === 'UMLAUFBAHN') return [...shop.angebote];
+  return [...shop.kartenmarkt, ...shop.kabinett, ...(shop.modul ? [shop.modul] : [])];
+}
+
+/**
+ * Neu würfeln: Umlaufbahn (alle Angebote) oder Im-Flug-Bereich `kartenmarkt|kabinett`.
+ * Bezahlt mit einem Gratis-Reroll (Sprungantrieb), sonst mit Geld; der Preis steigt je Reroll.
+ */
+function rlReroll(lauf, shop, bereich = 'angebote', rng = null) {
+  const d = lauf.daten;
+  if (!shop || d.shop !== shop) throw new Error('Kein offener Shop');
+  const R = RL_KONFIG.shop.reroll;
+  const umlauf = shop.art === 'UMLAUFBAHN';
+  if (umlauf) bereich = 'angebote';
+  else if (bereich !== 'kartenmarkt' && bereich !== 'kabinett') throw new Error('Bereich nicht rerollbar: ' + bereich);
+  const preis = umlauf ? shop.rerollPreis : shop.rerollPreis[bereich];
+  if (d.gratisRerolls > 0) d.gratisRerolls--;
+  else lauf.bezahle(preis);
+  const rerolls = (umlauf ? shop.rerolls : shop.rerolls[bereich]) + 1;
+  const neuerPreis = R.start + R.plus * rerolls;
+  const r = rng ?? rlShopRng(lauf, bereich, rerolls);
+  if (umlauf) {
+    shop.rerolls = rerolls;
+    shop.rerollPreis = neuerPreis;
+    rlUmlaufbahnFuellen(lauf, shop, r);
+  } else {
+    shop.rerolls[bereich] = rerolls;
+    shop.rerollPreis[bereich] = neuerPreis;
+    const n = RL_KONFIG.shop.imFlug[bereich];
+    const pool = bereich === 'kartenmarkt' ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
+    const ausser = new Set();
+    const neu = [];
+    for (let i = 0; i < n; i++) {
+      const a = rlZieheAusPool(r, lauf, pool, rlNeueId(shop), ausser);
+      if (a) neu.push(a);
+    }
+    shop[bereich] = neu;
+  }
+  return shop;
+}
+
+/**
+ * Angebot kaufen: prüft Geld und Verfügbarkeit, ruft `lauf.kaufen`, markiert `gekauft`.
+ * `extra.uid` für Aufwertungen. Ein Sternwarte-Kauf deckt sofort auf und liefert die Sternwarte.
+ */
+function rlKaufen(lauf, shop, angebotId, extra = {}) {
+  const angebot = rlShopAngebote(shop).find((a) => a.id === angebotId);
+  if (!angebot) throw new Error('Angebot unbekannt: ' + angebotId);
+  if (angebot.gekauft) throw new Error('Schon gekauft');
+  const ergebnis = lauf.kaufen(angebot, extra);
+  angebot.gekauft = true;
+  if (angebot.sorte === 'sternwarte') {
+    lauf.daten.sternwarten++;
+    return rlSternwarte(lauf, extra.rng ?? null);
+  }
+  return ergebnis;
+}
+
+/**
+ * Sternwarte: 5 Karten aufdecken (3 Zahlen, 2 kosmische), bis zu `nehmen` davon ins Deck.
+ * Zustand liegt in `lauf.daten.sternwarte` (Reload-fest). Bezahlt wird über das Angebot
+ * oder den Vorrat „Beobachtung" — hier nicht.
+ */
+function rlSternwarte(lauf, rng = null) {
+  const d = lauf.daten;
+  const S = RL_KONFIG.shop.sternwarte;
+  const r = rng ?? rlShopRng(lauf, 'sternwarte', 0);
+  const karten = [];
+  const ausser = new Set();
+  const zahlen = Math.min(3, S.aufdecken);
+  for (let i = 0; i < S.aufdecken; i++) {
+    const pool = i < zahlen ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
+    const a = rlZieheAusPool(r, lauf, pool, 's' + (i + 1), ausser);
+    if (a) karten.push({ id: a.id, katalogKey: a.katalogKey, name: a.name, text: a.text, groesse: a.groesse, spec: a.spec, genommen: false });
+  }
+  const warte = { karten, genommen: [], maxNehmen: S.nehmen };
+  d.sternwarte = warte;
+  return warte;
+}
+
+/** Eine aufgedeckte Karte nehmen (höchstens `nehmen`, Deckgrenze gilt). */
+function rlSternwarteNehmen(lauf, warte, kartenId) {
+  if (!warte) throw new Error('Keine Sternwarte offen');
+  if (warte.genommen.length >= warte.maxNehmen) throw new Error('Schon ' + warte.maxNehmen + ' Karten genommen');
+  const k = warte.karten.find((x) => x.id === kartenId);
+  if (!k) throw new Error('Karte nicht aufgedeckt: ' + kartenId);
+  if (k.genommen) throw new Error('Schon genommen');
+  const neu = lauf.deckHinzu(k.spec, k.katalogKey);
+  k.genommen = true;
+  warte.genommen.push(neu.uid);
+  return neu;
+}
+
+/** Sternwarte schließen (Rest verfällt). */
+function rlSternwarteSchliessen(lauf) {
+  lauf.daten.sternwarte = null;
+}
+
+/** Luftschleuse: eine Karte aus dem Deck werfen (höchstens `frei`, nie unter minGroesse). */
+function rlLuftschleuse(lauf, shop, uid) {
+  if (!shop || shop.art !== 'IMFLUG') throw new Error('Die Luftschleuse gibt es nur im Flug');
+  const L = shop.luftschleuse;
+  if (L.frei <= 0) throw new Error('Die Luftschleuse ist erschöpft');
+  const [k] = lauf.verkaufeLuftschleuse([uid]);
+  L.frei--;
+  L.entfernt.push(k);
+  return k;
+}
+
+/* ===== app\roguelike\rl-details.js ===== */
+/**
+ * Roguelike-Modus — Details-Fenster (Spieltest-Runde 2): die lange Erklärung eines Angebots, einer
+ * Pack-Karte, einer Planetenkarte, eines Packs oder einer Sternbildstufe, mit großer Vorschau und Beispiel.
+ * Anton: „bei manchen weiß man doch gar nicht direkt, was sie machen" — hier steht es.
+ *
+ * Vertrag für die Aufrufer (rl-shop-ui.js):
+ *   rlDetailsKnopf(schluessel, opt)            → button.rl-knopf.klein.rl-details-knopf[data-rl="details"][data-key]
+ *   rlDetailsZeigen(wurzel, schluessel, opt)   → Ebene (.rl-ebene[data-ebene="details"]) in `wurzel`, Rückgabe das Element
+ *   rlDetailsEintrag(schluessel, opt)          → { name, sorte, groesse, preis, spec, kurz, lang, beispiel, planet, typ }
+ * Schlüssel: Katalogschlüssel (RL_KATALOG: 'zahl-7', 'spiegel-3', 'leucht-5', 'anker-9', 'sternschnuppe',
+ *   'schwarzes-loch' …, Module, Vorrat, 'riese', 'ueberriese', 'sternwarte', Planetenkarten 'frost-eiszapfen' …),
+ *   'stufe:PFEIL' … (Sternbildstufe eines Typs), 'pack:sternbilder', 'pack:planet' (mit opt.planet).
+ *   `opt.spec` (KartenSpec) oder `opt.angebot` überlagern den Katalogeintrag (Preis, Größenklasse, Spec);
+ *   `opt.stufe` ist die aktuelle Stufe des Typs (für 'stufe:…').
+ * Texte: RL_TXT_DETAILS hier (Ausnahme von „alle Texte in rl-texte.js": die Texte gehören zum Fenster).
+ *   Jeder Eintrag `{ lang, beispiel }` ist ein Satz oder eine Funktion des Kontexts
+ *   `{ w, g, K, P, bonus, max, wahl, stufe }` — alle Spielzahlen kommen aus RL_KONFIG bzw. CONFIG.
+ *
+ * Top-Level-Namen dieser Datei: RL_TXT_DETAILS, RL_DETAILS_FORM_WERTE, RL_DETAILS_SORTE, rlDetailsKontext,
+ *   rlDetailsText, rlDetailsEintrag, rlDetailsKnopf, rlDetailsKarte, rlDetailsVorschauEl, rlDetailsMarkenEl, rlDetailsZeigen.
+ */
+
+/** Beispielwerte je Sternbildtyp für die Vorschau einer Sternbildstufe (wie die Formentafel). */
+const RL_DETAILS_FORM_WERTE = {
+  PFEIL: [4, 5, 6, 7], WAGEN: [2, 5, 8, 11], KRONE: [6, 6, 6, 2, 2],
+  KREUZ: [9, 9, 9, 9], ZWILLING: [4, 4, 8, 8, 11, 11], DOPPELSTIER: [3, 3, 3, 9, 9, 9],
+};
+
+/** Anzeigenamen der Sorten in der Kopfzeile des Fensters. */
+const RL_DETAILS_SORTE = {
+  zahl: 'Karte', kosmisch: 'Kosmische Karte', modul: 'Schiffsmodul', vorrat: 'Vorrat', aufwertung: 'Aufwertung',
+  sternwarte: 'Sternwarte', planet: 'Planetenkarte', stufe: 'Sternbildstufe', pack: 'Pack',
+};
+
+/**
+ * Lange Texte und Beispiele. Gruppen 'zahl' / 'spiegel' / 'leucht' / 'anker' gelten für alle Werte
+ * (der Wert steht im Kontext als `w`, die Spiegelseite als `g`).
+ */
+const RL_TXT_DETAILS = {
+  /* ---------- Zahlenkarten ---------- */
+  zahl: {
+    lang: (c) => `Eine gewöhnliche ${c.w} für dein Deck. Mehr Kopien eines Werts machen Sternbilder mit gleichen Werten leichter: Krone, Kreuz, Zwilling und Doppelstier brauchen Paare, Drillinge oder Vierlinge. Für Pfeile und Wagen füllt sie Lücken in deiner Folge.`,
+    beispiel: (c) => `Mit drei Karten ${c.w} im Deck ziehst du öfter zwei davon auf die Hand, die Grundlage für einen Zwilling oder eine Krone.`,
+  },
+  spiegel: {
+    lang: (c) => `Eine Spiegelkarte zeigt ${c.w} oder ${c.g}. Du drehst sie auf der Hand, so oft du willst, und das kostet keinen Zug. Liegt sie in einem Sternbild, bleibt der Wert, mit dem du sie gelegt hast.`,
+    beispiel: (c) => `Dir fehlt die ${c.g} für einen Pfeil: Spiegelkarte antippen, „Spiegelkarte drehen", und aus der ${c.w} wird die ${c.g}.`,
+  },
+  leucht: {
+    lang: (c) => `Eine ${c.w}, die leuchtet. Liegt sie bei der Wertung in einem gültigen Sternbild, bringt sie +${c.K.karten.leucht} Punkt, und zwar in jeder Runde wieder. Im Bosskampf ist das zusätzlicher Schaden.`,
+    beispiel: (c) => `Ein Pfeil aus drei Karten bringt ${c.P.PFEIL[3]} Punkte. Mit der Leuchtkarte darin sind es ${c.P.PFEIL[3] + c.K.karten.leucht}, bei jeder Wertung.`,
+  },
+  anker: {
+    lang: (c) => `Eine ${c.w} mit Anker. Das Sternbild, in dem sie liegt, kann dir niemand klauen, egal wie klein es ist. Gegen Schwarzes Loch, Urknall und Komet hilft der Anker nicht, davor schützt nur das Siegel.`,
+    beispiel: () => 'Dein Dreier-Pfeil wäre leichte Beute für einen Dieb. Mit der Ankerkarte darin bleibt er liegen, und du baust ihn in Ruhe aus.',
+  },
+  sternschnuppe: {
+    lang: () => 'Der Joker. Im Sternbild vertritt er jeden Wert, den du gerade brauchst. Kreuz und Drache lassen sich mit ihm nicht abschließen, und ein Gegner mit der echten Karte auf der Hand kann ihn herausklauen.',
+    beispiel: () => 'Du hast 4, 5 und 7 auf der Hand: Die Sternschnuppe spielt die 6, und der Pfeil 4-5-6-7 steht.',
+  },
+
+  /* ---------- Kosmische Karten (kosten keinen Zug, eine je Zug) ---------- */
+  'schwarzes-loch': {
+    lang: () => 'Zerstört ein ganzes Sternbild eines Gegners, auch ein fertiges. Nur versiegelte Sternbilder hält es nicht auf. Die Karten gehen auf die Ablagen ihrer Besitzer. Wie jede kosmische Karte kostet es keinen Zug.',
+    beispiel: () => 'Der Boss hat einen Sechser-Pfeil liegen, an dem er sich heilt: Schwarzes Loch darauf, danach spielst du deinen normalen Zug.',
+  },
+  'weisses-loch': {
+    lang: () => 'Zieht eine Karte deiner Wahl aus einem fremden, unversiegelten Sternbild auf deine Hand. Was übrig bleibt, ist oft kein gültiges Sternbild mehr: ein Wrack mit 0 Punkten, das sich leicht klauen lässt.',
+    beispiel: () => 'Aus der Krone 6-6-6-2-2 des Gegners ziehst du eine 6. Er hat ein Wrack, du hast die 6 für dein eigenes Sternbild.',
+  },
+  urknall: {
+    lang: () => 'Alle offenen Sternbilder am Tisch zerfallen, auch deine eigenen. Fertige Sternbilder (Kreuz, sechs Karten, Drache) und versiegelte bleiben liegen.',
+    beispiel: () => 'Du hast nur Versiegeltes ausliegen, der Gegner vier offene Sternbilder: Urknall, und nur er verliert.',
+  },
+  milchstrasse: {
+    lang: () => `Du ziehst sofort ${CONFIG.kosmisch.milchstrasseKarten} Karten aus deinem Deck. Mehr Handkarten heißt mehr Möglichkeiten in diesem Zug, am Zugende füllst du nur bis zur normalen Handgröße auf.`,
+    beispiel: () => 'Mit vier Handkarten geht nur ein Dreier. Nach der Milchstraße hast du sechs auf der Hand und legst gleich einen Fünfer.',
+  },
+  komet: {
+    lang: () => 'Schießt eine Karte deiner Wahl aus einem fremden, unversiegelten Sternbild. Sie geht auf die Ablage ihres Besitzers, nicht zu dir. Gegner mit „Immun gegen das Loch" trifft er nicht.',
+    beispiel: () => 'Der Gegner hat einen Fünfer-Pfeil. Der Komet nimmt die mittlere Karte heraus: kein Pfeil mehr, 0 Punkte, und du kannst das Wrack klauen.',
+  },
+  gravitation: {
+    lang: () => 'Holt eine Zahlenkarte oder Sternschnuppe aus der Mitte auf deine Hand. Danach darfst du beim Bauen trotzdem noch Karten aus der Mitte nehmen.',
+    beispiel: () => 'In der Mitte liegen 8, 9 und 10, du darfst beim Bauen aber nur zwei nehmen. Gravitation holt die 8 vorab, 9 und 10 nimmst du beim Bauen dazu.',
+  },
+  sternenstaub: {
+    lang: () => 'Eine Zahlenkarte auf deiner Hand bekommt einen neuen Wert von 1 bis 12. Der neue Wert bleibt für den Rest des Kampfes.',
+    beispiel: (c) => `Du hast 7, 7, 7 und eine 2. Sternenstaub macht aus der 2 eine 7, und das Kreuz 7-7-7-7 bringt ${c.P.KREUZ} Punkte.`,
+  },
+  funkspruch: {
+    lang: () => 'Zeigt dir die obersten drei Karten deines Decks. Sie stehen in der Leiste, bis du das nächste Mal ziehst.',
+    beispiel: () => 'Du siehst, dass als Nächstes die 9 kommt, und legst deinen Pfeil 6-7-8 so, dass sie im nächsten Zug passt.',
+  },
+  'weisser-zwerg': {
+    lang: () => 'Du ziehst drei Karten und wirfst danach zwei Handkarten deiner Wahl ab. So tauschst du schlechte Karten gegen bessere.',
+    beispiel: () => 'Auf der Hand liegen 1 und 12, die zu nichts passen. Drei neue Karten ziehen, dann 1 und 12 abwerfen.',
+  },
+  nebel: {
+    lang: () => 'Bis zum Ende dieser Runde kann dir niemand etwas klauen, auch kein Raub und kein Drachenklau. Schwarzes Loch und Komet treffen dich weiter.',
+    beispiel: () => 'Gegen einen Dieb: Nebel gleich zu Rundenbeginn, und deine offenen Sternbilder wachsen in Ruhe bis zur Wertung.',
+  },
+  'rote-riesin': {
+    lang: () => 'Ein eigenes gültiges Sternbild zählt bei der Wertung dieser Runde doppelt, mit allen Zuschlägen. Gegen den Boss ist das doppelter Schaden.',
+    beispiel: (c) => `Dein Sechser-Pfeil bringt ${c.P.PFEIL[6]} Punkte. Mit der Roten Riesin sind es ${2 * c.P.PFEIL[6]} in dieser Runde.`,
+  },
+  ausrichtung: {
+    lang: () => 'Du wählst einen Sternbildtyp. Jedes deiner Sternbilder dieses Typs bringt in dieser Runde einen Punkt mehr je Karte.',
+    beispiel: () => 'Du hast zwei Pfeile mit fünf und vier Karten liegen. Ausrichtung auf Pfeil bringt +9 Punkte in dieser Runde.',
+  },
+  eklipse: {
+    lang: () => 'Verdunkelt ein fremdes Sternbild, das sonst sicher wäre: fertig oder durch ein Privileg geschützt, aber nicht versiegelt. Im selben Zug darfst du es rauben, also Handkarten abwerfen und das Sternbild unverändert nehmen.',
+    beispiel: (c) => `Der Gegner hat ein Kreuz (${c.P.KREUZ} Punkte) liegen. Eklipse darauf, zwei Handkarten abwerfen: Das Kreuz gehört dir, dazu gibt es Geld für vier geklaute Karten.`,
+  },
+  drachenatem: {
+    lang: (c) => `Für den Rest des Kampfes zählt dein Drache +${c.K.karten.drachenatem} Punkte bei jeder Wertung. Ohne Drachen bringt die Karte nichts, sie lohnt sich in Pfeil-Decks.`,
+    beispiel: (c) => `Drache ${c.P.DRACHE} + Drachenatem ${c.K.karten.drachenatem} = ${c.P.DRACHE + c.K.karten.drachenatem} Punkte je Runde.`,
+  },
+
+  /* ---------- Aufwertungen und Sternwarte ---------- */
+  riese: {
+    lang: (c) => `Eine Zahlenkarte deines Decks wird zum Riesen. Sie bringt +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt. Die Karte wählst du nach dem Kauf.`,
+    beispiel: () => 'Mach die Karte zum Riesen, die du fast immer legst, zum Beispiel eine 6 oder 7 in einem Pfeil-Deck.',
+  },
+  ueberriese: {
+    lang: (c) => `Ein Riese wird zum Überriesen: +${c.K.karten.ueberriese} statt +${c.K.karten.riese} Punkte je Wertung. Das geht nur auf eine Karte, die schon ein Riese ist.`,
+    beispiel: (c) => `Ein Dreier-Pfeil mit einem Überriesen bringt ${c.P.PFEIL[3]} + ${c.K.karten.ueberriese} = ${c.P.PFEIL[3] + c.K.karten.ueberriese} Punkte je Runde.`,
+  },
+  sternwarte: {
+    lang: (c) => `Deckt ${c.K.shop.sternwarte.aufdecken} zufällige Karten auf, drei Zahlen und zwei kosmische. Bis zu ${c.K.shop.sternwarte.nehmen} davon nimmst du ins Deck, der Rest verfällt.`,
+    beispiel: () => 'Du suchst noch eine 9 und eine Milchstraße. Die Sternwarte zeigt fünf Karten auf einmal, mit etwas Glück ist beides dabei.',
+  },
+
+  /* ---------- Schiffsmodule (dauerhaft für den ganzen Lauf) ---------- */
+  sichtluke: { lang: () => 'Die oberste Karte deines Decks liegt offen. Du weißt immer, was du als Nächstes ziehst.', beispiel: () => 'Oben liegt die 8: Du hebst dir 6 und 7 auf, statt sie abzuwerfen.' },
+  peilsender: { lang: () => 'Du siehst auf dem Planetenschirm schon alle Gegner dieses Planeten, nicht nur den nächsten.', beispiel: () => 'Du siehst, dass die Elite ein Dieb ist, und kaufst vorher eine Ankerkarte.' },
+  werkbank: { lang: () => 'Aufwertungen zum Riesen und Überriesen kosten zwei Geld weniger.', beispiel: (c) => `Der Riese kostet ${Math.max(0, c.K.shop.preise.riese - 2)} statt ${c.K.shop.preise.riese} Geld.` },
+  magnetnetz: { lang: () => 'Zu Beginn jedes Zuges holst du die oberste Zahlenkarte deiner Ablage zurück auf die Hand.', beispiel: () => 'Du wirfst eine 5 ab, die gerade nicht passt. Im nächsten Zug liegt sie wieder auf deiner Hand.' },
+  bergungsrecht: { lang: () => 'Wird dir ein Sternbild geklaut, bekommst du doppelte Trostpunkte.', beispiel: () => 'Ein geklauter Vierer-Pfeil bringt dir 8 statt 4 Trostpunkte.' },
+  zinsmodul: { lang: () => 'Nach jedem Kampf bekommst du ein Geld je volle zehn Geld an Bord, höchstens drei.', beispiel: () => 'Mit 24 Geld an Bord gibt es nach dem Kampf +2.' },
+  ladeluke: { lang: () => 'Beim Einsammeln am Rundenende bleibt deine wertvollste Handkarte liegen. Du startest die nächste Runde mit ihr.', beispiel: () => 'Die 12 auf deiner Hand bleibt, und du ziehst nur drei neue Karten dazu.' },
+  frachtraum: { lang: () => 'Du hältst dauerhaft fünf statt vier Handkarten.', beispiel: () => 'Mit fünf Handkarten gelingen Vierer und Fünfer deutlich öfter aus einer Hand.' },
+  greifarm: { lang: () => 'Beim Bauen darfst du drei statt zwei Karten aus der Mitte nehmen.', beispiel: () => 'Aus der Hand 4 und 5, aus der Mitte 6, 7 und 8: ein Fünfer-Pfeil in einem Zug.' },
+  schild: { lang: () => 'Versiegeln kostet dich keinen Zug mehr, es bleibt bei höchstens zwei Siegeln je Runde.', beispiel: () => 'Du baust einen Sechser-Pfeil und versiegelst ihn im selben Zug.' },
+  kompass: { lang: () => 'Ab Runde 2 bist du immer Startspieler.', beispiel: () => 'Du legst zuerst und nimmst dir die besten Karten aus der frischen Mitte.' },
+  enterhaken: { lang: () => 'Du brauchst nur eine statt zwei Handkarten, um zu klauen.', beispiel: () => 'Der Gegner hat 3-4-5 liegen. Mit einer einzigen 6 klaust du den Pfeil.' },
+  kaperbrief: { lang: () => 'Wem du klaust, der bekommt keine Trostpunkte.', beispiel: () => 'Du klaust einen Fünfer: Der Gegner verliert ihn und bekommt dafür nichts.' },
+  reaktor: { lang: () => 'Am Ende jeder Runde hast du einen Zug zusätzlich.', beispiel: () => 'Der Gegner ist fertig, du legst noch ein Sternbild vor der Wertung.' },
+
+  /* ---------- Vorrat (einmalig) ---------- */
+  notruf: { lang: (c) => `Überspringt einen Lakaien, ohne dass der Boss stärker wird. Sonst kostet Überspringen +${c.K.boss.schuldProUebersprungenem} Bossleben.`, beispiel: () => 'Die Elite sieht zu stark aus: Notruf einsetzen und direkt zum Boss.' },
+  sprungantrieb: { lang: () => 'Ein kostenloser Reroll im Shop. Er wird verbraucht, sobald du neu würfelst.', beispiel: () => 'Die vier Angebote passen nicht: einsetzen und gratis neu würfeln.' },
+  beobachtung: { lang: () => 'Öffnet sofort eine Sternwarte: fünf Karten aufdecken, bis zu zwei nehmen.', beispiel: () => 'Im Flug eingesetzt, holst du dir zwei Karten, ohne dafür zu bezahlen.' },
+  kartenskizze: { lang: () => 'Zeigt auf der Sternkarte die Lakaien der erreichbaren Planeten, bevor du den Kurs setzt.', beispiel: () => 'Du siehst, dass auf der Kronwelt zwei Sammler warten, und fliegst dorthin.' },
+
+  /* ---------- Sternbildstufen ---------- */
+  'stufe:PFEIL': {
+    lang: (c) => `Der Pfeil: drei bis sechs Werte in Folge, ${c.P.PFEIL[3]} / ${c.P.PFEIL[4]} / ${c.P.PFEIL[5]} / ${c.P.PFEIL[6]} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung, für jeden Pfeil, den du ausliegen hast. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Auf Stufe 2 bringt dein Dreier-Pfeil ${c.P.PFEIL[3]} + ${2 * c.bonus} = ${c.P.PFEIL[3] + 2 * c.bonus} Punkte je Runde.`,
+  },
+  'stufe:WAGEN': {
+    lang: (c) => `Der Wagen: drei bis sechs Werte mit gleichem Abstand ab ${CONFIG.wagen.minSchrittweite}, ${c.P.WAGEN[3]} / ${c.P.WAGEN[4]} / ${c.P.WAGEN[5]} / ${c.P.WAGEN[6]} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Wagen. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Wagen 2-5-8-11 auf Stufe 1: ${c.P.WAGEN[4]} + ${c.bonus} = ${c.P.WAGEN[4] + c.bonus} Punkte je Runde.`,
+  },
+  'stufe:KRONE': {
+    lang: (c) => `Die Krone: drei gleiche Werte plus zwei gleiche, ${c.P.KRONE} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Krone. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Krone 6-6-6-2-2 auf Stufe 3: ${c.P.KRONE} + ${3 * c.bonus} = ${c.P.KRONE + 3 * c.bonus} Punkte je Runde.`,
+  },
+  'stufe:KREUZ': {
+    lang: (c) => `Das Kreuz: vier gleiche Werte, ${c.P.KREUZ} Punkte und sofort sicher vor dem Klauen. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Kreuz. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Kreuz 9-9-9-9 auf Stufe 2: ${c.P.KREUZ} + ${2 * c.bonus} = ${c.P.KREUZ + 2 * c.bonus} Punkte je Runde.`,
+  },
+  'stufe:ZWILLING': {
+    lang: (c) => `Der Zwilling: drei Paare, ${c.P.ZWILLING} Punkte, mit sechs Karten sofort fertig. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Zwilling. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Zwilling 4-4-8-8-11-11 auf Stufe 1: ${c.P.ZWILLING} + ${c.bonus} = ${c.P.ZWILLING + c.bonus} Punkte je Runde.`,
+  },
+  'stufe:DOPPELSTIER': {
+    lang: (c) => `Der Doppelstier: zwei Drillinge, ${c.P.DOPPELSTIER} Punkte, mit sechs Karten sofort fertig. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Doppelstier. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Doppelstier 3-3-3-9-9-9 auf Stufe 2: ${c.P.DOPPELSTIER} + ${2 * c.bonus} = ${c.P.DOPPELSTIER + 2 * c.bonus} Punkte je Runde.`,
+  },
+
+  /* ---------- Packs ---------- */
+  'pack:sternbilder': {
+    lang: (c) => `Beim Öffnen werden ${c.wahl} Sternbildtypen aufgedeckt, die noch nicht auf der Höchststufe sind. Einen davon wählst du, er steigt eine Stufe. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung dieses Typs. In jedem Shop liegt ein Pack, das nächste gibt es im nächsten Shop.`,
+    beispiel: () => 'Du baust vor allem Pfeile und Kronen. Aufgedeckt werden Pfeil, Kreuz und Zwilling: Du nimmst den Pfeil.',
+  },
+  'pack:planet': {
+    lang: (c) => `Beim Öffnen werden ${c.wahl} Karten aufgedeckt, die es nur auf diesem Planeten gibt. Eine davon kommt in dein Deck. Planetenzahlen tragen oft einen Typ-Bonus: Punkte extra, wenn sie in einem bestimmten Sternbildtyp liegen. In jedem Shop liegt ein Pack, das nächste gibt es im nächsten Shop.`,
+    beispiel: () => 'Auf dem Frostpfad zählen Pfeile mehr, und das Pack bringt Karten wie den Eiszapfen, der in einem Pfeil noch einmal +2 Punkte gibt.',
+  },
+
+  /* ---------- Planetenkarten ---------- */
+  'frost-eiszapfen': { lang: () => 'Eine 3 vom Frostpfad. Liegt sie bei der Wertung in einem Pfeil, bringt sie +2 Punkte. In jedem anderen Sternbild zählt sie wie eine normale 3.', beispiel: (c) => `Pfeil 2-3-4 mit dem Eiszapfen: ${c.P.PFEIL[3]} + 2 Punkte je Wertung.` },
+  'frost-nordlicht': { lang: (c) => `Eine 5, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung in jedem gültigen Sternbild, in einem Pfeil noch +1 dazu.`, beispiel: () => 'Im Pfeil 4-5-6 bringt das Nordlicht zusammen +2 Punkte je Wertung.' },
+  'frost-gletscher': { lang: () => 'Eine 7 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Gegen den Lotsen, der Pfeile jagt, schützt sie deinen Pfeil in der Mitte.', beispiel: () => 'Pfeil 6-7-8 mit dem Gletscherbrocken: Kein Dieb kommt heran, du baust ihn bis zur 11 aus.' },
+  'frost-polarstern': { lang: () => 'Eine Sternschnuppe vom Frostpfad, also ein Joker. Er vertritt jeden Wert. Kreuz und Drache lassen sich mit ihm nicht abschließen.', beispiel: () => 'Dir fehlt die 9 im Pfeil 7-8-_-10: Der Polarstern füllt die Lücke.' },
+  'doppel-zwillingsstern': { lang: () => 'Eine 5 vom Doppelstern. In einem Zwilling oder Doppelstier bringt sie +3 Punkte je Wertung.', beispiel: (c) => `Zwilling 5-5-8-8-11-11 mit dem Zwillingsstern: ${c.P.ZWILLING} + 3 Punkte je Wertung.` },
+  'doppel-doppelgaenger': { lang: () => 'Eine Spiegelkarte 4/9. Auf der Hand drehst du sie beliebig oft, das kostet keinen Zug.', beispiel: () => 'Du hast zwei Neunen: Der Doppelgänger wird zur dritten 9 für den Doppelstier.' },
+  'doppel-partner': { lang: (c) => `Eine 8, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung in jedem gültigen Sternbild, in einem Zwilling noch +1 dazu.`, beispiel: () => 'Im Zwilling 4-4-8-8-11-11 bringt die Partnerkarte zusammen +2 Punkte je Wertung.' },
+  'doppel-sternenstaub': { lang: () => 'Die kosmische Karte Sternenstaub: Eine Zahlenkarte auf deiner Hand bekommt einen neuen Wert von 1 bis 12, für den Rest des Kampfes. Auf dem Doppelstern macht sie aus einer einzelnen Karte das fehlende Paar.', beispiel: () => 'Du hast 4, 4, 8, 8, 11 und eine 2: Sternenstaub macht aus der 2 eine 11, der Zwilling steht.' },
+  'schrott-schrottteil': { lang: () => 'Eine 6 vom Schrottring. In einem Wagen bringt sie +2 Punkte je Wertung.', beispiel: (c) => `Wagen 2-4-6 mit dem Schrottteil: ${c.P.WAGEN[3]} + 2 Punkte je Wertung.` },
+  'schrott-magnetsplitter': { lang: () => 'Eine 10 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Gegen den Aasfresser, der frisch Gebautes klaut, ist das Gold wert.', beispiel: () => 'Dein neuer Pfeil 9-10-11 bleibt liegen, obwohl der Aasfresser passende Karten hätte.' },
+  'schrott-ersatzteil': { lang: (c) => `Eine 2, die schon ein Riese ist: +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt.`, beispiel: (c) => `Pfeil 1-2-3 mit dem Ersatzteil: ${c.P.PFEIL[3]} + ${c.K.karten.riese} Punkte je Wertung.` },
+  'schrott-gravitation': { lang: () => 'Die kosmische Karte Gravitation: eine Karte aus der Mitte auf die Hand holen, zusätzlich zu den Karten, die du beim Bauen nimmst. Auf dem Schrottring liegt die Mitte besonders voll.', beispiel: () => 'Zwölf Karten in der Mitte: Gravitation holt die eine, die deinem Pfeil noch fehlt.' },
+  'nebel-nebelkern': { lang: (c) => `Eine 7, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung, wenn sie in einem gültigen Sternbild liegt.`, beispiel: () => 'Die 7 passt in fast jeden Pfeil und viele Wagen, der Bonus kommt fast jede Runde.' },
+  'nebel-komet': { lang: () => 'Die kosmische Karte Komet: schießt eine Karte aus einem fremden, unversiegelten Sternbild auf die Ablage ihres Besitzers. Gegen die Nova, die selbst viel zerstört, schlägst du so zurück.', beispiel: () => 'Aus dem Fünfer-Pfeil der Nova fliegt die mittlere Karte: 0 Punkte für sie.' },
+  'nebel-weisser-zwerg': { lang: () => 'Die kosmische Karte Weißer Zwerg: drei Karten ziehen, danach zwei Handkarten abwerfen.', beispiel: () => 'Du wirfst zwei kosmische Karten ab, die gerade kein Ziel haben, und behältst die Zahlen.' },
+  'nebel-nebel': { lang: () => 'Die kosmische Karte Nebel: Bis zum Rundenende kann dir niemand etwas klauen. Auf der Nebelwelt tragen alle Decks doppelt so viele kosmische Karten, Schutz ist hier viel wert.', beispiel: () => 'Nebel zu Rundenbeginn, und deine offenen Sternbilder stehen bis zur Wertung.' },
+  'kron-juwel': { lang: () => 'Eine 9 von der Kronwelt. In einer Krone bringt sie +2, in einem Kreuz +3 Punkte je Wertung.', beispiel: (c) => `Kreuz 9-9-9-9 mit dem Juwel: ${c.P.KREUZ} + 3 Punkte je Wertung.` },
+  'kron-zepter': { lang: (c) => `Eine 11, die schon ein Riese ist: +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt.`, beispiel: (c) => `Krone 11-11-11-3-3 mit dem Zepter: ${c.P.KRONE} + ${c.K.karten.riese} Punkte je Wertung.` },
+  'kron-siegelring': { lang: () => 'Eine 5 mit Anker, in einer Krone noch +1 Punkt je Wertung. Das Sternbild, in dem sie liegt, ist nicht klaubar.', beispiel: () => 'Deine halbfertige Krone 5-5-5-7 bleibt liegen, bis die zweite 7 kommt.' },
+  'kron-rote-riesin': { lang: () => 'Die kosmische Karte Rote Riesin: Ein eigenes Sternbild zählt diese Runde doppelt. Auf der Kronwelt bringen Kreuz und Doppelstier ohnehin mehr, doppelt lohnt es sich besonders.', beispiel: () => 'Kreuz auf der Kronwelt: 14 Punkte, mit der Roten Riesin 28 in dieser Runde.' },
+  'nest-beute': { lang: (c) => `Eine 12, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung, wenn sie in einem gültigen Sternbild liegt.`, beispiel: () => 'Die 12 schließt lange Pfeile ab, und der Bonus kommt jede Runde dazu.' },
+  'nest-dietrich': { lang: () => 'Eine 1 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Im Nest sitzen nur Diebe.', beispiel: () => 'Pfeil 1-2-3 mit dem Dietrich: Die Elster schaut zu und kann nichts tun.' },
+  'nest-hehlerware': { lang: () => 'Eine 6 aus dem Nest. In einem Wagen oder Pfeil bringt sie +1 Punkt je Wertung.', beispiel: () => 'Die 6 liegt in der Mitte der Zahlenreihe und passt in fast jeden Pfeil.' },
+  'nest-eklipse': { lang: () => 'Die kosmische Karte Eklipse: Ein sicheres, unversiegeltes fremdes Sternbild wird für diesen Zug raubbar. Du wirfst Handkarten ab und nimmst es unverändert.', beispiel: (c) => `Die Elster hat ein Kreuz liegen: Eklipse, zwei Handkarten abwerfen, ${c.P.KREUZ} Punkte wechseln die Seite.` },
+};
+
+/** Der Kontext für die Textfunktionen: Wert und Spiegelseite, Konfigurationen, Stufenbonus, Packwahl. */
+function rlDetailsKontext(wert, opt = {}) {
+  const K = RL_KONFIG;
+  return {
+    w: wert ?? 0,
+    g: wert != null ? CONFIG.deck.zahlenMin + CONFIG.deck.zahlenMax - wert : 0,
+    K, P: CONFIG.punkte,
+    bonus: K.stufen.bonusProStufe,
+    max: K.stufen.max ?? K.stufen.schwellen.length,
+    wahl: opt.wahl ?? 3,
+    stufe: opt.stufe ?? 0,
+  };
+}
+
+/** Einen Text auflösen (Satz oder Funktion des Kontexts). */
+function rlDetailsText(t, kontext) {
+  if (typeof t === 'function') return t(kontext);
+  return t || '';
+}
+
+/** Der Eintrag zu einem Schlüssel: Katalog, Sternbildstufe oder Pack, mit Überlagerung aus `opt`. */
+function rlDetailsEintrag(schluessel, opt = {}) {
+  const key = String(schluessel || '');
+  let e, textKey = key, wert = null, wahl = 3;
+  if (key.startsWith('stufe:')) {
+    const typ = key.slice(6);
+    e = { name: typText(typ), sorte: 'stufe', groesse: 0, preis: null, spec: null, kurz: '', planet: null, typ };
+  } else if (key.startsWith('pack:')) {
+    const art = key.slice(5).split(':')[0];
+    const planet = opt.planet ?? key.split(':')[2] ?? null;
+    const P = (RL_KONFIG.shop.packs || {})[art] || {};
+    wahl = P.wahl ?? 3;
+    textKey = 'pack:' + art;
+    e = {
+      name: art === 'planet' ? RL_TXT_SCHIRM.packPlanet(rlText(RL_TXT_PLANET, planet)) : RL_TXT_SCHIRM.packSternbilder,
+      sorte: 'pack', groesse: 0, preis: opt.preis ?? P.preis ?? null, spec: null, kurz: '', planet, pack: art,
+    };
+  } else {
+    const k = RL_KATALOG[key];
+    e = k ? { name: k.name, sorte: k.sorte, groesse: k.groesse, preis: k.preis || null, spec: k.spec ? { ...k.spec } : null, kurz: k.text, planet: k.planet ?? null }
+      : { name: key, sorte: '', groesse: 0, preis: null, spec: null, kurz: '', planet: null };
+    const m = /^(zahl|spiegel|leucht|anker)-(\d+)$/.exec(key);
+    if (m) { textKey = m[1]; wert = Number(m[2]); }
+  }
+  if (opt.angebot) {
+    e.preis = opt.angebot.preis ?? e.preis;
+    e.groesse = opt.angebot.groesse ?? e.groesse;
+    if (opt.angebot.spec) e.spec = { ...opt.angebot.spec };
+    if (opt.angebot.name) e.name = opt.angebot.name;
+    if (opt.angebot.text) e.kurz = opt.angebot.text;
+  }
+  if (opt.spec) e.spec = { ...opt.spec };
+  if (opt.preis != null && e.preis == null) e.preis = opt.preis;
+  if (wert == null && e.spec && e.spec.art === 'ZAHL') wert = e.spec.wert ?? null;
+  e.schluessel = key;
+  e.stufe = opt.stufe ?? null;
+  const t = RL_TXT_DETAILS[textKey] || {};
+  const kontext = rlDetailsKontext(wert, { wahl, stufe: opt.stufe });
+  e.lang = rlDetailsText(t.lang, kontext) || e.kurz || '';
+  e.beispiel = rlDetailsText(t.beispiel, kontext);
+  return e;
+}
+
+/** Der Details-Knopf: die Delegation des Schirms ruft `details` mit `data-key` (und `data-planet`, `data-preis`). */
+function rlDetailsKnopf(schluessel, opt = {}) {
+  const daten = { rl: 'details', key: schluessel };
+  if (opt.planet) daten.planet = opt.planet;
+  if (opt.preis != null) daten.preis = opt.preis;
+  return rlSchirmKnopf(RL_TXT_SCHIRM.details, 'klein rl-details-knopf', daten);
+}
+
+/** Kartenobjekt für karteEl aus einer KartenSpec (eigene Ids, damit nichts mit dem Tisch kollidiert). */
+function rlDetailsKarte(spec, nr = 0) {
+  const k = { id: 700000 + nr, art: spec.art, wert: spec.art === 'ZAHL' ? (spec.wert ?? null) : null };
+  if (spec.stufe) k.stufe = spec.stufe;
+  if (spec.spiegel) k.spiegel = true;
+  if (spec.leucht) k.leucht = true;
+  if (spec.anker) k.anker = true;
+  if (spec.typBonus) k.typBonus = { ...spec.typBonus };
+  if (spec.planet) k.planet = spec.planet;
+  if (spec.name) k.name = spec.name;
+  return k;
+}
+
+/** Die große Vorschau: Karte, Modulbild, Beispiel-Sternbild (Stufen) oder Pack. */
+function rlDetailsVorschauEl(e) {
+  const v = rlSchirmEl('div', 'rl-details-vorschau');
+  if (e.sorte === 'stufe') {
+    const reihe = rlSchirmEl('div', 'rl-details-form');
+    (RL_DETAILS_FORM_WERTE[e.typ] || []).forEach((w, i) => reihe.appendChild(karteEl({ id: 710000 + i, art: 'ZAHL', wert: w }, 'sb', { klickbar: false })));
+    v.appendChild(reihe);
+  } else if (e.sorte === 'pack') {
+    v.innerHTML = rlPackSvg(e.pack, e.planet, 190);
+  } else if (e.sorte === 'modul' || e.sorte === 'vorrat') {
+    v.innerHTML = rlModulSvg(e.schluessel, 130);
+  } else if (e.sorte === 'aufwertung') {
+    v.appendChild(karteEl(rlDetailsKarte({ art: 'ZAHL', wert: 7, stufe: e.schluessel === 'ueberriese' ? 2 : 1 }), 'hand', { klickbar: false }));
+  } else if (e.spec) {
+    v.appendChild(karteEl(rlDetailsKarte(e.spec), 'hand', { klickbar: false }));
+  } else {
+    v.hidden = true;
+  }
+  return v;
+}
+
+/** Liste der Marken einer Zahlenkarte (Riese, Leucht, Anker, Spiegel, Typ-Bonus) — null, wenn sie keine trägt. */
+function rlDetailsMarkenEl(spec) {
+  if (!spec || spec.art !== 'ZAHL') return null;
+  const K = RL_KONFIG.karten;
+  const zeilen = [];
+  if (spec.stufe === 1) zeilen.push(['Riese', `+${K.riese} Punkte je Wertung`]);
+  if (spec.stufe === 2) zeilen.push(['Überriese', `+${K.ueberriese} Punkte je Wertung`]);
+  if (spec.leucht) zeilen.push(['Leucht', `+${K.leucht} Punkt je Wertung im gültigen Sternbild`]);
+  if (spec.anker) zeilen.push(['Anker', 'das Sternbild ist nicht klaubar']);
+  if (spec.spiegel) zeilen.push(['Spiegel', `zeigt ${spec.wert} oder ${CONFIG.deck.zahlenMin + CONFIG.deck.zahlenMax - spec.wert}`]);
+  for (const [typ, b] of Object.entries(spec.typBonus || {})) zeilen.push(['Typ-Bonus', `+${b} Punkte je Wertung in einem ${typText(typ)}`]);
+  if (!zeilen.length) return null;
+  const ul = rlSchirmEl('ul', 'rl-details-marken');
+  for (const [name, text] of zeilen) {
+    const li = rlSchirmEl('li', '');
+    li.appendChild(rlSchirmEl('b', '', name + ': '));
+    li.appendChild(document.createTextNode(text));
+    ul.appendChild(li);
+  }
+  return ul;
+}
+
+/** Das Fenster: Vorschau links, rechts Kopfzeile mit Chips, lange Erklärung, Beispiel, Marken; Schließen auch mit Escape. */
+function rlDetailsZeigen(wurzel, schluessel, opt = {}) {
+  const e = rlDetailsEintrag(schluessel, opt);
+  const alt = wurzel.querySelector(':scope > .rl-ebene[data-ebene="details"]');
+  if (alt) alt.remove();
+  const ebene = rlSchirmEl('div', 'rl-ebene rl-details');
+  ebene.dataset.ebene = 'details';
+  ebene.dataset.key = e.schluessel;
+  ebene.setAttribute('role', 'dialog');
+  ebene.setAttribute('aria-modal', 'true');
+  const kasten = rlSchirmEl('div', 'rl-ebene-kasten rl-details-kasten');
+  kasten.appendChild(rlSchirmEl('h3', 'rl-ueberschrift', e.name));
+  kasten.appendChild(rlDetailsVorschauEl(e));
+
+  const text = rlSchirmEl('div', 'rl-details-text');
+  const zeile = rlSchirmEl('p', 'rl-details-zeile');
+  if (RL_DETAILS_SORTE[e.sorte]) zeile.appendChild(rlSchirmEl('span', '', RL_DETAILS_SORTE[e.sorte]));
+  if (e.groesse > 0) {
+    const chip = rlSchirmEl('span', 'rl-details-chip');
+    chip.dataset.groesse = String(e.groesse);
+    chip.innerHTML = rlGroesseSvg(e.groesse, 16);
+    chip.appendChild(document.createTextNode(RL_TXT_GROESSE[e.groesse]));
+    zeile.appendChild(chip);
+  }
+  if (e.planet) zeile.appendChild(rlSchirmEl('span', 'rl-details-chip', rlText(RL_TXT_PLANET, e.planet)));
+  if (e.sorte === 'stufe' && e.stufe != null) {
+    const max = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
+    zeile.appendChild(rlSchirmEl('span', 'rl-details-chip', RL_TXT_STUFE.packStufe(e.stufe, max)));
+  }
+  if (e.preis != null && e.preis > 0) {
+    const preis = rlSchirmEl('span', 'rl-details-chip preis', String(e.preis));
+    preis.insertAdjacentHTML('beforeend', rlMuenzeSvg(14));
+    zeile.appendChild(preis);
+  }
+  if (zeile.childNodes.length) text.appendChild(zeile);
+  if (e.lang) text.appendChild(rlSchirmEl('p', 'rl-details-lang', e.lang));
+  if (e.beispiel) {
+    const b = rlSchirmEl('p', 'rl-details-beispiel');
+    b.appendChild(rlSchirmEl('b', '', 'Beispiel'));
+    b.appendChild(document.createTextNode(e.beispiel));
+    text.appendChild(b);
+  }
+  const marken = rlDetailsMarkenEl(e.spec);
+  if (marken) text.appendChild(marken);
+  kasten.appendChild(text);
+
+  const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
+  knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.schliessen, 'haupt', { rl: 'details-zu' }));
+  kasten.appendChild(knoepfe);
+  ebene.appendChild(kasten);
+
+  const zu = () => { document.removeEventListener('keydown', taste); ebene.remove(); };
+  const taste = (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); zu(); } };
+  document.addEventListener('keydown', taste);
+  ebene.addEventListener('click', (ev) => {
+    const ziel = ev.target.closest('[data-rl="details-zu"]');
+    if (!ziel && ev.target !== ebene) return;
+    ev.stopPropagation();
+    ev.preventDefault();
+    zu();
+  });
+  wurzel.appendChild(ebene);
+  return ebene;
+}
+
 /* ===== app\roguelike\rl-shop-ui.js ===== */
 /**
  * Roguelike-Modus — Shop-Schirme (Spezifikation §5.3): Umlaufbahn, Im Flug, Sternwarte,
@@ -14380,20 +15515,23 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
  * Sternwarte und Deckansicht sind eigene Ebenen (`.rl-ebene`) IN der Wurzel, kein Modal des Tisches.
  *
  * Rückrufe:
- *   Umlaufbahn  { kaufen(id, uid?), reroll(), sternwarte(), vorrat(key), stufe(typ), deckAnsehen(), weiter() }   — uid nur bei Aufwertungen; vorrat für Sprungantrieb/Kartenskizze (AP9)
- *   Im Flug     { kaufen(id, bereich), reroll(bereich), luftschleuse(uid), aufwerten(uid, stufe), vorrat(key), stufe(typ), deckAnsehen(), weiter() }
+ *   Umlaufbahn  { kaufen(id, uid?), reroll(), sternwarte(), vorrat(key), packOeffnen(art), packWaehlen(art, id), deckAnsehen(), weiter() }   — uid nur bei Aufwertungen; vorrat für Sprungantrieb/Kartenskizze (AP9)
+ *   Im Flug     { kaufen(id, bereich), reroll(bereich), luftschleuse(uid), aufwerten(uid, stufe), vorrat(key), packOeffnen(art), packWaehlen(art, id), deckAnsehen(), weiter() }
  *   Sternwarte  { nehmen(kartenId), schliessen() }
  *   Deckansicht { schliessen() }
- *   stufe(typ) = Kauf im Sternbilderpack, deckAnsehen() = Deck-Knopf der Kopfzeile (beide Spieltest-Runde 1).
+ *   packOeffnen/packWaehlen = die beiden Packs (Spieltest-Runde 2), deckAnsehen() = Deck-Knopf der Kopfzeile.
+ *   Das Details-Fenster (rl-details.js) öffnet dieser Baustein selbst — kein Rückruf.
  *
- * DOM-Vertrag der Spieltest-Runde 1 (rl-selbsttest.html prüft ihn): `.rl-angebot-kachel[data-groesse]`,
- * `.rl-angebot[data-groesse]`, `section.rl-pack .rl-pack-typ[data-typ][data-stufe]`, `button[data-rl="stufe"][data-typ]`,
+ * DOM-Vertrag (rl-selbsttest.html prüft ihn): `.rl-angebot-kachel[data-groesse]`, `.rl-angebot[data-groesse]`,
  * `button[data-rl="deck"]`, `.rl-ebene[data-ebene="deck"]` mit `.rl-wertetafel .rl-wert[data-wert]`, `.rl-deck-stufen`,
- * `.rl-deck-stand` und `.karte[data-zustand]`.
+ * `.rl-deck-stand` und `.karte[data-zustand]`; Spieltest-Runde 2: `section.rl-packs .rl-pack[data-pack][data-zustand]`,
+ * `button[data-rl="pack-oeffnen"][data-pack]`, `.rl-pack-karte[data-id]`, `button[data-rl="pack-nehmen"][data-pack][data-id]`,
+ * `button[data-rl="details"][data-key]` an jedem Angebot, jeder Sternwartenkarte, jedem Pack und jeder Pack-Karte.
  *
- * Top-Level-Namen dieser Datei: RL_SHOP_SORTE_BILD, RL_SHOP_TYPEN, RL_SHOP_TYP_SYMBOL, rlShopKarteAus, rlShopBildEl,
+ * Top-Level-Namen dieser Datei: RL_SHOP_SORTE_BILD, RL_SHOP_TYPEN, RL_SHOP_TYP_SYMBOL, rlShopPackFrisch, rlShopKarteAus, rlShopBildEl,
  *   rlShopKachelEl, rlShopAngebotEl, rlShopGroessenEl, rlShopDeckReiheEl, rlShopEbene, rlShopAufwertungWahlEl,
- *   rlShopTypSymbolSvg, rlShopDeckKnopf, rlShopGroesseChipEl, rlShopNaechsteSchwelle, rlShopStufenPreis, rlShopPackEl,
+ *   rlShopTypSymbolSvg, rlShopDeckKnopf, rlShopGroesseChipEl, rlShopAlleAngebote, rlShopDetailsKnopf, rlShopDetailsOeffnen,
+ *   rlShopPackKarteEl, rlShopPackEl, rlShopPacksEl,
  *   rlShopWertetafelEl, rlShopDeckStufenEl, rlUmlaufbahnZeigen, rlImFlugZeigen, rlSternwarteModal, rlDeckAnsicht.
  */
 
@@ -14411,6 +15549,9 @@ function rlShopKarteAus(spec, nr = 0) {
   if (spec.spiegel) k.spiegel = true;
   if (spec.leucht) k.leucht = true;
   if (spec.anker) k.anker = true;
+  if (spec.typBonus) k.typBonus = { ...spec.typBonus };   // Planetenkarten (Spieltest-Runde 2)
+  if (spec.planet) k.planet = spec.planet;
+  if (spec.name) k.name = spec.name;
   return k;
 }
 
@@ -14481,6 +15622,7 @@ function rlShopKachelEl(lauf, angebot, nr, opt = {}) {
   if (opt.bereich) daten.bereich = opt.bereich;
   const text = angebot.gekauft ? RL_TXT_UI.gekauft : RL_TXT_SCHIRM.kaufenFuer(angebot.preis);
   k.appendChild(rlSchirmKnopf(text, 'klein haupt', daten, { aus, titel }));
+  k.appendChild(rlShopDetailsKnopf(angebot));
   return k;
 }
 
@@ -14504,6 +15646,7 @@ function rlShopAngebotEl(lauf, angebot, nr, bereich) {
   else if (d.geld < angebot.preis) { aus = true; titel = RL_TXT_SCHIRM.nichtGenugGeld; }
   else if (d.deck.length >= RL_KONFIG.deck.maxGroesse) { aus = true; titel = RL_TXT_SCHIRM.deckVoll; }
   a.appendChild(rlSchirmKnopf(angebot.gekauft ? RL_TXT_UI.gekauft : RL_TXT_UI.kaufen, 'klein haupt', { rl: 'kaufen', id: angebot.id, bereich, sorte: angebot.sorte }, { aus, titel }));
+  a.appendChild(rlShopDetailsKnopf(angebot));
   return a;
 }
 
@@ -14626,82 +15769,164 @@ function rlShopGroesseChipEl(groesse, titel) {
   return c;
 }
 
-/** Die nächste Schwelle (gespielte Sternbilder) über `gespielt`; null, wenn alle erreicht sind. */
-function rlShopNaechsteSchwelle(gespielt) {
-  const s = (RL_KONFIG.stufen.schwellen || []).find((x) => x > gespielt);
-  return s == null ? null : s;
+/* ------------------------------------------------------------------ */
+/*  Packs (Spieltest-Runde 2)                                           */
+/* ------------------------------------------------------------------ */
+
+/** Welches Pack gerade geöffnet wurde — beim nächsten Zeichnen fächern seine Karten mit Animation auf. */
+let rlShopPackFrisch = null;
+
+/** Alle Angebote eines Shops als flache Liste (Umlaufbahn: angebote; Im Flug: Kartenmarkt, Kabinett, Modul). */
+function rlShopAlleAngebote(shop) {
+  if (!shop) return [];
+  if (Array.isArray(shop.angebote)) return shop.angebote;
+  return [...(shop.kartenmarkt || []), ...(shop.kabinett || []), ...(shop.modul ? [shop.modul] : [])];
 }
 
-/** Preis der nächsten Stufe: aus dem Lauf (stufenPreis), zur Not aus RL_KONFIG; null auf der Höchststufe. */
-function rlShopStufenPreis(lauf, typ, stufe, max) {
-  if (lauf && typeof lauf.stufenPreis === 'function') return lauf.stufenPreis(typ);
-  if (stufe >= max) return null;
-  const preise = RL_KONFIG.stufen.preise || [];
-  return preise[Math.min(stufe, preise.length - 1)] ?? 0;
+/** Der Details-Knopf eines Angebots (Schlüssel = Katalogschlüssel; die Angebots-Id reist als data-angebot mit). */
+function rlShopDetailsKnopf(angebot) {
+  const b = rlDetailsKnopf(angebot.katalogKey, { preis: angebot.preis });
+  b.dataset.angebot = angebot.id;
+  return b;
 }
 
-/**
- * Das Sternbilderpack (beide Shops): je Typ eine Karte mit Symbol, Stufenpunkten, Bonus, Fortschritt zur
- * Gratis-Stufe und Kaufknopf `data-rl="stufe" data-typ`; auf der Höchststufe ein Stempel.
- */
-function rlShopPackEl(lauf) {
+/** Klick auf „Details": Angebot, Pack-Karte oder Pack heraussuchen und das Fenster öffnen. */
+function rlShopDetailsOeffnen(wurzel, lauf, shop, dat) {
+  const opt = {};
+  if (dat.planet) opt.planet = dat.planet;
+  if (dat.preis != null && dat.preis !== '') opt.preis = Number(dat.preis);
+  if (dat.angebot) {
+    const a = rlShopAlleAngebote(shop).find((x) => x.id === dat.angebot);
+    if (a) opt.angebot = a;
+  }
+  if (dat.pack && dat.id && shop) {
+    const pack = rlShopPacks(lauf, shop)[dat.pack];
+    const k = pack ? pack.karten.find((x) => x.id === dat.id) : null;
+    if (k && k.spec) opt.spec = k.spec;
+    if (k && k.typ) opt.stufe = (lauf.daten.stufen[k.typ] || {}).stufe ?? 0;
+  }
+  return rlDetailsZeigen(wurzel, dat.key, opt);
+}
+
+/** Eine Karte im offenen oder fertigen Pack: Sternbildtyp (Stufe x → x+1) oder Planetenkarte. */
+function rlShopPackKarteEl(lauf, pack, k, nr) {
+  const K = RL_KONFIG.stufen;
+  const max = K.max ?? K.schwellen.length;
+  const e = rlSchirmEl('div', 'rl-pack-karte');
+  e.dataset.id = k.id;
+  e.style.setProperty('--nr', String(nr));
+  let name, schluessel;
+  const detailOpt = {};
+  if (pack.art === 'sternbilder') {
+    name = typText(k.typ);
+    schluessel = 'stufe:' + k.typ;
+    e.dataset.typ = k.typ;
+    const bild = rlSchirmEl('span', 'rl-pack-karte-bild rl-pack-typkarte');
+    bild.innerHTML = rlShopTypSymbolSvg(k.typ, 64);
+    e.appendChild(bild);
+    e.appendChild(rlSchirmEl('span', 'rl-pack-karte-name', name));
+    const von = k.stufe ?? 0;
+    const nach = Math.min(max, von + 1);
+    const stufe = rlSchirmEl('span', 'rl-pack-karte-stufe');
+    stufe.appendChild(document.createTextNode(RL_TXT_STUFE.packStufe(von, max)));
+    stufe.appendChild(rlSchirmEl('b', 'rl-pack-pfeil', ' → ' + nach));
+    e.appendChild(stufe);
+    e.appendChild(rlSchirmEl('span', 'rl-pack-karte-text', RL_TXT_STUFE.packBonus(nach, K.bonusProStufe)));
+  } else {
+    name = k.name;
+    schluessel = k.katalogKey;
+    detailOpt.planet = k.planet;
+    if (k.groesse > 0) e.dataset.groesse = String(k.groesse);
+    const bild = rlSchirmEl('span', 'rl-pack-karte-bild');
+    bild.appendChild(karteEl(rlShopKarteAus(k.spec, 900 + nr), 'hand', { klickbar: false }));
+    e.appendChild(bild);
+    e.appendChild(rlSchirmEl('span', 'rl-pack-karte-name', name));
+    e.appendChild(rlSchirmEl('span', 'rl-pack-karte-text', k.text));
+    e.appendChild(rlShopGroessenEl(k.groesse, true));
+  }
+  const knoepfe = rlSchirmEl('div', 'rl-pack-karte-knoepfe');
+  if (pack.zustand === 'offen') {
+    knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.packNehmen, 'klein haupt', { rl: 'pack-nehmen', pack: pack.art, id: k.id }));
+  } else if (pack.gewaehlt === k.id) {
+    e.classList.add('gewaehlt');
+    e.appendChild(rlSchirmEl('span', 'rl-stempel gruen rl-pack-genommen', RL_TXT_SCHIRM.packGenommen(name)));
+  } else {
+    e.classList.add('verfallen');
+  }
+  const details = rlDetailsKnopf(schluessel, detailOpt);
+  details.dataset.pack = pack.art;
+  details.dataset.id = k.id;
+  knoepfe.appendChild(details);
+  e.appendChild(knoepfe);
+  return e;
+}
+
+/** Ein Pack: zu (Bild, Text, Preis, Öffnen), offen (aufgerissen, Karten zur Wahl) oder fertig (geöffnet, Wahl markiert). */
+function rlShopPackEl(lauf, pack) {
   const d = lauf.daten;
   const K = RL_KONFIG.stufen;
   const max = K.max ?? K.schwellen.length;
-  const bonus = K.bonusProStufe;
-  const sec = rlSchirmEl('section', 'rl-bereich rl-pack');
-  sec.appendChild(rlSchirmEl('h4', '', RL_TXT_STUFE.pack));
-  sec.appendChild(rlSchirmEl('span', 'rl-stempel', RL_TXT_UI.nichtRerollbar));
-  sec.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_STUFE.packText(bonus, max)));
-  const typen = rlSchirmEl('div', 'rl-pack-typen');
-  for (const typ of RL_SHOP_TYPEN) {
-    const st = (d.stufen && d.stufen[typ]) || { gespielt: 0, stufe: 0, gekauft: 0 };
-    const stufe = st.stufe ?? 0;
-    const gespielt = st.gespielt ?? 0;
-    const karte = rlSchirmEl('div', 'rl-pack-typ');
-    karte.dataset.typ = typ;
-    karte.dataset.stufe = String(stufe);
+  const p = rlSchirmEl('div', 'rl-pack');
+  p.dataset.pack = pack.art;
+  p.dataset.zustand = pack.zustand;
+  if (pack.planet) p.dataset.planet = pack.planet;
+  if (rlShopPackFrisch === pack.art && pack.zustand === 'offen') p.classList.add('frisch');
+  const planetName = pack.planet ? rlText(RL_TXT_PLANET, pack.planet) : '';
+  const name = pack.art === 'planet' ? RL_TXT_SCHIRM.packPlanet(planetName) : RL_TXT_SCHIRM.packSternbilder;
+  const text = pack.art === 'planet' ? RL_TXT_SCHIRM.packPlanetText(planetName, pack.wahl) : RL_TXT_STUFE.packText(K.bonusProStufe, max, pack.wahl);
 
-    const kopf = rlSchirmEl('div', 'rl-pack-kopf');
-    const sym = rlSchirmEl('span', 'rl-pack-symbol');
-    sym.innerHTML = rlShopTypSymbolSvg(typ, 36);
-    kopf.appendChild(sym);
-    kopf.appendChild(rlSchirmEl('span', 'rl-pack-name', typText(typ)));
-    karte.appendChild(kopf);
-
-    const punkte = rlSchirmEl('span', 'rl-pack-punkte');
-    punkte.title = RL_TXT_STUFE.packStufe(stufe, max);
-    punkte.setAttribute('aria-label', RL_TXT_STUFE.packStufe(stufe, max));
-    for (let i = 1; i <= max; i++) {
-      const p = rlSchirmEl('i', 'rl-pack-punkt');
-      if (i <= stufe) p.dataset.voll = '1';
-      punkte.appendChild(p);
-    }
-    karte.appendChild(punkte);
-    karte.appendChild(rlSchirmEl('span', 'rl-pack-stufe', RL_TXT_STUFE.packStufe(stufe, max)));
-    karte.appendChild(rlSchirmEl('span', 'rl-pack-bonus', RL_TXT_STUFE.packBonus(stufe, bonus)));
-
-    const naechste = rlShopNaechsteSchwelle(gespielt);
-    karte.appendChild(rlSchirmEl('span', 'rl-pack-gespielt', RL_TXT_STUFE.packGespielt(gespielt, naechste)));
-    if (naechste) {
-      const balken = rlSchirmEl('span', 'rl-pack-balken');
-      balken.style.setProperty('--anteil', String(Math.min(1, gespielt / naechste)));
-      balken.appendChild(rlSchirmEl('i', ''));
-      karte.appendChild(balken);
-    }
-
-    const preis = rlShopStufenPreis(lauf, typ, stufe, max);
-    if (preis == null) {
-      karte.appendChild(rlSchirmEl('span', 'rl-stempel gruen rl-pack-voll', RL_TXT_STUFE.packVoll));
-    } else {
-      const aus = d.geld < preis;
-      const b = rlSchirmKnopf(RL_TXT_STUFE.packKaufen(preis), 'klein haupt', { rl: 'stufe', typ }, { aus, titel: aus ? RL_TXT_SCHIRM.nichtGenugGeld : '' });
-      b.insertAdjacentHTML('beforeend', rlMuenzeSvg(14));
-      karte.appendChild(b);
-    }
-    typen.appendChild(karte);
+  const kopf = rlSchirmEl('div', 'rl-pack-kopf');
+  const bild = rlSchirmEl('span', 'rl-pack-bild');
+  bild.innerHTML = rlPackSvg(pack.art, pack.planet, 132);
+  kopf.appendChild(bild);
+  const info = rlSchirmEl('div', 'rl-pack-info');
+  info.appendChild(rlSchirmEl('span', 'rl-pack-name', name));
+  info.appendChild(rlSchirmEl('span', 'rl-pack-text', text));
+  const knoepfe = rlSchirmEl('div', 'rl-pack-knoepfe');
+  if (pack.zustand === 'zu') {
+    const preis = rlSchirmEl('span', 'rl-preis rl-pack-preis');
+    preis.appendChild(document.createTextNode(String(pack.preis)));
+    preis.insertAdjacentHTML('beforeend', rlMuenzeSvg(20));
+    kopf.appendChild(preis);
+    let aus = false, titel = '';
+    if (d.geld < pack.preis) { aus = true; titel = RL_TXT_SCHIRM.nichtGenugGeld; }
+    else if (pack.art === 'sternbilder' && RL_SHOP_TYPEN.every((t) => ((d.stufen[t] || {}).stufe ?? 0) >= max)) { aus = true; titel = RL_TXT_SCHIRM.packAlleVoll; }
+    else if (pack.art === 'planet' && d.deck.length >= RL_KONFIG.deck.maxGroesse) { aus = true; titel = RL_TXT_SCHIRM.packDeckVoll; }
+    const b = rlSchirmKnopf(RL_TXT_SCHIRM.packOeffnen(pack.preis), 'haupt', { rl: 'pack-oeffnen', pack: pack.art }, { aus, titel });
+    b.insertAdjacentHTML('beforeend', rlMuenzeSvg(16));
+    knoepfe.appendChild(b);
+    if (titel) info.appendChild(rlSchirmEl('span', 'rl-pack-sperre', titel));
+  } else if (pack.zustand === 'offen') {
+    info.appendChild(rlSchirmEl('span', 'rl-pack-wahl', RL_TXT_SCHIRM.packWahl));
+  } else {
+    kopf.appendChild(rlSchirmEl('span', 'rl-stempel rl-pack-geoeffnet', RL_TXT_SCHIRM.packGeoeffnet));
+    info.appendChild(rlSchirmEl('span', 'rl-pack-naechster', RL_TXT_SCHIRM.packNaechster));
   }
-  sec.appendChild(typen);
+  knoepfe.appendChild(rlDetailsKnopf('pack:' + pack.art, { planet: pack.planet, preis: pack.preis }));
+  info.appendChild(knoepfe);
+  kopf.appendChild(info);
+  p.appendChild(kopf);
+
+  if (pack.zustand !== 'zu') {
+    const karten = rlSchirmEl('div', 'rl-pack-karten');
+    let nr = 0;
+    for (const k of pack.karten) karten.appendChild(rlShopPackKarteEl(lauf, pack, k, nr++));
+    p.appendChild(karten);
+  }
+  return p;
+}
+
+/** Der Pack-Bereich beider Shops: `section.rl-packs` mit Sternbilderpack und Planetenpack (je Shop einmal). */
+function rlShopPacksEl(lauf, shop) {
+  const packs = rlShopPacks(lauf, shop);
+  const sec = rlSchirmEl('section', 'rl-bereich rl-packs');
+  sec.appendChild(rlSchirmEl('h4', '', RL_TXT_SCHIRM.packsTitel));
+  sec.appendChild(rlSchirmEl('span', 'rl-stempel', RL_TXT_UI.nichtRerollbar));
+  sec.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.packsHinweis));
+  const reihe = rlSchirmEl('div', 'rl-packs-reihe');
+  for (const art of ['sternbilder', 'planet']) if (packs[art]) reihe.appendChild(rlShopPackEl(lauf, packs[art]));
+  sec.appendChild(reihe);
+  rlShopPackFrisch = null;
   return sec;
 }
 
@@ -14830,7 +16055,7 @@ function rlUmlaufbahnZeigen(wurzel, lauf, shop, rueckrufe = {}) {
   shopEl.appendChild(gro);
 
   // Sternbilderpack (Spieltest-Runde 1): Stufen kaufen, nicht rerollbar
-  shopEl.appendChild(rlShopPackEl(lauf));
+  shopEl.appendChild(rlShopPacksEl(lauf, shop));
 
   innen.appendChild(shopEl);
 
@@ -14870,7 +16095,9 @@ function rlUmlaufbahnZeigen(wurzel, lauf, shop, rueckrufe = {}) {
     reroll: () => { if (rueckrufe.reroll) rueckrufe.reroll(); },
     sternwarte: () => { if (rueckrufe.sternwarte) rueckrufe.sternwarte(); else if (rueckrufe.vorrat) rueckrufe.vorrat('beobachtung'); },
     vorrat: (dat) => { if (rueckrufe.vorrat) rueckrufe.vorrat(dat.key); },
-    stufe: (dat) => { if (rueckrufe.stufe) rueckrufe.stufe(dat.typ); },
+    'pack-oeffnen': (dat) => { rlShopPackFrisch = dat.pack; if (rueckrufe.packOeffnen) rueckrufe.packOeffnen(dat.pack); },
+    'pack-nehmen': (dat) => { if (rueckrufe.packWaehlen) rueckrufe.packWaehlen(dat.pack, dat.id); },
+    details: (dat) => { rlShopDetailsOeffnen(wurzel, lauf, shop, dat); },
     deck: () => { if (rueckrufe.deckAnsehen) rueckrufe.deckAnsehen(); },
     weiter: () => { if (rueckrufe.weiter) rueckrufe.weiter(); },
   });
@@ -14989,7 +16216,7 @@ function rlImFlugZeigen(wurzel, lauf, shop, rueckrufe = {}) {
   raster.appendChild(auf);
 
   // Sternbilderpack (Spieltest-Runde 1): eigener Bereich über die volle Breite des Rasters
-  raster.appendChild(rlShopPackEl(lauf));
+  raster.appendChild(rlShopPacksEl(lauf, shop));
   innen.appendChild(raster);
 
   // Vorrat und Module an Bord
@@ -15045,7 +16272,9 @@ function rlImFlugZeigen(wurzel, lauf, shop, rueckrufe = {}) {
       aufStand.textContent = RL_TXT_SCHIRM.aufwertungStufe;
     },
     aufwerten: (dat) => { if (aufUid && rueckrufe.aufwerten) rueckrufe.aufwerten(aufUid, Number(dat.stufe)); },
-    stufe: (dat) => { if (rueckrufe.stufe) rueckrufe.stufe(dat.typ); },
+    'pack-oeffnen': (dat) => { rlShopPackFrisch = dat.pack; if (rueckrufe.packOeffnen) rueckrufe.packOeffnen(dat.pack); },
+    'pack-nehmen': (dat) => { if (rueckrufe.packWaehlen) rueckrufe.packWaehlen(dat.pack, dat.id); },
+    details: (dat) => { rlShopDetailsOeffnen(wurzel, lauf, shop, dat); },
     deck: () => { if (rueckrufe.deckAnsehen) rueckrufe.deckAnsehen(); },
   });
 }
@@ -15090,6 +16319,9 @@ function rlSternwarteModal(wurzel, lauf, warte, rueckrufe = {}) {
       const deckVoll = d.deck.length >= RL_KONFIG.deck.maxGroesse;
       a.appendChild(rlSchirmKnopf(RL_TXT_UI.nehmen, 'klein haupt', { rl: 'warte-nehmen', id: k.id }, { aus: voll || deckVoll, titel: deckVoll ? RL_TXT_SCHIRM.deckVoll : '' }));
     }
+    const wd = rlDetailsKnopf(k.katalogKey);
+    wd.dataset.karte = k.id;
+    a.appendChild(wd);
     reihe.appendChild(a);
   }
   kasten.appendChild(reihe);
@@ -15103,6 +16335,10 @@ function rlSternwarteModal(wurzel, lauf, warte, rueckrufe = {}) {
     if (ziel.dataset.rl === 'warte-nehmen') {
       ev.stopPropagation();
       if (rueckrufe.nehmen) rueckrufe.nehmen(ziel.dataset.id);
+    } else if (ziel.dataset.rl === 'details') {
+      ev.stopPropagation();
+      const karte = warte.karten.find((x) => x.id === ziel.dataset.karte);
+      rlDetailsZeigen(wurzel, ziel.dataset.key, karte ? { spec: karte.spec } : {});
     } else if (ziel.dataset.rl === 'ebene-zu') {
       ev.stopPropagation();
       ebene.remove();
@@ -15445,6 +16681,13 @@ class RlLauf {
   /** Gegnerplan des aktuellen Planeten. */
   planAktuell() { return this.d.gegnerPlan[this.planetAktuell()]; }
 
+  /** Rundenzahl eines Kampfes (Spieltest-Runde 2): je Kampfplatz für Lakaien, feste Zahl für den Boss. */
+  rundenFuer(kampfIndex = this.d.kampfIndex) {
+    const R = RL_KONFIG.partie.runden;
+    if (kampfIndex >= RL_KONFIG.lauf.lakaienProPlanet) return R.boss;
+    return R.lakai[Math.min(kampfIndex, R.lakai.length - 1)];
+  }
+
   /**
    * Erreichbare Planeten. Vor dem ersten Landen (Platz 1) nur der Startort selbst; danach die
    * Nachbarn des aktuellen Planeten, die freigeschaltet (Profil) und noch nicht besucht sind.
@@ -15680,16 +16923,25 @@ class RlLauf {
     return preise[Math.min(st.stufe, preise.length - 1)] ?? 0;
   }
 
-  /** Sternbilderpack (Spieltest-Runde 1): die nächste Stufe eines Typs kaufen. Liefert die neue Stufe. */
+  /** Sternbildstufe eines Typs um eins heben, ohne zu bezahlen (Sternbilderpack). Liefert die neue Stufe. */
+  stufeGeben(typ) {
+    const st = this.d.stufen[typ];
+    if (!st) throw new Error('Unbekannter Sternbildtyp: ' + typ);
+    const max = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
+    if (st.stufe >= max) throw new Error('Höchststufe erreicht');
+    st.gekauft = (st.gekauft ?? 0) + 1;
+    st.stufe = rlStufeGesamt(st);
+    return st.stufe;
+  }
+
+  /** Die nächste Stufe eines Typs gegen Geld (Preis aus `stufen.preise`). Liefert die neue Stufe. */
   stufeKaufen(typ) {
     const preis = this.stufenPreis(typ);
     if (preis == null) throw new Error('Höchststufe erreicht');
     this.bezahle(preis);
-    const st = this.d.stufen[typ];
-    st.gekauft = (st.gekauft ?? 0) + 1;
-    st.stufe = rlStufeGesamt(st);
+    const stufe = this.stufeGeben(typ);
     this.d.statistik.gekauft++;
-    return st.stufe;
+    return stufe;
   }
 
   /** Neue uid für eine Deckkarte. */
@@ -15728,6 +16980,7 @@ class RlLauf {
     switch (angebot.sorte) {
       case 'zahl':
       case 'kosmisch':
+      case 'planet':
         ergebnis = this.deckHinzu(angebot.spec, angebot.katalogKey);
         break;
       case 'modul':
@@ -16489,7 +17742,7 @@ function rlAussetzerZug(spiel, idx) {
   let karte = null;
   for (const k of sp.hand) if (istZahl(k) && (!karte || k.wert < karte.wert)) karte = k;
   if (!karte) karte = sp.hand[0];
-  spiel.log(`${sp.name} zögert und wirft ${kartenName(karte)} ab`);
+  spiel.log(`${sp.name} zögert.`);   // der Abwurf selbst steht als eigene Zeile im Protokoll
   return { art: 'ABWERFEN', handIds: [karte.id], gewinn: 0, punkteNachher: 0, aussetzer: true };
 }
 
@@ -16570,9 +17823,10 @@ function rlBotFuer(gegnerSpec, zusatz = {}) {
  * Reihenfolge am Rundenende: Wertung → Schaden → (Boss lebt noch:) Heilung → Abbruchprüfung.
  * Ein Boss, dessen Leben durch den Schaden auf 0 fällt, ist tot und heilt nicht mehr.
  *
- * Elite-Fähigkeiten an Zugbeginn (Nachtrag AP4 in der Spezifikation §15): Sonde und Zöllner
- * wirken beim ZUG_START des jeweiligen Sitzes ab Runde 2, höchstens einmal je Runde — zu
- * Rundenbeginn gibt es weder Sternbilder noch bleibende Hände (die Engine sammelt alles ein).
+ * Elite-Fähigkeiten an Zugbeginn (Nachtrag AP4 in der Spezifikation §15, Spieltest-Runde 2): Sonde und Zöllner
+ * wirken beim ZUG_START des jeweiligen Sitzes ab seinem zweiten Zug der Runde, höchstens einmal je Runde —
+ * im ersten Zug einer Runde gibt es weder Sternbilder noch bleibende Hände (die Engine sammelt alles ein),
+ * und mit ein bis zwei Runden je Kampf wäre „ab Runde 2" fast nie.
  *
  * Exporte: RlKampf.
  * Top-Level-Namen dieser Datei: RL_KAMPF_ID_JE_SITZ, RL_KAMPF_ID_HIMMEL, rlKampfHoechsteZahl, RlKampf.
@@ -16649,7 +17903,10 @@ class RlKampf {
         letzteAenderung: { schaden: 0, heilung: 0 }, tot: false,
       };
     }
-    this.runden = this.istBoss ? RL_KONFIG.partie.bossRunden : RL_KONFIG.partie.lakaiRunden;
+    // Spieltest-Runde 2: Runden je Kampfplatz (Lakai 1 / Lakai 2 / Elite) bzw. für den Boss, feste Züge je Runde.
+    const R = RL_KONFIG.partie.runden;
+    this.runden = this.istBoss ? R.boss : R.lakai[Math.min(lauf.daten.kampfIndex ?? 0, R.lakai.length - 1)];
+    this.zuegeJeRunde = RL_KONFIG.partie.zuegeJeRunde ?? null;
 
     // Zähler dieses Kampfes
     this.geld = 0;
@@ -16660,6 +17917,7 @@ class RlKampf {
     this.ereignisse = [];
     this.rundenEreignisse = [];
     this.rundeMarker = new Set();
+    this.zugZaehler = {};
     this.heroldPlus = 0;
     this.beendetSchon = false;
     this.abmelden = null;
@@ -16743,7 +18001,7 @@ class RlKampf {
 
     const ablaufOpts = {
       namen, protokoll: opts.protokoll ?? true, menschIdx: m,
-      decks: { spieler: spielerDecks, himmel }, regeln, nova: false, runden: this.runden,
+      decks: { spieler: spielerDecks, himmel }, regeln, nova: false, runden: this.runden, zuegeJeRunde: this.zuegeJeRunde,
       abbruch: () => this.bossTot(),
       punkteModifikator: this.punkteModifikator,
       kartenBonus: { ...RL_KONFIG.karten },
@@ -16843,7 +18101,7 @@ class RlKampf {
       stufenBonus: RL_KONFIG.stufen.bonusProStufe,
       stufenMax: RL_KONFIG.stufen.max,
       stufenZaehler: { ...this.stufenZaehler },
-      platz: d.platz, kampfIndex: d.kampfIndex, istBoss: this.istBoss, runden: this.runden,
+      platz: d.platz, kampfIndex: d.kampfIndex, istBoss: this.istBoss, runden: this.runden, zuegeJeRunde: this.zuegeJeRunde,
       menschIdx: this.menschIdx,
     };
     if (this.lauf.hatModul('sichtluke')) {
@@ -16887,8 +18145,10 @@ class RlKampf {
       case 'RUNDE_START':
         this.rundenEreignisse = [e];
         this.rundeMarker = new Set();
+        this.zugZaehler = {};
         break;
       case 'ZUG_START':
+        this.zugZaehler[e.idx] = (this.zugZaehler[e.idx] ?? 0) + 1;
         this.beiZugStart(e);
         break;
       case 'GEBAUT':
@@ -16960,7 +18220,7 @@ class RlKampf {
     }
   }
 
-  /** Zugbeginn eines Gegners: Sturm (erster Zug der Runde), Sonde und Zöllner (ab Runde 2, einmal je Runde). */
+  /** Zugbeginn eines Gegners: Sturm (erster Zug der Runde), Sonde und Zöllner (ab dem zweiten eigenen Zug der Runde, einmal je Runde). */
   beiZugStart(e) {
     const i = e.idx;
     const spec = this.gegnerVonSitz[i];
@@ -16972,10 +18232,10 @@ class RlKampf {
       this.rundeMarker.add(marke);
       this.sturm(i, e);
     } else if (f === 'sondeWaechst') {
-      if (this.spiel.runde < 2) return;
+      if ((this.zugZaehler[i] ?? 0) < 2) return;
       if (this.sonde(i, e)) this.rundeMarker.add(marke);
     } else if (f === 'zoellner') {
-      if (this.spiel.runde < 2) return;
+      if ((this.zugZaehler[i] ?? 0) < 2) return;
       this.rundeMarker.add(marke);
       this.zoellner(i, e);
     }
@@ -17063,324 +18323,6 @@ class RlKampf {
     this.spiel.log(`${sp.name} ruft den Boss: +${plus} Bossleben (Herold)`);
     this.merke({ art: 'FAEHIGKEIT', faehigkeit: 'herold', idx: i, bossSchuld: plus, gesamt: this.heroldPlus }, e);
   }
-}
-
-/* ===== engine\src\roguelike\rl-shop.js ===== */
-/**
- * Roguelike-Modus — Shops (Spezifikation §4.7): Umlaufbahn (nach einem Lakaien), Im Flug
- * (nach dem Boss), Reroll, Kauf, Sternwarte, Luftschleuse.
- *
- * Reine Daten und Funktionen. Der Zufall ist deterministisch aus dem Laufzustand abgeleitet:
- * gleicher Zustand → gleiche Angebote; ein Reload stellt den gespeicherten `lauf.daten.shop`
- * wieder her. Angebotsgrößen werden nach RL_KONFIG.shop.gewichte gezogen; die erste Größe
- * erscheint je Lauf höchstens `ersteGroesseProLaufMax`-mal; die Garantie (nach dem
- * Überspringen) erzwingt ein Angebot 2. Größe oder besser in der Umlaufbahn.
- *
- * Zahlenkarten tragen im Katalog Größe 0; für die Ziehung bekommen sie hier eine Ziehklasse
- * (Kopie 4, Spiegel/Leucht/Sternschnuppe 3, Anker 2) — das Angebot behält Größe 0 (Preis 3–5).
- *
- * Exporte: rlUmlaufbahn, rlImFlug, rlReroll, rlKaufen, rlSternwarte, rlSternwarteNehmen,
- *   rlSternwarteSchliessen, rlLuftschleuse, rlShopAngebote, rlShopRng.
- *
- * Top-Level-Namen dieser Datei: RL_SHOP_BEREICH_NR, RL_ZAHL_ZIEHKLASSE, rlShopRng, rlAngebotAus,
- *   rlPoolZahl, rlPoolKosmisch, rlPoolDrittes, rlZieheGroesse, rlZieheAusPool, rlNeueId,
- *   rlUmlaufbahnFuellen, rlUmlaufbahn, rlImFlug, rlShopAngebote, rlReroll, rlKaufen,
- *   rlSternwarte, rlSternwarteNehmen, rlSternwarteSchliessen, rlLuftschleuse.
- */
-
-/** Nummern der Bereiche für die Seed-Ableitung (verschiedene Bereiche, verschiedene Angebote). */
-const RL_SHOP_BEREICH_NR = { angebote: 1, kartenmarkt: 2, kabinett: 3, modul: 4, sternwarte: 5 };
-
-/** Ziehklasse der Zahlenkarten-Sorten (Katalog-Größe 0) für die Größenverteilung. */
-const RL_ZAHL_ZIEHKLASSE = { zahl: 4, spiegel: 3, leucht: 3, sternschnuppe: 3, anker: 2 };
-
-/**
- * Deterministischer Zufall je Laufzustand (§4.7):
- * seed ^ (kampfIndex+1)·7919 ^ platz·104729 ^ rerolls·31, plus Bereich und Sternwartenzähler.
- */
-function rlShopRng(lauf, bereich = 'angebote', rerolls = 0) {
-  const d = lauf.daten;
-  const nr = RL_SHOP_BEREICH_NR[bereich] ?? 0;
-  const seed = (d.seed ^ ((d.kampfIndex + 1) * 7919) ^ (d.platz * 104729) ^ (rerolls * 31)
-    ^ (nr * 65537) ^ (d.sternwarten * 2654435761)) >>> 0;
-  return rngVon(seed);
-}
-
-/** Angebot aus einem Katalogeintrag (Preis kann überlagert werden). */
-function rlAngebotAus(eintrag, id, preis = null) {
-  const a = {
-    id, katalogKey: eintrag.key, sorte: eintrag.sorte, name: eintrag.name, text: eintrag.text,
-    groesse: eintrag.groesse, preis: preis ?? eintrag.preis, gekauft: false,
-  };
-  if (eintrag.spec) a.spec = { ...eintrag.spec };
-  return a;
-}
-
-/** Pool der Zahlenkarten: `{eintrag, klasse, preis}` — Sternschnuppe nur ohne Deckschwäche. */
-function rlPoolZahl(lauf) {
-  const schwaeche = lauf.deckSchwaeche();
-  const out = [];
-  for (const e of Object.values(RL_KATALOG)) {
-    if (e.sorte !== 'zahl') continue;
-    const sorte = e.key.split('-')[0];
-    if (sorte === 'sternschnuppe' && schwaeche.keineSternschnuppe) continue;
-    out.push({ eintrag: e, klasse: RL_ZAHL_ZIEHKLASSE[sorte] ?? 4, preis: e.preis });
-  }
-  return out;
-}
-
-/** Pool der kosmischen Karten (maxProLauf beachtet; Lotse: Kabinettfaktor auf den Preis). */
-function rlPoolKosmisch(lauf) {
-  const d = lauf.daten;
-  const faktor = lauf.deckSchwaeche().kabinettFaktor ?? 1;
-  const out = [];
-  for (const e of Object.values(RL_KATALOG)) {
-    if (e.sorte !== 'kosmisch') continue;
-    if (e.maxProLauf && d.deck.filter((k) => k.art === e.spec.art).length >= e.maxProLauf) continue;
-    out.push({ eintrag: e, klasse: e.groesse, preis: e.preis * faktor });
-  }
-  return out;
-}
-
-/** Pool des dritten Platzes: Module (nicht an Bord), Vorrat (nicht an Bord), Sternwarte, Aufwertungen. */
-function rlPoolDrittes(lauf, { mitModule = true, mitVorrat = true, mitSternwarte = true, mitAufwertung = true } = {}) {
-  const d = lauf.daten;
-  const out = [];
-  for (const e of Object.values(RL_KATALOG)) {
-    if (e.sorte === 'modul') {
-      if (mitModule && !lauf.hatModul(e.key)) out.push({ eintrag: e, klasse: e.groesse, preis: e.preis });
-    } else if (e.sorte === 'vorrat') {
-      if (mitVorrat && !lauf.hatVorrat(e.key)) out.push({ eintrag: e, klasse: e.groesse, preis: e.preis });
-    } else if (e.sorte === 'sternwarte') {
-      if (mitSternwarte) out.push({ eintrag: e, klasse: e.groesse, preis: e.preis });
-    } else if (e.sorte === 'aufwertung') {
-      if (!mitAufwertung) continue;
-      const stufe = e.key === 'ueberriese' ? 2 : 1;
-      const ziel = d.deck.some((k) => k.art === 'ZAHL' && (k.stufe ?? 0) === stufe - 1);
-      if (ziel) out.push({ eintrag: e, klasse: e.groesse, preis: lauf.aufwertungsPreis(stufe) });
-    }
-  }
-  return out;
-}
-
-/**
- * Größenklasse ziehen (Gewichte aus RL_KONFIG) unter den im Pool vorhandenen Klassen.
- * Klasse 1 nur, solange der Lauf-Zähler unter `ersteGroesseProLaufMax` liegt; wird sie
- * gezogen, zählt der Lauf mit.
- */
-function rlZieheGroesse(rng, lauf, klassen, hoechstens = 4) {
-  const d = lauf.daten;
-  const G = RL_KONFIG.shop.gewichte;
-  const erlaubt = [...klassen].filter((k) => k <= hoechstens && (k !== 1 || d.ersteGroesseAngeboten < RL_KONFIG.shop.ersteGroesseProLaufMax));
-  if (!erlaubt.length) return null;
-  const gew = erlaubt.map((k) => G['groesse' + k] ?? 1);
-  const summe = gew.reduce((a, b) => a + b, 0);
-  let z = rng() * summe;
-  let wahl = erlaubt[erlaubt.length - 1];
-  for (let i = 0; i < erlaubt.length; i++) { z -= gew[i]; if (z < 0) { wahl = erlaubt[i]; break; } }
-  if (wahl === 1) d.ersteGroesseAngeboten++;
-  return wahl;
-}
-
-/** Ein Angebot aus einem Pool ziehen (ohne schon angebotene Katalogschlüssel). */
-function rlZieheAusPool(rng, lauf, pool, id, ausser = new Set(), hoechstens = 4) {
-  const frei = pool.filter((p) => !ausser.has(p.eintrag.key));
-  if (!frei.length) return null;
-  const klasse = rlZieheGroesse(rng, lauf, new Set(frei.map((p) => p.klasse)), hoechstens);
-  if (klasse === null) return null;
-  const kandidaten = frei.filter((p) => p.klasse === klasse);
-  const p = rng.pick(kandidaten);
-  ausser.add(p.eintrag.key);
-  return rlAngebotAus(p.eintrag, id, p.preis);
-}
-
-/** Fortlaufende Angebots-Id innerhalb eines Shops. */
-function rlNeueId(shop) { return 'a' + (shop.naechsteId++); }
-
-/**
- * Die Umlaufbahn-Angebote würfeln (RL_KONFIG.shop.umlaufbahn.angebote, Spieltest-Runde 1: vier):
- * [Zahl] + [kosmisch] + [je zur Hälfte Zahl oder kosmisch]… + [Modul|Vorrat|Sternwarte|Aufwertung].
- */
-function rlUmlaufbahnFuellen(lauf, shop, rng) {
-  const ausser = new Set();
-  const n = Math.max(3, RL_KONFIG.shop.umlaufbahn.angebote ?? 3);
-  const angebote = [
-    rlZieheAusPool(rng, lauf, rlPoolZahl(lauf), rlNeueId(shop), ausser),
-    rlZieheAusPool(rng, lauf, rlPoolKosmisch(lauf), rlNeueId(shop), ausser),
-  ];
-  for (let i = 2; i < n - 1; i++) {
-    const pool = rng() < 0.5 ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
-    angebote.push(rlZieheAusPool(rng, lauf, pool, rlNeueId(shop), ausser));
-  }
-  angebote.push(rlZieheAusPool(rng, lauf, rlPoolDrittes(lauf), rlNeueId(shop), ausser));
-  shop.garantieErfuellt = false;
-  if (shop.garantie && !angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2)) {
-    const pool = rlPoolKosmisch(lauf).filter((p) => p.klasse <= 2);
-    const ersatz = rlZieheAusPool(rng, lauf, pool, rlNeueId(shop), new Set(), 2);
-    if (ersatz) angebote[1] = ersatz;
-  }
-  if (shop.garantie) shop.garantieErfuellt = angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2);
-  shop.angebote = angebote.filter(Boolean);
-}
-
-/**
- * Umlaufbahn-Shop nach einem Lakaien-Sieg. Verbraucht `lauf.daten.garantie` (sie gilt für
- * diesen Shop samt Rerolls) und legt den Zustand in `lauf.daten.shop`.
- */
-function rlUmlaufbahn(lauf, rng = null) {
-  const d = lauf.daten;
-  const shop = {
-    art: 'UMLAUFBAHN', angebote: [], rerolls: 0, rerollPreis: RL_KONFIG.shop.reroll.start,
-    garantie: !!d.garantie, garantieErfuellt: false, naechsteId: 1,
-  };
-  d.garantie = false;
-  rlUmlaufbahnFuellen(lauf, shop, rng ?? rlShopRng(lauf, 'angebote', 0));
-  d.shop = shop;
-  return shop;
-}
-
-/**
- * Im-Flug-Shop nach einem Boss-Sieg: Kartenmarkt (4 Zahlen), Kosmisches Kabinett (3), ein
- * Schiffsmodul (nicht rerollbar, null wenn alle an Bord), Luftschleuse (bis 3 Karten).
- */
-function rlImFlug(lauf, rng = null) {
-  const d = lauf.daten;
-  const K = RL_KONFIG.shop.imFlug;
-  const shop = {
-    art: 'IMFLUG', kartenmarkt: [], kabinett: [], modul: null,
-    luftschleuse: { frei: K.luftschleuse, entfernt: [] },
-    rerolls: { kartenmarkt: 0, kabinett: 0 },
-    rerollPreis: { kartenmarkt: RL_KONFIG.shop.reroll.start, kabinett: RL_KONFIG.shop.reroll.start },
-    naechsteId: 1,
-  };
-  const rngMarkt = rng ?? rlShopRng(lauf, 'kartenmarkt', 0);
-  const rngKab = rng ?? rlShopRng(lauf, 'kabinett', 0);
-  const rngModul = rng ?? rlShopRng(lauf, 'modul', 0);
-  const ausserM = new Set();
-  for (let i = 0; i < K.kartenmarkt; i++) {
-    const a = rlZieheAusPool(rngMarkt, lauf, rlPoolZahl(lauf), rlNeueId(shop), ausserM);
-    if (a) shop.kartenmarkt.push(a);
-  }
-  const ausserK = new Set();
-  for (let i = 0; i < K.kabinett; i++) {
-    const a = rlZieheAusPool(rngKab, lauf, rlPoolKosmisch(lauf), rlNeueId(shop), ausserK);
-    if (a) shop.kabinett.push(a);
-  }
-  shop.modul = rlZieheAusPool(rngModul, lauf, rlPoolDrittes(lauf, { mitVorrat: false, mitSternwarte: false, mitAufwertung: false }), rlNeueId(shop));
-  d.shop = shop;
-  return shop;
-}
-
-/** Alle Angebote eines Shops als flache Liste. */
-function rlShopAngebote(shop) {
-  if (!shop) return [];
-  if (shop.art === 'UMLAUFBAHN') return [...shop.angebote];
-  return [...shop.kartenmarkt, ...shop.kabinett, ...(shop.modul ? [shop.modul] : [])];
-}
-
-/**
- * Neu würfeln: Umlaufbahn (alle Angebote) oder Im-Flug-Bereich `kartenmarkt|kabinett`.
- * Bezahlt mit einem Gratis-Reroll (Sprungantrieb), sonst mit Geld; der Preis steigt je Reroll.
- */
-function rlReroll(lauf, shop, bereich = 'angebote', rng = null) {
-  const d = lauf.daten;
-  if (!shop || d.shop !== shop) throw new Error('Kein offener Shop');
-  const R = RL_KONFIG.shop.reroll;
-  const umlauf = shop.art === 'UMLAUFBAHN';
-  if (umlauf) bereich = 'angebote';
-  else if (bereich !== 'kartenmarkt' && bereich !== 'kabinett') throw new Error('Bereich nicht rerollbar: ' + bereich);
-  const preis = umlauf ? shop.rerollPreis : shop.rerollPreis[bereich];
-  if (d.gratisRerolls > 0) d.gratisRerolls--;
-  else lauf.bezahle(preis);
-  const rerolls = (umlauf ? shop.rerolls : shop.rerolls[bereich]) + 1;
-  const neuerPreis = R.start + R.plus * rerolls;
-  const r = rng ?? rlShopRng(lauf, bereich, rerolls);
-  if (umlauf) {
-    shop.rerolls = rerolls;
-    shop.rerollPreis = neuerPreis;
-    rlUmlaufbahnFuellen(lauf, shop, r);
-  } else {
-    shop.rerolls[bereich] = rerolls;
-    shop.rerollPreis[bereich] = neuerPreis;
-    const n = RL_KONFIG.shop.imFlug[bereich];
-    const pool = bereich === 'kartenmarkt' ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
-    const ausser = new Set();
-    const neu = [];
-    for (let i = 0; i < n; i++) {
-      const a = rlZieheAusPool(r, lauf, pool, rlNeueId(shop), ausser);
-      if (a) neu.push(a);
-    }
-    shop[bereich] = neu;
-  }
-  return shop;
-}
-
-/**
- * Angebot kaufen: prüft Geld und Verfügbarkeit, ruft `lauf.kaufen`, markiert `gekauft`.
- * `extra.uid` für Aufwertungen. Ein Sternwarte-Kauf deckt sofort auf und liefert die Sternwarte.
- */
-function rlKaufen(lauf, shop, angebotId, extra = {}) {
-  const angebot = rlShopAngebote(shop).find((a) => a.id === angebotId);
-  if (!angebot) throw new Error('Angebot unbekannt: ' + angebotId);
-  if (angebot.gekauft) throw new Error('Schon gekauft');
-  const ergebnis = lauf.kaufen(angebot, extra);
-  angebot.gekauft = true;
-  if (angebot.sorte === 'sternwarte') {
-    lauf.daten.sternwarten++;
-    return rlSternwarte(lauf, extra.rng ?? null);
-  }
-  return ergebnis;
-}
-
-/**
- * Sternwarte: 5 Karten aufdecken (3 Zahlen, 2 kosmische), bis zu `nehmen` davon ins Deck.
- * Zustand liegt in `lauf.daten.sternwarte` (Reload-fest). Bezahlt wird über das Angebot
- * oder den Vorrat „Beobachtung" — hier nicht.
- */
-function rlSternwarte(lauf, rng = null) {
-  const d = lauf.daten;
-  const S = RL_KONFIG.shop.sternwarte;
-  const r = rng ?? rlShopRng(lauf, 'sternwarte', 0);
-  const karten = [];
-  const ausser = new Set();
-  const zahlen = Math.min(3, S.aufdecken);
-  for (let i = 0; i < S.aufdecken; i++) {
-    const pool = i < zahlen ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
-    const a = rlZieheAusPool(r, lauf, pool, 's' + (i + 1), ausser);
-    if (a) karten.push({ id: a.id, katalogKey: a.katalogKey, name: a.name, text: a.text, groesse: a.groesse, spec: a.spec, genommen: false });
-  }
-  const warte = { karten, genommen: [], maxNehmen: S.nehmen };
-  d.sternwarte = warte;
-  return warte;
-}
-
-/** Eine aufgedeckte Karte nehmen (höchstens `nehmen`, Deckgrenze gilt). */
-function rlSternwarteNehmen(lauf, warte, kartenId) {
-  if (!warte) throw new Error('Keine Sternwarte offen');
-  if (warte.genommen.length >= warte.maxNehmen) throw new Error('Schon ' + warte.maxNehmen + ' Karten genommen');
-  const k = warte.karten.find((x) => x.id === kartenId);
-  if (!k) throw new Error('Karte nicht aufgedeckt: ' + kartenId);
-  if (k.genommen) throw new Error('Schon genommen');
-  const neu = lauf.deckHinzu(k.spec, k.katalogKey);
-  k.genommen = true;
-  warte.genommen.push(neu.uid);
-  return neu;
-}
-
-/** Sternwarte schließen (Rest verfällt). */
-function rlSternwarteSchliessen(lauf) {
-  lauf.daten.sternwarte = null;
-}
-
-/** Luftschleuse: eine Karte aus dem Deck werfen (höchstens `frei`, nie unter minGroesse). */
-function rlLuftschleuse(lauf, shop, uid) {
-  if (!shop || shop.art !== 'IMFLUG') throw new Error('Die Luftschleuse gibt es nur im Flug');
-  const L = shop.luftschleuse;
-  if (L.frei <= 0) throw new Error('Die Luftschleuse ist erschöpft');
-  const [k] = lauf.verkaufeLuftschleuse([uid]);
-  L.frei--;
-  L.entfernt.push(k);
-  return k;
 }
 
 /* ===== app\roguelike\rl-start.js ===== */
@@ -17620,7 +18562,7 @@ function rlStartZeigePlanet() {
   rlPlanetZeigen(rlS.schirm, lauf, rueckrufe, { stationen: rlStartStationen() });
   if (lauf.istBossKampf()) {
     const boss = lauf.planAktuell().boss;
-    rlStartHaken().sag('vorBoss', { bossName: boss ? boss.name : '', runden: RL_KONFIG.partie.bossRunden });
+    rlStartHaken().sag('vorBoss', { bossName: boss ? boss.name : '', runden: lauf.rundenFuer() });
   } else {
     rlStartHaken().sag('planet', { schuld: RL_KONFIG.boss.schuldProUebersprungenem });
   }
@@ -17650,7 +18592,8 @@ function rlStartZeigeUmlaufbahn() {
       lauf.vorratNutzen(key);
       if (key === 'beobachtung') rlSternwarte(lauf);
     }),
-    stufe: (typ) => rlStartTu(() => lauf.stufeKaufen(typ)),                 // Sternbilderpack (Spieltest-Runde 1)
+    packOeffnen: (art) => rlStartTu(() => rlPackOeffnen(lauf, d.shop, art)),         // Packs (Spieltest-Runde 2)
+    packWaehlen: (art, id) => rlStartTu(() => rlPackWaehlen(lauf, d.shop, art, id)),
     deckAnsehen: () => rlDeckAnsicht(rlS.schirm, lauf.daten.deck, {}, rlStartDeckOpt(lauf)),
     weiter: () => rlStartTu(() => { rlSternwarteSchliessen(lauf); lauf.shopFertig(); }),
   });
@@ -17672,7 +18615,8 @@ function rlStartZeigeImFlug() {
       lauf.vorratNutzen(key);
       if (key === 'beobachtung') rlSternwarte(lauf);
     }),
-    stufe: (typ) => rlStartTu(() => lauf.stufeKaufen(typ)),                 // Sternbilderpack (Spieltest-Runde 1)
+    packOeffnen: (art) => rlStartTu(() => rlPackOeffnen(lauf, d.shop, art)),         // Packs (Spieltest-Runde 2)
+    packWaehlen: (art, id) => rlStartTu(() => rlPackWaehlen(lauf, d.shop, art, id)),
     deckAnsehen: () => rlDeckAnsicht(rlS.schirm, lauf.daten.deck, {}, rlStartDeckOpt(lauf)),
     weiter: () => rlStartTu(() => { rlSternwarteSchliessen(lauf); lauf.shopFertig(); }),
   });
@@ -17740,7 +18684,7 @@ function rlStartKampfStarten(neu) {
 
   const haupt = Array.isArray(gegner) ? gegner[0] : gegner;
   if (neu === false) haken.satz(RL_TXT_KAMPF.neustart, { pose: 'warnt', seite: 'rechts' });
-  else if (haken.aktiv()) haken.sag('kampfbeginn', { runden: kampf.runden, gegnerName: haupt.name });
+  else if (haken.aktiv()) haken.sag('kampfbeginn', { runden: kampf.runden, zuege: kampf.zuegeJeRunde, gegnerName: haupt.name });
   else if (haupt.boss) haken.erstesMal('boss', lauf.planetAktuell());
   else if (haupt.elite) haken.erstesMal('elite');
 }
@@ -17810,8 +18754,15 @@ function rlStartRegelnHtml(mitTrenner = false) {
   const k = {
     planeten: K.lauf.planetenProLauf,
     lakaien: K.lauf.lakaienProPlanet,
-    lakaiRunden: K.partie.lakaiRunden,
-    bossRunden: K.partie.bossRunden,
+    lakaiRunden: K.partie.runden.lakai.join(' / '),
+    bossRunden: K.partie.runden.boss,
+    zuegeJeRunde: K.partie.zuegeJeRunde,
+    packSternbilder: K.shop.packs.sternbilder.preis,
+    packPlanet: K.shop.packs.planet.preis,
+    planetKarten: Object.entries(RL_PLANET_KARTEN).map(([planet, karten]) => ({
+      planet: rlStartEsc(rlText(RL_TXT_PLANET, planet)),
+      karten: rlStartEsc(karten.map((e) => e.name).join(', ')),
+    })),
     schuld: K.boss.schuldProUebersprungenem,
     proKarte: K.geld.proGeklauterKarte,
     bossSiegBonus: K.geld.bossSiegBonus,
@@ -18060,7 +19011,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '14.09.2026 01:30';
+const BAU_STAND = '18.09.2026 23:19';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
