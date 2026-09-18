@@ -3815,6 +3815,79 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
   .rl-pack-bild { transition: none; }
 }
 
+/* ---------- 23. Pflicht-Tutorial: Führung durch V2-A2 (Spieltest-Runde 3) ---------- */
+
+/* Roguelike-Ebene, solange das Tutorial aussteht: nur „Raubzug beginnen" und der Hinweis. */
+.rl-start-pflicht {
+  max-width: 560px; margin: 0 auto var(--raum3); padding: 10px 16px;
+  border: 2px dashed var(--rl-gold); border-radius: 10px;
+  color: var(--schrift); font-size: var(--t-text); line-height: 1.4; text-align: center;
+}
+.rl-start-pflicht[hidden], #rl-start-wahl[hidden] { display: none; }
+#start-roguelike[data-pflicht="1"] #btn-rl-neu { font-size: 24px; padding: 12px 30px 10px; }
+
+/* Auf den Schirmen ist nur der gezeigte Schritt bedienbar: alles andere tritt zurück. */
+#rl-schirm[data-fuehrung] [data-rl]:not(.rl-tut-frei) { opacity: .42; filter: grayscale(.7); cursor: not-allowed; }
+#rl-schirm[data-fuehrung] [data-rl]:not(.rl-tut-frei):hover { translate: 0 0; }
+/* Platz unter dem Inhalt, damit das Ziel über V2-A2 gerollt werden kann (die Packs liegen unten). */
+#rl-schirm[data-fuehrung] .rl-schirm-innen { padding-bottom: 250px; }
+
+/* Das Ziel pulst: Knöpfe, Kacheln und Bereiche auf den Schirmen … */
+#rl-schirm .rl-tut-ziel { position: relative; z-index: 1; animation: rl-tut-puls 1100ms ease-in-out infinite; }
+#rl-schirm .rl-geld.rl-tut-ziel, #rl-schirm .rl-shop-kacheln.rl-tut-ziel, #rl-schirm .rl-pack.rl-tut-ziel {
+  border-radius: 12px; animation-name: rl-tut-rahmen;
+}
+/* … und am Tisch: die anzutippenden Karten, das Ziel-Sternbild, der Knopf in der Fußleiste. */
+body[data-modus="roguelike"] .karte.rl-tut-ziel { animation: rl-tut-karte 1000ms ease-in-out infinite; z-index: 2; }
+body[data-modus="roguelike"] .sternbild.rl-tut-ziel { animation: rl-tut-rahmen 1000ms ease-in-out infinite; border-radius: 10px; cursor: pointer; }
+body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel { animation: rl-tut-puls 1000ms ease-in-out infinite; }
+@keyframes rl-tut-puls {
+  0%, 100% { box-shadow: var(--rl-schatten), 0 0 0 0 rgba(242, 198, 64, .0); }
+  50%      { box-shadow: var(--rl-schatten), 0 0 0 7px rgba(242, 198, 64, .85); }
+}
+@keyframes rl-tut-rahmen {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(242, 198, 64, .35); }
+  50%      { box-shadow: 0 0 0 6px rgba(242, 198, 64, .9); }
+}
+@keyframes rl-tut-karte {
+  0%, 100% { translate: 0 0; box-shadow: var(--rl-schatten-klein), 0 0 0 2px rgba(242, 198, 64, .55); }
+  50%      { translate: 0 -6px; box-shadow: var(--rl-schatten), 0 0 0 5px rgba(242, 198, 64, .95); }
+}
+
+/* Gesperrter Klick: die Blase ruckelt kurz — „erst das hier". */
+#rl-figur.ruckelt .rl-blase { animation: rl-tut-ruckeln 420ms ease-in-out 1; }
+@keyframes rl-tut-ruckeln {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -7px 0; } 40% { translate: 6px 0; } 60% { translate: -4px 0; } 80% { translate: 3px 0; }
+}
+/* Aufgaben-Blase (ohne Knopf): goldener Rand, damit sie als Auftrag erkennbar ist. */
+#rl-figur[data-aufgabe="1"] .rl-blase { border-color: #B8860B; box-shadow: var(--rl-schatten), 0 0 0 3px var(--rl-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  #rl-schirm .rl-tut-ziel, body[data-modus="roguelike"] .karte.rl-tut-ziel,
+  body[data-modus="roguelike"] .sternbild.rl-tut-ziel, body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel {
+    animation: none; box-shadow: var(--rl-schatten), 0 0 0 5px rgba(242, 198, 64, .9);
+  }
+  #rl-figur.ruckelt .rl-blase { animation: none; }
+}
+
+/* ---------- 24. Deckansicht: An Bord (Module, Vorrat) und besondere Karten (Spieltest-Runde 3) ---------- */
+.rl-deck-bord-liste, .rl-deck-besondere-liste { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.rl-deck-bord-liste { grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+.rl-deck-bord-eintrag {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-areas: "bild text" "bild art"; gap: 0 10px; align-items: center;
+  padding: 6px 10px; border: 2px solid var(--tinte); border-radius: 10px; background: var(--papier); color: var(--tinte);
+  box-shadow: var(--rl-schatten-klein);
+}
+.rl-deck-bord-bild { grid-area: bild; width: 40px; height: 40px; display: block; }
+.rl-deck-bord-bild svg { display: block; width: 40px; height: 40px; }
+.rl-deck-bord-bild.vorrat { border: 2px dashed var(--tinte); border-radius: 8px; background: var(--rl-halbton, none); }
+.rl-deck-bord-text { grid-area: text; display: flex; flex-direction: column; font-size: var(--t-neben); line-height: 1.3; }
+.rl-deck-bord-text b { font-family: var(--display); font-weight: 400; letter-spacing: .04em; font-size: 15px; }
+.rl-deck-bord-art { grid-area: art; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #6B5B2A; }
+.rl-deck-besondere-liste li { font-size: var(--t-neben); line-height: 1.35; color: var(--schrift); }
+.rl-deck-besondere-liste li b { color: var(--rl-gold); font-family: var(--display); font-weight: 400; }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -4027,6 +4100,9 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
         <button class="rl-knopf haupt" id="btn-rl-fortsetzen" type="button" hidden>Lauf fortsetzen</button>
         <button class="rl-knopf" id="btn-rl-neu" type="button">Neuer Lauf</button>
       </div>
+      <!-- Pflicht-Tutorial: solange es aussteht, steht hier der Hinweis und die Wahl darunter bleibt versteckt. -->
+      <p class="rl-start-pflicht" id="rl-start-pflicht" hidden></p>
+      <div id="rl-start-wahl">
       <h3 class="rl-start-abschnitt">Dein Deck</h3>
       <div class="rl-deckwahl" id="rl-deckwahl"></div>
       <div class="rl-start-zeile">
@@ -4038,6 +4114,7 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
         </div>
       </div>
       <p class="rl-startort">Startort: <b id="rl-startort">Frostpfad</b></p>
+      </div>
       <div class="rl-start-fuss">
         <button class="rl-knopf klein" id="btn-rl-regeln" type="button">So funktioniert der Raubzug</button>
         <button class="rl-knopf klein" id="btn-rl-tutorial" type="button">Tutorial ansehen</button>
@@ -4984,9 +5061,9 @@ function generiereAktionen(spiel, spielerIdx) {
    * Ein fertiger, unversiegelter Sechser-Pfeil eines Gegners darf geklaut werden, wenn er den
    * eigenen fertigen Sechser-Pfeil zum Drachen ergänzt (1–6 zu 7–12 oder umgekehrt): mindestens
    * `klauenMinHandkarten` beliebige Handkarten abwerfen (handIds füllt die Oberfläche bzw. der
-   * Bot), der fremde Pfeil wandert herüber, beide werden sofort zum Drachen. Privilegien des
-   * Besitzers (Anker, sicherAb, unklaubare Typen) und Nebel schützen wie beim Klauen; ein
-   * Siegel schützt immer. Spieltest-Runde 1.
+   * Bot), der fremde Pfeil wandert herüber, beide werden sofort zum Drachen. Es schützen nur das
+   * Siegel, eine Ankerkarte im Pfeil und Nebel — Privilegien des Besitzers (sicherAb, unklaubare
+   * Typen) nicht (Spieltest-Runde 3; vorher schützten sie wie beim Klauen). Spieltest-Runde 1.
    */
   if (spielRegel(spiel, spielerIdx, 'drachenKlau') && sp.hand.length >= minHandRaub) {
     for (const eigen of sp.sternbilder) {
@@ -4995,7 +5072,9 @@ function generiereAktionen(spiel, spielerIdx) {
       for (let g = 0; g < spiel.spieler.length; g++) {
         if (g === spielerIdx || imNebel(g)) continue;
         for (const sb of spiel.spieler[g].sternbilder) {
-          if (sb.versiegelt || privilegSicher(sb, g)) continue;
+          // Spieltest-Runde 3: vor dem Drachenklau schützen nur das Siegel, eine Ankerkarte und Nebel — Privilegien des
+          // Besitzers ("Sicher ab vier", die unklaubaren Pfeile des Lotsen) nicht. Wer seinen Sechser behalten will, versiegelt ihn.
+          if (sb.versiegelt || sb.karten.some((k) => k.anker)) continue;
           if (!bildenDrachen(eigen, sb)) continue;
           const b = bewerte(sb.karten);
           aktionen.push({
@@ -5954,7 +6033,7 @@ class Spiel {
         // nur: nicht klaubar. Schutz davor gibt es allein durchs Versiegeln.
         // Roguelike: ein Ziel mit `immunSchwarzesLoch` wird ignoriert.
         if (sb && !istVersiegelt(sb) && !spielRegel(this, wahl.zielIdx, 'immunSchwarzesLoch')) {
-          this.log(`${sp.name} spielt Schwarzes Loch auf ${this.spieler[wahl.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
+          this.log(`${sp.name} spielt Schwarzes Loch auf ${this.spieler[wahl.zielIdx].name} (${this.punkteVon(sb, wahl.zielIdx)} P.)`);
           this.loeseSbAuf(wahl.zielIdx, sb, 'ZERSTOERT', 'SCHWARZES_LOCH', spielerIdx);
         }
         break;
@@ -6109,7 +6188,7 @@ class Spiel {
     const sb = this.findeSb(wahl.zielIdx, wahl.sbId);
     if (!sb) return;
     const beute = bewerte(sb.karten).punkte;
-    this.log(`${this.spieler[spielerIdx].name} zündet die NOVA auf ein Sternbild von ${this.spieler[wahl.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
+    this.log(`${this.spieler[spielerIdx].name} zündet die NOVA auf ein Sternbild von ${this.spieler[wahl.zielIdx].name} (${this.punkteVon(sb, wahl.zielIdx)} P.)`);
     this.loeseSbAuf(wahl.zielIdx, sb, CONFIG.kosmisch.novaKartenAufAblage ? 'ABLAGE' : 'ZERSTOERT', 'NOVA', spielerIdx);
     // Regel: "Danach ist die Nova aus dem Spiel." Nicht auf die Ablage — von dort
     // würde sie beim nächsten Einsammeln wieder ins Deck wandern.
@@ -6163,7 +6242,7 @@ class Spiel {
     sb.versiegelt = true;
     sp.versiegelungenDieseRunde++;
     this.stats.versiegelungen++;
-    this.log(`${sp.name} versiegelt ein Sternbild gratis (${bewerte(sb.karten).punkte} P.)`);
+    this.log(`${sp.name} versiegelt ein Sternbild gratis (${this.punkteVon(sb, sp.idx)} P.)`);
     this.melde({ art: 'VERSIEGELT', idx: spielerIdx, sbId, gratis: true });
     return true;
   }
@@ -6246,7 +6325,7 @@ class Spiel {
       case 'VERSIEGELN': {
         const sb = this.findeSb(spielerIdx, a.sbId);
         if (sb) { sb.versiegelt = true; sp.versiegelungenDieseRunde++; this.stats.versiegelungen++; }
-        this.log(`${sp.name} versiegelt ein Sternbild (${sb ? bewerte(sb.karten).punkte : 0} P.)`);
+        this.log(`${sp.name} versiegelt ein Sternbild (${sb ? this.punkteVon(sb, spielerIdx) : 0} P.)`);
         if (sb) this.melde({ art: 'VERSIEGELT', idx: spielerIdx, sbId: sb.id, gratis: false });
         break;
       }
@@ -6275,14 +6354,14 @@ class Spiel {
           sb.karten.push(...karten);
           const neuerTyp = bewerte(sb.karten).typ;
           if (neuerTyp && neuerTyp !== alterTyp) this.stats.sternbildGebaut[neuerTyp]++;
-          this.log(`${sp.name} erweitert ein Sternbild auf ${neuerTyp} (${bewerte(sb.karten).punkte} P.)`);
+          this.log(`${sp.name} erweitert ein Sternbild auf ${neuerTyp} (${this.punkteVon(sb, spielerIdx)} P.)`);
           this.melde({ art: 'GEBAUT', idx: spielerIdx, sbId: sb.id, typ: neuerTyp, groesse: sb.karten.length, neu: false, alterTyp });
         } else {
           sb = { id: this.neueSbId(), karten, versiegelt: false };
           sp.sternbilder.push(sb);
           const t = bewerte(sb.karten).typ;
           if (t) this.stats.sternbildGebaut[t]++;
-          this.log(`${sp.name} baut ${t} (${bewerte(sb.karten).punkte} P.)`);
+          this.log(`${sp.name} baut ${t} (${this.punkteVon(sb, spielerIdx)} P.)`);
           this.melde({ art: 'GEBAUT', idx: spielerIdx, sbId: sb.id, typ: t, groesse: sb.karten.length, neu: true, alterTyp: null });
         }
         break;
@@ -6308,7 +6387,7 @@ class Spiel {
         this.stats.entschaedigung += entschaedigung;
         const t = bewerte(sb.karten).typ;
         if (t) this.stats.sternbildGebaut[t]++;
-        this.log(`🗡 ${sp.name} klaut ${opfer.name} ein Sternbild → ${t} (${bewerte(sb.karten).punkte} P.); ${opfer.name} erhält ${entschaedigung} Trostpunkte`);
+        this.log(`🗡 ${sp.name} klaut ${opfer.name} ein Sternbild → ${t} (${this.punkteVon(sb, spielerIdx)} P.); ${opfer.name} erhält ${entschaedigung} Trostpunkte`);
         this.melde({ art: 'KLAU', dieb: spielerIdx, opfer: a.opferIdx, sbId: sb.id, karten: kartenVorher, typ: t, entschaedigung });
         break;
       }
@@ -6337,7 +6416,7 @@ class Spiel {
         this.letzteEntschaedigung = { opferIdx: a.opferIdx, punkte: entschaedigung };
         this.stats.raube = (this.stats.raube ?? 0) + 1;
         this.stats.entschaedigung += entschaedigung;
-        this.log(`🗡 ${sp.name} raubt ${opfer.name} ein Sternbild (${bewerte(sb.karten).punkte} P.); ${opfer.name} erhält ${entschaedigung} Trostpunkte`);
+        this.log(`🗡 ${sp.name} raubt ${opfer.name} ein Sternbild (${this.punkteVon(sb, spielerIdx)} P.); ${opfer.name} erhält ${entschaedigung} Trostpunkte`);
         this.melde({ art: 'RAUB', dieb: spielerIdx, opfer: a.opferIdx, sbId: sb.id, karten: kartenVorher, entschaedigung });
         break;
       }
@@ -6354,7 +6433,7 @@ class Spiel {
         const eigen = this.findeSb(spielerIdx, a.sbIdEigen);
         if (!sb || !eigen) throw new Error('Der Pfeil für den Drachenklau liegt nicht mehr da — Zug abgebrochen');
         if (sb.versiegelt) throw new Error('Ein versiegelter Pfeil lässt sich nicht klauen');
-        if (this.istPrivilegSicher(sb, a.opferIdx)) throw new Error('Dieser Pfeil ist durch ein Privileg geschützt');
+        if (sb.karten.some((k) => k.anker)) throw new Error('Eine Ankerkarte schützt diesen Pfeil');   // Privilegien schützen vor dem Drachenklau nicht
         if (opfer.nebelRunde === this.runde) throw new Error('Nebel — dieser Spieler ist nicht bestehlbar');
         if (!bildenDrachen(eigen, sb)) throw new Error('Diese beiden Pfeile ergeben keinen Drachen');
         const handIds = a.handIds || [];
@@ -6479,7 +6558,7 @@ class Spiel {
     const sb = this.findeSb(ziel.zielIdx, ziel.sbId);
     if (!sb || istVersiegelt(sb)) return false;
     this.letzteKosmisch = 'SCHWARZES_LOCH';
-    this.log(`🕳 Schwarzes Loch aus dem Himmel trifft ${this.spieler[ziel.zielIdx].name} (${bewerte(sb.karten).punkte} P.)`);
+    this.log(`🕳 Schwarzes Loch aus dem Himmel trifft ${this.spieler[ziel.zielIdx].name} (${this.punkteVon(sb, ziel.zielIdx)} P.)`);
     this.loeseSbAuf(ziel.zielIdx, sb, 'ZERSTOERT', 'HIMMEL', verursacher);
     return true;
   }
@@ -9420,7 +9499,8 @@ function rlGegnerFigurSvg(info, opt = {}) {
  * Top-Level-Namen: RL_TXT_PLANET, RL_TXT_VERHALTEN, RL_TXT_PRIVILEG,
  *   RL_TXT_ELITE, RL_TXT_BOSS, RL_TXT_DECK, RL_TXT_MODUL, RL_TXT_VORRAT,
  *   RL_TXT_KATALOG, RL_TXT_GROESSE, RL_TXT_MARKE, RL_TXT_STUFE,
- *   RL_TXT_SEXTANT, RL_TXT_UI, RL_TXT_SCHIRM, RL_TXT_ZIEL, RL_TXT_KAMPF, RL_TXT_REGELN, rlText
+ *   RL_TXT_SEXTANT, rlTxtWerteListe, rlTxtWerteReihe, RL_TXT_FUEHRUNG,
+ *   RL_TXT_UI, RL_TXT_SCHIRM, RL_TXT_ZIEL, RL_TXT_KAMPF, RL_TXT_REGELN, rlText
  */
 
 /** Planeten: Name, ein Satz zum Himmelseffekt (kurz, fürs Banner) und ein längerer. */
@@ -9540,8 +9620,8 @@ const RL_TXT_KATALOG = {
   leucht:        { name: 'Leuchtkarte',   text: 'Ein Punkt mehr je Wertung, wenn sie in einem gültigen Sternbild liegt.' },
   anker:         { name: 'Ankerkarte',    text: 'Das Sternbild, in dem sie liegt, ist nicht klaubar.' },
   sternschnuppe: { name: 'Sternschnuppe', text: 'Der Joker — vertritt jeden Wert.' },
-  riese:         { name: 'Riese',         text: 'Eine Zahlenkarte deines Decks bringt zwei Punkte mehr je Wertung.' },
-  ueberriese:    { name: 'Überriese',     text: 'Ein Riese wird zum Überriesen: vier Punkte mehr je Wertung.' },
+  riese:         { name: 'Riese',         text: 'Aufwertung: Du wählst eine Zahlenkarte deines Decks. Sie bringt ab dann in jedem Sternbild zwei Punkte mehr je Wertung — den ganzen Lauf lang.' },
+  ueberriese:    { name: 'Überriese',     text: 'Aufwertung: Du wählst einen Riesen aus deinem Deck. Er bringt ab dann vier statt zwei Punkte mehr je Wertung.' },
   sternwarte:    { name: 'Sternwarte',    text: 'Fünf zufällige Karten aufdecken, bis zu zwei davon nehmen.' },
 };
 
@@ -9577,50 +9657,29 @@ const RL_TXT_STUFE = {
 };
 
 /**
- * V2-A2-Sätze der elf Tutorial-Stellen (§5.6, Schlüssel = Auslöser in rl-tutorial.js) und die
- * kurzen Blasen bei ersten Ereignissen. Ein Eintrag ist eine Satzliste oder eine Funktion des
- * Kontexts, den rl-start.js mitgibt (z. B. bossName, runden, schuld, ergebnis). V2-A2 erklärt
- * nur den Modus — die Grundregeln kennt der Spieler aus dem Tutorial des Grundspiels.
+ * V2-A2-Sätze außerhalb der Führung (Schlüssel = Auslöser in rl-tutorial.js): die Begrüßung auf der
+ * Roguelike-Ebene und die Hinweise, die je Profil genau einmal kommen — beim ersten echten Kampf, vor dem
+ * ersten Boss, beim ersten Bossschaden, im ersten Flug-Shop, am ersten Lauf-Ende. Ein Eintrag ist eine
+ * Satzliste oder eine Funktion des Kontexts, den rl-start.js mitgibt (z. B. bossName, runden, ergebnis).
+ * Den geführten Teil (Sternkarte bis erster Shop) spricht RL_TXT_FUEHRUNG.
  */
 const RL_TXT_SEXTANT = {
   start: (k) => [
     'Willkommen an Bord. Ich bin V2-A2, dein Bordnavigator.',
     'Das hier ist der Raubzug: drei Planeten, ein eigenes Deck, ein Leben. Wer einen Kampf verliert, strandet.',
     k.wiederholung
-      ? 'Diesen Lauf führe ich dich Schritt für Schritt — mit dem Standarddeck, Stufe eins, ab dem Frostpfad.'
-      : 'Dein erster Lauf ist geführt — ich melde mich an den wichtigen Stellen. Such dir ein Deck aus, dann los.',
+      ? 'Ich fliege noch einmal mit: erst der Übungskampf, dann der erste Shop — danach bist du wieder allein am Steuer.'
+      : 'Beim ersten Mal fliege ich mit: Ich zeige dir den ersten Kampf und den ersten Shop. Drück auf »Raubzug beginnen«.',
   ],
-  karte: (k) => [
-    'Die Sternkarte. Sechs Planeten, drei davon besuchen wir — einen nach dem anderen.',
-    k.platz > 1
-      ? 'Von hier aus wählst du unter den Nachbarn, die noch frei sind. Zurück geht es nie — der Kurs ist verbindlich.'
-      : 'Platz eins ist dein Startort. Ab dem nächsten Planeten wählst du unter den Nachbarn, die noch frei sind. Jetzt: Landen.',
-  ],
-  planet: (k) => [
-    'Auf jedem Planeten warten drei Lakaien und der Boss. Der dritte Lakai ist eine Elite mit eigener Fähigkeit.',
-    `Lakaien darfst du überspringen: Der nächste Shop hat dann sicher etwas Gutes, aber der Boss bekommt ${k.schuld ?? 12} Leben mehr.`,
-    'Lies Verhalten und Privileg des Gegners. Ein Dieb mit fünf Handkarten spielt anders als ein Sammler.',
-  ],
-  kampfbeginn: (k) => [
-    'Jetzt spielst du mit deinem eigenen Deck. Die Mitte kommt aus dem Himmel-Stapel, der gehört niemandem.',
-    `${k.runden === 1 ? 'Eine Runde' : k.runden ? k.runden + ' Runden' : 'Eine Runde'} mit ${k.zuege ?? 9} Zügen. Wer am Ende mehr Punkte hat, gewinnt — Gleichstand reicht dir. Verlierst du, ist der Lauf vorbei.`,
-  ],
-  ersterKlau: (k) => [
-    `Geklaut! Das gibt Geld: ${k.proKarte === 1 || !k.proKarte ? 'eine Münze' : k.proKarte + ' Münzen'} je Karte. Damit kaufst du nach dem Kampf ein.`,
-  ],
-  ersteWertung: [
-    'Die erste Wertung. Jeder Sternbildtyp hat eine Stufe: Wer denselben Typ oft baut oder Stufen im Sternbilderpack kauft, bekommt bei jeder Wertung Punkte obendrauf.',
-  ],
-  umlaufbahn: [
-    'Die Umlaufbahn: vier Angebote. Der Stern zeigt die Größenklasse — grau ist häufig, grün, blau und lila werden seltener und stärker.',
-    'Neu würfeln kostet Geld und wird jedes Mal teurer. Unten liegen zwei Packs: Das Sternbilderpack deckt drei Sternbilder auf, eines steigt eine Stufe. Das Planetenpack bringt Karten, die es nur hier gibt.',
-    'Bei jedem Angebot steht ein Details-Knopf — dort ist genau erklärt, was die Karte tut.',
+  ernst: (k) => [
+    `Ab jetzt ist es ernst: ${k.runden === 1 || !k.runden ? 'eine Runde' : k.runden + ' Runden'} mit ${k.zuege ?? 9} Zügen, und der Lakai spielt wirklich mit.`,
+    'Wer am Ende mehr Punkte hat, gewinnt — Gleichstand reicht dir. Verlierst du, ist der Lauf vorbei.',
   ],
   vorBoss: (k) => [
     `${k.bossName ? k.bossName + '. ' : ''}Der Boss hat eine Lebensleiste — jede deiner Rundenwertungen ist Schaden.`,
-    `Er heilt sich, jeder auf seine Art. ${k.runden ? k.runden + ' Runden' : 'Fünf Runden'} hast du. Steht sein Leben dann nicht auf null, hat er gewonnen.`,
+    `Er heilt sich, jeder auf seine Art. ${k.runden ? k.runden + ' Runden' : 'Drei Runden'} hast du. Steht sein Leben dann nicht auf null, hat er gewonnen.`,
   ],
-  ersterSchaden: ['KLIRR — so geht das. Deine Wertung geht direkt von seinem Leben ab.'],
+  ersterSchaden: ['BUMM — so geht das. Deine Wertung geht direkt von seinem Leben ab.'],
   imflug: [
     'Im Flug: Kartenmarkt, Kosmisches Kabinett, ein Schiffsmodul und die Luftschleuse.',
     'In der Luftschleuse wirfst du bis zu drei Karten aus dem Deck — ein kleines Deck zieht öfter das Gute. Ein Riese macht eine Zahl dauerhaft stärker.',
@@ -9628,14 +9687,125 @@ const RL_TXT_SEXTANT = {
   ende: (k) => (k.ergebnis === 'SIEG'
     ? [
       'Raubzug gelungen. Der Boss hinterlässt dir sein Deck — beim nächsten Lauf wählbar.',
-      'Das war die Führung. Ab jetzt fliegst du allein — ich melde mich nur noch bei Neuem.',
+      'Drei Planeten, drei Bosse. Beim nächsten Mal wartet eine härtere Stufe auf dich.',
     ]
     : [
-      'Gestrandet. Dein Startort wandert zum nächsten Planeten — der nächste Lauf beginnt dort.',
-      'Das war die Führung. Du weißt jetzt alles, was zählt — ich melde mich nur noch bei Neuem.',
+      'Gestrandet. Das gehört dazu — jeder Raubzug ist ein neuer Versuch mit frischem Deck.',
+      'Dein Startort wandert zu diesem Planeten: Der nächste Lauf beginnt hier.',
     ]),
   ersteElite: 'Eine Elite. Die hat eine Fähigkeit, nicht nur ein Privileg — lies sie, bevor du kämpfst.',
   ersterBoss: 'Der Boss. Ab jetzt zählt jede Wertung als Schaden auf seine Leiste.',
+};
+
+/** „die 5", „die 5 und die 6", „die 5, die 6 und die 7" — Kartenwerte für die Ansagen des V2-A2. */
+function rlTxtWerteListe(werte) {
+  const w = (werte || []).map((x) => 'die ' + x);
+  if (w.length <= 1) return w.join('');
+  return w.slice(0, -1).join(', ') + ' und ' + w[w.length - 1];
+}
+
+/** „5 · 6 · 7" */
+function rlTxtWerteReihe(werte) {
+  return (werte || []).join(' · ');
+}
+
+/**
+ * Die Führung des Pflicht-Tutorials (Spieltest-Runde 3): Sternkarte, Planetenschirm, Übungskampf, erster Shop.
+ * Jeder Eintrag ist eine Satzliste oder eine Funktion des Kontexts. Die Kartenwerte der Kampf-Ansagen kommen
+ * aus dem Skript des Übungskampfes (rl-uebung.js: `k.hand`, `k.mitte`, `k.zielWerte`), Punkte, Geld und
+ * Preise aus dem laufenden Spiel — hier stehen keine Zahlen des Modus.
+ */
+const RL_TXT_FUEHRUNG = {
+  ebene: {
+    knopf: 'Raubzug beginnen',
+    hinweis: 'Dein erster Raubzug ist geführt: V2-A2 zeigt dir den ersten Kampf und den ersten Shop. Deck und Schwierigkeit wählst du danach selbst.',
+    wiederholen: 'Tutorial wiederholen',
+  },
+  gesperrt: 'Gleich — erst der Schritt, den V2-A2 gerade zeigt.',
+  ueberspringenGesperrt: 'Der Übungskampf lässt sich nicht überspringen.',
+  karte: (k) => [
+    'Die Sternkarte. Sechs Planeten, drei davon besuchen wir — einen nach dem anderen.',
+    `Platz eins ist dein Startort: ${k.planetName || 'der Frostpfad'}. Ab dem zweiten Planeten wählst du selbst unter den Nachbarn. Drück jetzt auf »Landen«.`,
+  ],
+  planet: (k) => [
+    'Auf jedem Planeten warten drei Lakaien und am Ende der Boss. Der dritte Lakai ist eine Elite mit eigener Fähigkeit.',
+    'Rechts steht dein erster Gegner. Sein Verhalten sagt, wie er spielt, sein Privileg ist seine Sonderregel — lies beides vor jedem Kampf.',
+    `Später darfst du Lakaien überspringen, dann bekommt der Boss ${k.schuld ?? 12} Leben mehr. Heute nicht: Der erste Kampf ist ein Übungskampf, verlieren kannst du ihn nicht. Drück auf »Kampf beginnen«.`,
+  ],
+  kampf: {
+    aufgabeKopf: (n, von) => `Aufgabe ${n} von ${von}: `,
+    bestaetigen: 'Passt genau — jetzt unten bestätigen.',
+    falscheKarte: 'Das gehört nicht zur Aufgabe — tipp es noch einmal an, dann ist es wieder abgewählt.',
+    abgelehnt: 'Das wäre im Spiel erlaubt — im Übungskampf geht es gerade nur um den einen Zug, den V2-A2 ansagt.',
+    nochmal: 'Noch mal erklären',
+    frei: 'Freier Zug: Spiel, was du für richtig hältst.',
+    bauen: {
+      vor: (k) => [
+        'Der Kampftisch. Unten liegt deine Hand — sie kommt aus deinem eigenen Deck. Die Karten in der Mitte gehören niemandem.',
+        `Dieser Kampf dauert eine Runde mit ${k.zuege ?? 4} Zügen. Wer danach mehr Punkte hat, gewinnt. Ich sage dir jeden Zug an — die Karten dafür leuchten.`,
+        `Bau einen Pfeil, das sind Zahlen in Folge: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann ${rlTxtWerteListe(k.mitte)} in der Mitte — und bestätige unten.`,
+      ],
+      aufgabe: (k) => `Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann ${rlTxtWerteListe(k.mitte)} in der Mitte. Danach unten bestätigen.`,
+      danach: (k) => [
+        `Dein erster Pfeil — ${k.punkte} Punkte. Gezählt wird aber erst am Ende der Runde, bis dahin muss er liegen bleiben. Jetzt ist der Lakai dran.`,
+      ],
+    },
+    klauen: {
+      vor: (k) => [
+        `Der Lakai hat auch einen Pfeil gelegt: ${rlTxtWerteReihe(k.zielWerte)}. Den holen wir uns — deshalb heißt das Spiel Sternenraub.`,
+        `Klauen geht so: mindestens ${k.minHand ?? 2} eigene Handkarten anlegen, und das Sternbild muss danach mehr wert sein. Tipp ${rlTxtWerteListe(k.hand)} an, dann seinen Pfeil — und bestätige.`,
+      ],
+      aufgabe: (k) => `Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann den Pfeil des Gegners. Danach unten bestätigen.`,
+      danach: (k) => [
+        `ZACK! Der ganze Pfeil gehört jetzt dir: ${k.karten} Karten, ${k.punkte} Punkte.`,
+        `Und Klauen bringt Geld: ${k.proKarte === 1 || !k.proKarte ? 'eine Münze' : k.proKarte + ' Münzen'} je geklauter Karte, das sind ${k.geld}. Dein Geld steht oben neben der Rundenanzeige — damit kaufst du nach dem Kampf ein.`,
+      ],
+    },
+    erweitern: {
+      vor: (k) => [
+        'Der Lakai zögert und tauscht nur eine Karte. Das machen Lakaien manchmal — nutz es aus.',
+        `Mach deinen ersten Pfeil größer: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann deinen Pfeil ${rlTxtWerteReihe(k.zielWerte)} — und bestätige. Mehr Karten, mehr Punkte.`,
+      ],
+      aufgabe: (k) => `Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann deinen Pfeil ${rlTxtWerteReihe(k.zielWerte)}. Danach unten bestätigen.`,
+      danach: (k) => [
+        `${k.karten} Karten, ${k.punkte} Punkte. Aber Vorsicht: Was offen vor dir liegt, kann dir der Gegner genauso klauen.`,
+      ],
+    },
+    versiegeln: {
+      vor: (k) => [
+        `Letzter Zug. Dein Pfeil ${rlTxtWerteReihe(k.zielWerte)} liegt offen — mit zwei passenden Karten wäre er weg. Der große Pfeil ist schon zu lang zum Klauen.`,
+        `Versiegeln macht ein Sternbild sicher: Niemand kann es klauen, keine kosmische Karte zerstört es. Dafür kostet es den ganzen Zug. Tipp deinen Pfeil ${rlTxtWerteReihe(k.zielWerte)} an und drück dann unten auf »Pfeil versiegeln«.`,
+      ],
+      aufgabe: (k) => `Tipp deinen Pfeil ${rlTxtWerteReihe(k.zielWerte)} an, dann unten auf »Pfeil versiegeln«.`,
+      danach: () => [
+        'Versiegelt — der Goldrand heißt: unantastbar. Der Lakai zieht noch einmal, dann wird gewertet.',
+      ],
+    },
+    wertung: (k) => [
+      `Die Wertung: Deine Sternbilder bringen ${k.ich} Punkte, der Lakai kommt auf ${k.gegner}${k.trost > 0 ? ` — ${k.trost} davon sind Trostpunkte für den geklauten Pfeil` : ''}. Gewonnen!`,
+      'Noch etwas: Jeder Sternbildtyp sammelt Stufen. Wer oft Pfeile spielt oder Stufen kauft, bekommt bei jeder Wertung Punkte obendrauf. Dazu gleich mehr im Shop.',
+    ],
+    sieg: (k) => [
+      `Sieg! Für jeden besiegten Lakaien gibt es eine Prämie${k.praemie > 0 ? ` — hier ${k.praemie} Münzen` : ''}. Jetzt geht es in den Shop.`,
+    ],
+  },
+  shop: {
+    geld: (k) => [`Die Umlaufbahn — nach jedem besiegten Lakaien wird eingekauft. Oben steht dein Geld: ${k.geld} Münzen.`],
+    angebote: () => ['Das sind die Angebote: Karten für dein Deck, kosmische Karten und Module fürs Schiff. Der farbige Rand zeigt die Seltenheit — grau ist häufig, dann grün, blau, lila.'],
+    details: () => 'Was ein Angebot genau tut, steht hinter »Details«. Tipp bei einer Kachel darauf.',
+    pack: (k) => `Gut. Unten liegen zwei Packs. Öffne das Sternbilderpack — es kostet ${k.preis} Münzen.`,
+    packZuTeuer: () => ['Für das Sternbilderpack reicht das Geld gerade nicht. Macht nichts — in jedem Shop liegt ein neues.'],
+    packwahl: (k) => `Drei Sternbilder liegen offen, eines davon steigt eine Stufe: Dieser Typ bringt dann bei jeder Wertung ${k.bonus} Punkte mehr. ${k.mitPfeil ? 'Pfeile hast du gerade gespielt, und auf dem Frostpfad zählen sie ohnehin mehr — aber nimm, was dir gefällt.' : 'Nimm den Typ, den du am ehesten bauen wirst.'}`,
+    kaufen: () => 'Jetzt ein Angebot von oben: Such dir eines aus, das du bezahlen kannst, und drück auf »Kaufen«.',
+    kaufenZuTeuer: () => ['Für ein Angebot reicht das Geld nicht mehr. Auch Sparen ist ein Plan.'],
+    rest: () => [
+      'Gekauft. Karten wandern in dein Deck — »Deck ansehen« zeigt dir alle. Module wirken ab sofort den ganzen Lauf.',
+      '»Neu würfeln« tauscht die Angebote gegen Geld. Das zweite Pack ist das Planetenpack: Karten, die es nur auf diesem Planeten gibt. Jedes Pack geht je Shop einmal auf.',
+    ],
+    ende: () => [
+      'Das war die Führung. Ab jetzt entscheidest du selbst: kaufen, sparen, weiterfliegen. Mit »Weiter« geht es zum nächsten Lakaien — ich melde mich nur noch, wenn etwas Neues kommt.',
+    ],
+  },
 };
 
 /** Feste Beschriftungen der Schirme und Knöpfe. */
@@ -9752,8 +9922,8 @@ const RL_TXT_SCHIRM = {
   luftschleuseErschoepft: 'erschöpft',
   luftschleuseMin: (n) => `Das Deck darf nicht kleiner als ${n} werden.`,
   luftschleuseText: 'Bis zu drei Karten antippen, dann aus dem Deck werfen.',
-  aufwertungText: (riese, ueberriese) => `Eine Zahlenkarte antippen: Riese ${riese} Geld, Überriese (nur auf einen Riesen) ${ueberriese} Geld.`,
-  aufwertungWahl: (name) => `Welche Karte soll ein ${name} werden?`,
+  aufwertungText: (riese, ueberriese) => `Eine Zahlenkarte dauerhaft stärker machen: Als Riese bringt sie in jedem Sternbild +2 Punkte je Wertung (${riese} Geld), als Überriese +4 (nur auf einen Riesen, ${ueberriese} Geld). Karte antippen, dann aufwerten.`,
+  aufwertungWahl: (name) => `Welche Karte soll ein ${name} werden? Tipp sie an — die Aufwertung bleibt den ganzen Lauf, die Karte trägt danach die Marke mit dem Bonus.`,
   aufwerten: 'Aufwerten',
   zumRiesen: 'Zum Riesen',
   zumUeberriesen: 'Zum Überriesen',
@@ -9769,6 +9939,20 @@ const RL_TXT_SCHIRM = {
   fertig: 'Fertig',
   // Deckansicht
   deinDeck: (n) => `Dein Deck · ${n} Karten`,
+  anBord: 'An Bord: Module und Vorrat',
+  anBordLeer: 'Noch nichts an Bord. Module wirken den ganzen Lauf, Vorräte einmal — beides gibt es in den Shops.',
+  modulDauerhaft: 'wirkt dauerhaft',
+  vorratEinmal: 'einmal einsetzbar',
+  besondereKarten: 'Besondere Karten in deinem Deck',
+  besonders: {
+    riese: (n) => `Riese: +${n} Punkte bei jeder Wertung, egal in welchem Sternbild (Marke „+${n}" auf der Karte).`,
+    ueberriese: (n) => `Überriese: +${n} Punkte bei jeder Wertung (Marke „+${n}").`,
+    leucht: (n) => `Leuchtkarte: +${n} Punkt bei jeder Wertung, solange sie in einem gültigen Sternbild liegt.`,
+    anker: 'Ankerkarte: Das Sternbild, in dem sie liegt, kann niemand klauen.',
+    spiegel: 'Spiegelkarte: auf der Hand drehbar — sie zeigt x oder 13 − x, das kostet keinen Zug.',
+    typbonus: 'Planetenkarte: Extrapunkte, wenn sie im passenden Sternbildtyp liegt (steht auf der Karte).',
+    sternschnuppe: 'Sternschnuppe: der Joker — vertritt jeden Wert.',
+  },
   zahlen: 'Zahlenkarten',
   kosmische: 'Kosmische Karten',
   leer: 'leer',
@@ -9876,7 +10060,7 @@ const RL_TXT_KAMPF = {
   punkteZeile: (du, gegner) => `Du ${du} Punkte · bester Gegner ${gegner} Punkte`,
   bossLebenZeile: (leben, max) => `Bossleben am Ende: ${leben} von ${max}`,
   geldZeile: (n) => `+${n} Geld in diesem Kampf`,
-  bossBonusZeile: (n) => `+${n} Geld Prämie (Sieg, Zinsmodul)`,
+  bossBonusZeile: (n, mitZins = false) => `+${n} Geld Siegprämie${mitZins ? ' (mit Zinsen aus dem Zinsmodul)' : ''}`,
   drachenklauHinweis: (opfer, n) => `Drachenklau möglich: ${opfer}s fertiger Sechser-Pfeil ergänzt deinen zum Drachen. Wähle mindestens ${n} ${n === 1 ? 'Handkarte' : 'Handkarten'} zum Abwerfen und tippe seinen Pfeil an.`,
   deckStapelTitel: 'Antippen: dein Deck ansehen — was noch im Stapel liegt, was auf der Hand ist und was schon gespielt wurde.',
   geldStand: (n) => `${n} Geld an Bord`,
@@ -9977,8 +10161,9 @@ const RL_TXT_REGELN = {
     { titel: 'Drachenklau', html:
       `<p>Liegt bei dir ein fertiger Sechser-Pfeil (1–6 oder 7–12) und bei einem Gegner das <b>unversiegelte Gegenstück</b>, darfst du es klauen:
       Wirf mindestens so viele Handkarten ab, wie du zum Klauen brauchst, und tippe seinen Pfeil an — beide Pfeile werden sofort zum
-      <b>Drachen</b> (${k.drache} Punkte). Der Bestohlene bekommt Trostpunkte, du das Geld für sechs geklaute Karten. Siegel, Anker, Nebel und
-      Privilegien wie beim Lotsen schützen davor. Die Gegner dürfen das auch — versiegle deinen Sechser-Pfeil, wenn du ihn behalten willst.</p>` },
+      <b>Drachen</b> (${k.drache} Punkte). Der Bestohlene bekommt Trostpunkte, du das Geld für sechs geklaute Karten. Davor schützen nur das
+      <b>Siegel</b>, eine Ankerkarte im Pfeil und Nebel — die Marke „nicht klaubar" und Privilegien wie die unklaubaren Pfeile des Lotsen
+      schützen <b>nicht</b>. Die Gegner dürfen das auch — versiegle deinen Sechser-Pfeil, wenn du ihn behalten willst.</p>` },
     { titel: 'Besondere Karten', html:
       `<ul>
         <li><b>Riese</b> +${k.riese}, <b>Überriese</b> +${k.ueberriese} Punkte je Wertung (Aufwertung einer Zahlenkarte; Überriese nur auf einen Riesen).</li>
@@ -10080,6 +10265,13 @@ function rlMarkeEl(art, text) {
   return m;
 }
 
+/**
+ * Merker der Bossleiste: welche Änderung (Schaden/Heilung) schon gezeigt wurde und seit wann. Der Tisch wird bei
+ * jedem Antippen neu gezeichnet — ohne den Merker lief die Schadens- und Heilungsanimation jedes Mal von vorn
+ * (Spieltest-Runde 3: „die Leiste flackert rot und grün").
+ */
+const rlBossLeisteMerker = { kennung: '', start: 0 };
+
 /** Die Bossleiste unter dem Gegnerkopf. */
 function rlBossLeisteEl(boss) {
   const max = Math.max(1, boss.lebenMax || 1);
@@ -10097,10 +10289,17 @@ function rlBossLeisteEl(boss) {
   balken.style.setProperty('--anteil', anteil.toFixed(4));
   wurzel.appendChild(balken);
 
-  // Was zuletzt passiert ist: das rote Stück, das abbricht, das grüne, das nachwächst.
+  // Was zuletzt passiert ist: das rote Stück, das abbricht, das grüne, das nachwächst — jede Änderung genau EINMAL
+  // animiert. Ein Neuzeichnen mitten in der Animation setzt sie an derselben Stelle fort (negative Verzögerung),
+  // danach bleibt vom Schaden nichts und von der Heilung das ruhige grüne Stück stehen.
   const a = boss.letzteAenderung || null;
-  if (a && a.schaden > 0) {
+  const kennung = [boss.key || '', boss.aenderungNr ?? '', a ? a.schaden : 0, a ? a.heilung : 0, leben].join(':');
+  const jetzt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  if (rlBossLeisteMerker.kennung !== kennung) { rlBossLeisteMerker.kennung = kennung; rlBossLeisteMerker.start = jetzt; }
+  const vergangen = Math.max(0, jetzt - rlBossLeisteMerker.start);
+  if (a && a.schaden > 0 && vergangen < 1000) {
     const st = el('div', 'leben-schaden');
+    st.style.animationDelay = Math.round(300 - vergangen) + 'ms';
     st.style.setProperty('--von', anteil.toFixed(4));
     st.style.setProperty('--bis', Math.min(1, anteil + a.schaden / max).toFixed(4));
     st.textContent = '−' + a.schaden;
@@ -10108,6 +10307,8 @@ function rlBossLeisteEl(boss) {
   }
   if (a && a.heilung > 0) {
     const he = el('div', 'leben-heilung');
+    if (vergangen < 500) he.style.animationDelay = Math.round(-vergangen) + 'ms';
+    else he.style.animation = 'none';
     he.style.setProperty('--von', Math.max(0, anteil - a.heilung / max).toFixed(4));
     he.style.setProperty('--bis', anteil.toFixed(4));
     he.textContent = '+' + a.heilung;
@@ -10684,7 +10885,9 @@ function zeichneIch(dom, s) {
 function zeichneTipps(dom, s) {
   leere(dom.tipps);
   if (!s.tipps.length) {
-    dom.tipps.appendChild(el('li', 'leer', s.z.amZug === s.menschIdx ? 'kein Zug möglich' : '…'));
+    // Roguelike: sind die Vorschläge nur zugeklappt, steht hier nicht „kein Zug möglich" (das stimmte dann nicht).
+    const zugeklappt = !!s.rl && (s.knoepfe || []).some((k) => k.text === 'Vorschläge');
+    dom.tipps.appendChild(el('li', 'leer', s.z.amZug === s.menschIdx ? (zugeklappt ? 'unten auf „Vorschläge" tippen' : 'kein Zug möglich') : '…'));
     return;
   }
   s.tipps.forEach((t, i) => {
@@ -11196,7 +11399,10 @@ const merkeName = (name) => schreib(SPEICHER_NAME, name);
  *   optional für den Roguelike-Modus „Raubzug":
  *   roguelike: { fortsetzen(), neu({deck, stufe}), tutorial() }, roguelikeRegeln() (optional, Regeltext des Modus),
  *   roguelikeStand() → { laufVorhanden, decks:[{key,name,text,frei,staerke?,schwaeche?}],
- *                        stufen:[1,2,3] (freigeschaltete), startortName, bestwerteHtml }
+ *                        stufen:[1,2,3] (freigeschaltete), startortName, bestwerteHtml,
+ *                        pflicht?, pflichtKnopf?, pflichtHinweis?, tutorialKnopf? }
+ *     pflicht = das Pflicht-Tutorial steht noch aus: der Knopf „Neuer Lauf" heißt dann `pflichtKnopf`
+ *     und startet den geführten Lauf, Deck-, Stufen- und Startortwahl bleiben versteckt.
  *   Fehlt `roguelike`, bleibt der Knopf im Menü versteckt. }
  */
 function baueStartschirm(rueckrufe) {
@@ -11274,6 +11480,25 @@ function baueStartschirm(rueckrufe) {
     const st = rlStand();
     const fortsetzen = document.getElementById('btn-rl-fortsetzen');
     if (fortsetzen) fortsetzen.hidden = !st.laufVorhanden;
+
+    // Pflicht-Tutorial: nur „Raubzug beginnen" und der Hinweis, die Wahl kommt nach dem geführten Lauf.
+    const pflicht = !!st.pflicht;
+    rlBereich.dataset.pflicht = pflicht ? '1' : '0';
+    const neuKnopf = document.getElementById('btn-rl-neu');
+    if (neuKnopf) {
+      if (!neuKnopf.dataset.text) neuKnopf.dataset.text = neuKnopf.textContent;
+      neuKnopf.textContent = pflicht && st.pflichtKnopf ? st.pflichtKnopf : neuKnopf.dataset.text;
+      neuKnopf.classList.toggle('haupt', pflicht && !st.laufVorhanden);
+    }
+    const pflichtHinweis = document.getElementById('rl-start-pflicht');
+    if (pflichtHinweis) { pflichtHinweis.hidden = !pflicht; pflichtHinweis.textContent = pflicht ? (st.pflichtHinweis || '') : ''; }
+    const wahlBereich = document.getElementById('rl-start-wahl');
+    if (wahlBereich) wahlBereich.hidden = pflicht;
+    const tutorialKnopf = document.getElementById('btn-rl-tutorial');
+    if (tutorialKnopf) {
+      tutorialKnopf.hidden = pflicht;
+      if (st.tutorialKnopf) tutorialKnopf.textContent = st.tutorialKnopf;
+    }
 
     const kacheln = document.getElementById('rl-deckwahl');
     if (kacheln) {
@@ -13269,9 +13494,9 @@ function rlKatalogBauen() {
   }
 
   // Aufwertungen und Sternwarte
-  lege({ key: 'riese', sorte: 'aufwertung', name: 'Riese', text: 'Eine Zahlenkarte deines Decks bringt zwei Punkte mehr je Wertung.',
+  lege({ key: 'riese', sorte: 'aufwertung', name: 'Riese', text: 'Du wählst eine Zahlenkarte deines Decks: Sie bringt ab dann zwei Punkte mehr je Wertung, den ganzen Lauf lang.',
     groesse: 3, preis: P.riese, effekt: 'riese' });
-  lege({ key: 'ueberriese', sorte: 'aufwertung', name: 'Überriese', text: 'Ein Riese wird zum Überriesen: vier Punkte mehr je Wertung.',
+  lege({ key: 'ueberriese', sorte: 'aufwertung', name: 'Überriese', text: 'Du wählst einen Riesen aus deinem Deck: Er bringt ab dann vier statt zwei Punkte mehr je Wertung.',
     groesse: 2, preis: P.ueberriese, effekt: 'ueberriese' });
   lege({ key: 'sternwarte', sorte: 'sternwarte', name: 'Sternwarte', text: 'Fünf zufällige Karten aufdecken, bis zu zwei davon nehmen.',
     groesse: 3, preis: P.sternwarte, effekt: 'sternwarte' });
@@ -13784,38 +14009,40 @@ function rlNachbarn(key) {
 
 /* ===== app\roguelike\rl-tutorial.js ===== */
 /**
- * Roguelike-Modus — V2-A2 und Tutorial (Spezifikation §5.3 „V2-A2", §5.6).
+ * Roguelike-Modus — V2-A2, das Pflicht-Tutorial und die einmaligen Hinweise (Spezifikation §5.3, §5.6,
+ * §15 „Spieltest-Runde 3").
  *
- * V2-A2 ist der Bordnavigator: eine Figur unten am Rand (#rl-figur) mit Sprechblase, die
- * ihren Text mit der Erzähler-Mechanik aus erzaehler.js tippt (eigene DOM-Zuordnung, Stimme
- * 650 Hz). Er wechselt die Pose (neutral, freut, warnt) und die Seite (links, rechts).
+ * V2-A2 ist der Bordnavigator: eine Figur unten am Rand (#rl-figur) mit Sprechblase, die ihren Text mit
+ * der Erzähler-Mechanik aus erzaehler.js tippt (eigene DOM-Zuordnung, Stimme 650 Hz). Er wechselt die
+ * Pose (neutral, freut, warnt) und die Seite (links, rechts).
  *
- * Zwei Arten von Blasen:
- *   - Tutorial-Punkte im geführten Lauf (`lauf.daten.tutorial`): ein bis drei Sätze, jeder mit
- *     „Weiter", der letzte mit „Alles klar". Elf Auslöser (§5.6) — jeder je Lauf genau einmal.
- *     Sätze stehen in einer Warteschlange: kommt ein zweiter Auslöser, während der erste noch
- *     steht, wartet er, bis der erste bestätigt ist. Kein Zugzwang: der Lauf läuft weiter.
- *   - Kurze Ein-Satz-Blasen ohne Knopf (4 s) für erstmalige Ereignisse außerhalb des
- *     Tutorials (erste Elite, erster Boss je Planet), im Profil gemerkt (`profil.hinweise`).
+ * Drei Aufgaben:
+ *   1. Die FÜHRUNG (RlFuehrung): Der erste Raubzug ist Pflicht-Tutorial. Von der Sternkarte bis zum Ende
+ *      des ersten Shops sagt V2-A2 jeden Schritt an, und nur der gezeigte Schritt ist bedienbar:
+ *        - Sternkarte und Planetenschirm: nur „Landen" bzw. „Kampf beginnen" (Überspringen ist gesperrt).
+ *        - Übungskampf (engine rl-uebung.js): vier Aufgaben — bauen, klauen, erweitern, versiegeln. Die Züge
+ *          sind auf den einen angesagten beschränkt, die Karten dazu leuchten, die Aufgabe steht in der
+ *          Fußleiste. Erklärungen nach dem eigenen Zug halten die Bots an, bis sie bestätigt sind.
+ *        - Erster Shop: Geld, Angebote, Details ansehen, Sternbilderpack öffnen und wählen, ein Angebot
+ *          kaufen, Rest erklären. Danach ist alles frei und das Profil merkt `tutorialGeschafft`.
+ *      Der Stand liegt im Lauf (`lauf.daten.fuehrung`), damit ein Reload an derselben Stelle weitermacht.
+ *   2. HINWEISE, die je Profil genau einmal kommen (RlTutorial): erster echter Kampf, vor dem ersten Boss,
+ *      erster Bossschaden, erster Flug-Shop, erstes Lauf-Ende. Kein Zugzwang — der Lauf läuft weiter.
+ *   3. Kurze Ein-Satz-Blasen ohne Knopf (4 s): erste Elite, erster Boss je Planet (`profil.hinweise`).
  *
- * Aufteilung:
- *   RlSextant    Figur + Blase (zeigen, weg, sag, erzaehle) — kennt keine Tutorial-Logik.
- *   RlTutorial   Schrittliste mit Auslöser-Schlüsseln, Merker der gezeigten Punkte, Warteschlange.
- *   rlTutorialHaken(lauf, profil, opt) → das Objekt, das rl-start.js an den elf Stellen ruft.
+ * Jede Blase löst ihre Promise auf — auch wenn sie von der nächsten abgelöst oder weggeräumt wird (false).
  *
  * Top-Level-Namen dieser Datei: RL_TUTORIAL_AUSLOESER, RL_TUTORIAL_KAMPF_AUSLOESER,
  *   RL_TUTORIAL_HINWEIS_DAUER, RL_TUTORIAL_STIMME, RL_TUTORIAL_POSE, RL_TUTORIAL_SEITE,
- *   RlSextant, RlTutorial, rlTutorialSaetze, rlTutorialSchritte, rlTutorialHaken.
+ *   RL_FUEHRUNG_SHOP_FOLGE, RL_FUEHRUNG_KAMPF_POSE,
+ *   RlSextant, RlTutorial, RlFuehrung, rlTutorialSaetze, rlTutorialSchritte, rlTutorialHaken.
  */
 
-/** Die elf Auslöser des geführten Laufs in der Reihenfolge, in der sie im Lauf vorkommen (§5.6). */
-const RL_TUTORIAL_AUSLOESER = [
-  'start', 'karte', 'planet', 'kampfbeginn', 'ersterKlau', 'ersteWertung',
-  'umlaufbahn', 'vorBoss', 'ersterSchaden', 'imflug', 'ende',
-];
+/** Die Auslöser außerhalb der Führung, in der Reihenfolge, in der sie zum ersten Mal vorkommen. */
+const RL_TUTORIAL_AUSLOESER = ['start', 'ernst', 'vorBoss', 'ersterSchaden', 'imflug', 'ende'];
 
-/** Hinweise aus dem Kampf (rl-kampf-ui `kontext.hinweis(key)`) → Tutorial-Auslöser. */
-const RL_TUTORIAL_KAMPF_AUSLOESER = { klau: 'ersterKlau', wertung: 'ersteWertung', bossSchaden: 'ersterSchaden' };
+/** Hinweise aus dem Kampf (rl-kampf-ui `kontext.hinweis(key)`) → Auslöser. */
+const RL_TUTORIAL_KAMPF_AUSLOESER = { bossSchaden: 'ersterSchaden' };
 
 /** Kurze Blasen ohne Knopf bleiben so lange stehen (Millisekunden). */
 const RL_TUTORIAL_HINWEIS_DAUER = 4000;
@@ -13823,19 +14050,16 @@ const RL_TUTORIAL_HINWEIS_DAUER = 4000;
 const RL_TUTORIAL_STIMME = 650;
 
 /** Pose je Auslöser; `ende` hängt vom Ergebnis ab (siehe rlTutorialSchritte). */
-const RL_TUTORIAL_POSE = {
-  start: 'freut', karte: 'neutral', planet: 'neutral', kampfbeginn: 'neutral', ersterKlau: 'freut',
-  ersteWertung: 'neutral', umlaufbahn: 'neutral', vorBoss: 'warnt', ersterSchaden: 'freut', imflug: 'neutral',
-};
+const RL_TUTORIAL_POSE = { start: 'freut', ernst: 'warnt', vorBoss: 'warnt', ersterSchaden: 'freut', imflug: 'neutral' };
 
-/**
- * Seite der Figur je Auslöser. Auf dem Planetenschirm steht der Planet links, im Kampf liegt
- * links unten die Hand — dort spricht V2-A2 von rechts (über dem Protokoll).
- */
-const RL_TUTORIAL_SEITE = {
-  planet: 'rechts', vorBoss: 'rechts', kampfbeginn: 'rechts', ersterKlau: 'rechts',
-  ersteWertung: 'rechts', ersterSchaden: 'rechts',
-};
+/** Seite der Figur je Auslöser: im Kampf liegt links unten die Hand — dort spricht V2-A2 von rechts. */
+const RL_TUTORIAL_SEITE = { ernst: 'rechts', ersterSchaden: 'rechts' };
+
+/** Die Schritte des geführten Shops in ihrer Reihenfolge (Stand in `lauf.daten.fuehrung.shop`). */
+const RL_FUEHRUNG_SHOP_FOLGE = ['geld', 'angebote', 'details', 'pack', 'packwahl', 'kaufen', 'rest', 'ende'];
+
+/** Pose des V2-A2 nach den vier Aufgaben des Übungskampfes. */
+const RL_FUEHRUNG_KAMPF_POSE = { bauen: 'freut', klauen: 'freut', erweitern: 'warnt', versiegeln: 'freut' };
 
 /* ------------------------------------------------------------------ */
 /*  Die Figur                                                           */
@@ -13857,6 +14081,7 @@ class RlSextant {
     this.timer = null;
     this.bilder = {};            // Pose → SVG-Text
     this.text = '';              // der zuletzt gesagte Satz (für Tests)
+    this.abbruch = null;         // löst den laufenden Satz mit false auf (Ablösung, weg)
     if (!figur) return;
     const rlDom = {
       erz: figur,
@@ -13872,6 +14097,9 @@ class RlSextant {
   /** Läuft nur mit vollständigem Markup. */
   get bereit() { return !!this.erz; }
 
+  /** Steht gerade eine Blase? */
+  get sichtbar() { return !!this.figur && !this.figur.hidden; }
+
   /** Figur zeigen, Pose und Seite setzen (Bild wird je Pose einmal gebaut). */
   zeigen(pose, seite) {
     const f = this.figur;
@@ -13885,40 +14113,68 @@ class RlSextant {
     f.hidden = false;
   }
 
+  /** Den laufenden Satz mit false auflösen (der Erzähler selbst lässt abgelöste Sätze offen). */
+  abbrechen() {
+    const f = this.abbruch;
+    this.abbruch = null;
+    if (f) f();
+  }
+
   /** Blase weg; ein laufender `sag` löst mit false auf. */
   weg() {
     clearTimeout(this.timer);
     this.timer = null;
     this.nr++;
+    this.abbrechen();
     if (this.erz) this.erz.verstecken();
-    if (this.figur) this.figur.hidden = true;
+    if (this.figur) { this.figur.hidden = true; delete this.figur.dataset.aufgabe; }
+  }
+
+  /** Kurzes Ruckeln der Blase: „das geht gerade nicht" (gesperrter Klick in der Führung). */
+  ruckeln() {
+    const f = this.figur;
+    if (!f || f.hidden) return;
+    f.classList.remove('ruckelt');
+    void f.offsetWidth;          // Animation neu anstoßen
+    f.classList.add('ruckelt');
+    setTimeout(() => f.classList.remove('ruckelt'), 450);
   }
 
   /**
-   * Ein Satz. Mit `opt.knopf` bleibt er stehen, bis der Knopf gedrückt ist; sonst verschwindet
-   * er nach `opt.dauer` Millisekunden. Ein neuer Satz löst den alten ab (der alte liefert false).
+   * Ein Satz. Mit `opt.knopf` bleibt er stehen, bis der Knopf gedrückt ist; mit `opt.bleibt` steht er ohne
+   * Knopf, bis ihn der nächste Satz ablöst (Aufgaben der Führung); sonst verschwindet er nach `opt.dauer`
+   * Millisekunden. Ein neuer Satz löst den alten ab (der alte liefert false).
    * `opt.offenLassen`: nach dem Knopf bleibt die Figur stehen (für den nächsten Satz).
-   * @returns {Promise<boolean>} true, wenn der Satz bis zum Ende stand
+   * @returns {Promise<boolean>} true, wenn der Satz bis zum Ende stand (bei `bleibt`: fertig getippt ist)
    */
-  async sag(text, opt = {}) {
-    if (!this.erz || !text) return false;
+  sag(text, opt = {}) {
+    if (!this.erz || !text) return Promise.resolve(false);
     clearTimeout(this.timer);
     const nr = ++this.nr;
+    this.abbrechen();
     this.text = text;
     this.zeigen(opt.pose, opt.seite);
+    if (opt.bleibt) this.figur.dataset.aufgabe = '1'; else delete this.figur.dataset.aufgabe;
     this.erz.knopfWeg();
-    await this.erz.sag(text);
-    if (nr !== this.nr) return false;
-    if (opt.knopf) {
-      await this.erz.warteAufWeiter(opt.knopf);
+    const abgeloest = new Promise((fertig) => { this.abbruch = () => fertig(false); });
+    const ablauf = (async () => {
+      await this.erz.sag(text);
       if (nr !== this.nr) return false;
-      if (!opt.offenLassen) this.weg();
+      if (opt.bleibt) return true;
+      if (opt.knopf) {
+        await this.erz.warteAufWeiter(opt.knopf);
+        if (nr !== this.nr) return false;
+        this.abbruch = null;         // der Satz stand bis zum Ende — das Wegräumen ist keine Ablösung
+        if (!opt.offenLassen) this.weg();
+        return true;
+      }
+      await new Promise((fertig) => { this.timer = setTimeout(fertig, opt.dauer || RL_TUTORIAL_HINWEIS_DAUER); });
+      if (nr !== this.nr) return false;
+      this.abbruch = null;
+      this.weg();
       return true;
-    }
-    await new Promise((fertig) => { this.timer = setTimeout(fertig, opt.dauer || RL_TUTORIAL_HINWEIS_DAUER); });
-    if (nr !== this.nr) return false;
-    this.weg();
-    return true;
+    })();
+    return Promise.race([ablauf, abgeloest]);
   }
 
   /** Mehrere Sätze nacheinander, jeder mit „Weiter", der letzte mit „Alles klar". */
@@ -13926,7 +14182,7 @@ class RlSextant {
     const liste = (Array.isArray(saetze) ? saetze : [saetze]).filter(Boolean);
     for (let i = 0; i < liste.length; i++) {
       const letzter = i === liste.length - 1;
-      const ok = await this.sag(liste[i], { ...opt, knopf: letzter ? RL_TXT_UI.allesKlar : RL_TXT_UI.weiter, offenLassen: !letzter });
+      const ok = await this.sag(liste[i], { ...opt, knopf: letzter ? (opt.schluss || RL_TXT_UI.allesKlar) : RL_TXT_UI.weiter, offenLassen: !letzter });
       if (!ok) return false;
     }
     return liste.length > 0;
@@ -13934,7 +14190,7 @@ class RlSextant {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Die Schritte                                                        */
+/*  Einmalige Hinweise                                                  */
 /* ------------------------------------------------------------------ */
 
 /** Sätze eines Schritts aus RL_TXT_SEXTANT: String, Liste oder Funktion des Kontexts. */
@@ -13959,61 +14215,542 @@ function rlTutorialSchritte(texte = RL_TXT_SEXTANT) {
 }
 
 /**
- * Das Tutorial eines Laufs: welche Punkte schon gezeigt wurden, und die Warteschlange, damit
- * sich zwei kurz nacheinander ausgelöste Punkte nicht gegenseitig abwürgen.
+ * Die einmaligen Hinweise: welche schon gezeigt wurden (je Profil über `gemerkt`/`merken`, dazu je Lauf),
+ * und die Warteschlange, damit sich zwei kurz nacheinander ausgelöste Punkte nicht gegenseitig abwürgen.
  */
 class RlTutorial {
   /**
    * @param {ReturnType<typeof rlTutorialSchritte>} schritte
-   * @param {{sextant:RlSextant, aktiv?:()=>boolean, beiEnde?:()=>void}} opt
-   *   aktiv:   ob der Lauf geführt ist (Standard: immer)
-   *   beiEnde: läuft, wenn der Punkt `ende` gezeigt wurde (Merker im Profil setzen)
+   * @param {{sextant:RlSextant, gesperrt?:()=>boolean, gemerkt?:(key:string)=>boolean, merken?:(key:string)=>void}} opt
+   *   gesperrt: solange true, kommt kein Hinweis (die Führung spricht selbst)
+   *   gemerkt/merken: der Profil-Merker („schon einmal gezeigt")
    */
   constructor(schritte, opt = {}) {
     this.schritte = new Map((schritte || rlTutorialSchritte()).map((s) => [s.key, s]));
     this.sextant = opt.sextant || null;
-    this.istAktiv = opt.aktiv || (() => true);
-    this.beiEnde = opt.beiEnde || null;
+    this.gesperrt = opt.gesperrt || (() => false);
+    this.gemerkt = opt.gemerkt || (() => false);
+    this.merken = opt.merken || (() => {});
     this.gezeigt = new Set();
     this.reihenfolge = [];       // die Auslöser in der Reihenfolge ihres Auftretens (für Tests)
     this.schlange = Promise.resolve();
     this.offen = 0;              // Punkte, die noch auf ihre Blase warten oder gerade stehen
   }
 
-  /** Einen Punkt als gezeigt vermerken, ohne ihn zu sprechen (z. B. „start" kam schon auf dem Startschirm). */
+  /** Einen Punkt als gezeigt vermerken, ohne ihn zu sprechen. */
   merke(ausloeser) {
     if (this.gezeigt.has(ausloeser)) return;
     this.gezeigt.add(ausloeser);
     this.reihenfolge.push(ausloeser);
   }
 
-  /** Ob der Punkt jetzt gezeigt würde (geführter Lauf, Auslöser bekannt, noch nicht gezeigt). */
-  faellig(ausloeser) {
-    return !!this.sextant && this.sextant.bereit && this.istAktiv() && this.schritte.has(ausloeser) && !this.gezeigt.has(ausloeser);
+  /** Ob der Punkt jetzt gezeigt würde (`erzwingen`: auch wenn das Profil ihn schon kennt). */
+  faellig(ausloeser, erzwingen = false) {
+    if (!this.sextant || !this.sextant.bereit || !this.schritte.has(ausloeser) || this.gezeigt.has(ausloeser)) return false;
+    if (erzwingen) return true;
+    return !this.gesperrt() && !this.gemerkt(ausloeser);
   }
 
   /**
-   * Einen Punkt auslösen. Liefert eine Promise, die auflöst, wenn die Blase bestätigt (true)
-   * oder abgelöst/übersprungen (false) wurde. Jeder Auslöser wirkt je Lauf einmal.
+   * Einen Punkt auslösen. Liefert eine Promise, die auflöst, wenn die Blase bestätigt (true) oder
+   * abgelöst/übersprungen (false) wurde. Jeder Auslöser wirkt je Profil einmal.
    * @param {string} ausloeser  einer aus RL_TUTORIAL_AUSLOESER
-   * @param {object} [kontext]  Werte für die Sätze (z. B. {bossName, ergebnis, schuld})
+   * @param {object} [kontext]  Werte für die Sätze (z. B. {bossName, ergebnis}); `kontext.erzwingen` zeigt ihn auf jeden Fall
    * @returns {Promise<boolean>}
    */
   sag(ausloeser, kontext = {}) {
-    if (!this.faellig(ausloeser)) return Promise.resolve(false);
+    if (!this.faellig(ausloeser, !!kontext.erzwingen)) return Promise.resolve(false);
     const schritt = this.schritte.get(ausloeser);
     this.gezeigt.add(ausloeser);
     this.reihenfolge.push(ausloeser);
+    this.merken(ausloeser);
     const saetze = schritt.saetze(kontext);
     if (!saetze.length) return Promise.resolve(false);
     this.offen++;
-    const lauf = this.schlange.then(async () => {
-      const ok = await this.sextant.erzaehle(saetze, { pose: schritt.pose(kontext), seite: schritt.seite });
-      if (ausloeser === 'ende' && this.beiEnde) this.beiEnde();
-      return ok;
-    }).catch(() => false);
+    const lauf = this.schlange.then(() => this.sextant.erzaehle(saetze, { pose: schritt.pose(kontext), seite: schritt.seite })).catch(() => false);
     this.schlange = lauf.then(() => { this.offen--; });
     return lauf;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Die Führung (Pflicht-Tutorial)                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Die Führung eines Laufs. rl-start.js ruft
+ *   `schirm(ansicht, kontext)` nach jedem Zeichnen von Sternkarte, Planetenschirm und Umlaufbahn,
+ *   `fuerKampf(kampf, uebung)` für den Übungskampf (liefert die Haken für rl-kampf-ui / start.js),
+ *   `kampfEnde(kontext)` neben dem Sieg-Fenster,
+ * und hängt `waechter` an den Klick-Verteiler der Schirme (rlSchirmKlick).
+ */
+class RlFuehrung {
+  /**
+   * @param {{lauf:object|null, sextant:RlSextant|null, wurzel:HTMLElement|null, speichern?:()=>void, beiFertig?:()=>void, neuZeichnen?:()=>void}} opt
+   *   wurzel: #rl-schirm · speichern: Lauf sichern · beiFertig: die Führung ist durch (Profil-Merker setzen)
+   *   neuZeichnen: den offenen Schirm neu zeichnen (nach dem Ende der Führung)
+   *   tischZeichnen: den Kampftisch neu zeichnen (nach einer Ansage im Übungskampf)
+   */
+  constructor(opt = {}) {
+    this.lauf = opt.lauf || null;
+    this.sextant = opt.sextant || null;
+    this.wurzel = opt.wurzel || null;
+    this.speichern = opt.speichern || (() => {});
+    this.beiFertig = opt.beiFertig || (() => {});
+    this.neuZeichnen = opt.neuZeichnen || (() => {});
+    this.tischZeichnen = opt.tischZeichnen || (() => {});
+    this.ansicht = '';
+    this.redet = null;            // Schlüssel der laufenden Erklärung (Reden-Schritt)
+    this.frei = null;             // (aktion, daten, el) => boolean — was gerade bedienbar ist; null = alles
+    this.ziel = null;             // CSS-Selektor des hervorgehobenen Ziels
+    this.seite = '';              // Seite, auf der V2-A2 im laufenden Schritt steht ('rechts' oder links)
+    this.detailsGesehen = false;  // das Details-Fenster war offen und ist wieder zu
+    this.detailsOffen = false;
+    this.beobachter = null;
+    this.gescrollt = '';          // Schritt, zu dessen Ziel schon gescrollt wurde
+    this.reihenfolge = [];        // gesprochene Schritte in ihrer Reihenfolge (für Tests)
+  }
+
+  /** Der gespeicherte Stand der Führung im Lauf. */
+  get stand() {
+    const d = this.lauf.daten;
+    if (!d.fuehrung || typeof d.fuehrung !== 'object') d.fuehrung = { gesagt: [], shop: null, fertig: false };
+    if (!Array.isArray(d.fuehrung.gesagt)) d.fuehrung.gesagt = [];
+    return d.fuehrung;
+  }
+
+  /** Läuft die Führung gerade (geführter Teil des Laufs, V2-A2 vorhanden)? */
+  aktiv() {
+    return !!this.lauf && !!this.sextant && this.sextant.bereit && typeof this.lauf.istGefuehrt === 'function' && this.lauf.istGefuehrt();
+  }
+
+  /* ---------------- Schirme: Sperre und Marken ---------------- */
+
+  /**
+   * Wächter für rlSchirmKlick: false = der Klick wird verschluckt (und V2-A2 ruckelt).
+   * Ohne aktive Führung ist alles erlaubt.
+   */
+  waechter(aktion, daten, el) {
+    if (!this.aktiv() || !this.frei) return true;
+    if (this.frei(aktion, daten || {}, el)) return true;
+    if (this.sextant) this.sextant.ruckeln();
+    return false;
+  }
+
+  /** Marken setzen: gesperrte Knöpfe abblenden, freie kennzeichnen, das Ziel pulsen lassen. */
+  markiere() {
+    const w = this.wurzel;
+    if (!w) return;
+    for (const e of w.querySelectorAll('.rl-tut-frei, .rl-tut-ziel')) e.classList.remove('rl-tut-frei', 'rl-tut-ziel');
+    if (!this.aktiv() || !this.frei) { delete w.dataset.fuehrung; return; }
+    w.dataset.fuehrung = this.ansicht;
+    for (const e of w.querySelectorAll('[data-rl]')) {
+      if (this.frei(e.dataset.rl, { ...e.dataset }, e)) e.classList.add('rl-tut-frei');
+      else if (!e.title) e.title = RL_TXT_FUEHRUNG.gesperrt;
+    }
+    if (this.ziel) {
+      const ziele = w.querySelectorAll(this.ziel);
+      for (const e of ziele) e.classList.add('rl-tut-ziel');
+      // Einmal je Schritt zum Ziel rollen — aber nur, wenn es außerhalb des Bildes liegt oder unter V2-A2
+      // verschwände (die Packs liegen unter dem Falz, die Figur steht unten in einer Ecke).
+      const marke = this.ansicht + ':' + (this.stand.shop || '') + ':' + this.ziel;
+      if (ziele.length && this.gescrollt !== marke && typeof ziele[0].scrollIntoView === 'function') {
+        this.gescrollt = marke;
+        const r = ziele[0].getBoundingClientRect();
+        const hoch = window.innerHeight || 0, breit = window.innerWidth || 0;
+        const rechts = this.seite === 'rechts';
+        const schmal = breit <= 720;
+        const unterFigur = r.bottom > hoch - 270 && (schmal || (rechts ? r.right > breit - 560 : r.left < 560));
+        // Nur so weit rollen wie nötig: das Ziel soll über der Blase bzw. im Bild stehen, der Kopf möglichst bleiben.
+        let dy = 0;
+        if (r.top < 8) dy = r.top - 24;
+        else if (unterFigur) dy = r.bottom - (hoch - 290);
+        else if (r.bottom > hoch - 8) dy = r.bottom - (hoch - 24);
+        if (dy) {
+          try { w.scrollBy({ top: dy, behavior: 'smooth' }); } catch { w.scrollTop += dy; }
+        }
+      }
+    }
+  }
+
+  /** Alles freigeben (Führung zu Ende oder nie aktiv). */
+  freigeben() {
+    this.frei = null;
+    this.ziel = null;
+    this.redet = null;
+    if (this.beobachter) { this.beobachter.disconnect(); this.beobachter = null; }
+    if (this.wurzel) {
+      delete this.wurzel.dataset.fuehrung;
+      for (const e of this.wurzel.querySelectorAll('.rl-tut-frei, .rl-tut-ziel')) e.classList.remove('rl-tut-frei', 'rl-tut-ziel');
+    }
+  }
+
+  /** Sätze sprechen (mit Weiter / Alles klar). Liefert true, wenn bis zum Ende bestätigt. */
+  sprich(key, saetze, opt = {}) {
+    if (!this.sextant || !this.sextant.bereit) return Promise.resolve(false);
+    this.reihenfolge.push(key);
+    return this.sextant.erzaehle(saetze, opt);
+  }
+
+  /**
+   * Nach jedem Zeichnen eines Schirms. `kontext` trägt, was die Sätze brauchen (planetName, schuld …).
+   * @param {'karte'|'planet'|'umlaufbahn'|string} ansicht
+   */
+  schirm(ansicht, kontext = {}) {
+    this.ansicht = ansicht;
+    if (!this.aktiv()) { this.freigeben(); return; }
+    if (ansicht === 'karte') {
+      this.redeAufSchirm('karte', RL_TXT_FUEHRUNG.karte(kontext), { frei: (a) => a === 'landen' || a === 'kurs', ziel: '[data-rl="landen"]' });
+    } else if (ansicht === 'planet') {
+      this.redeAufSchirm('planet', RL_TXT_FUEHRUNG.planet(kontext), { frei: (a) => a === 'kampf' || a === 'deck', ziel: '[data-rl="kampf"]' });
+      for (const e of this.wurzel ? this.wurzel.querySelectorAll('[data-rl="ueberspringen"], [data-rl="notruf"]') : []) {
+        e.disabled = true;
+        e.title = RL_TXT_FUEHRUNG.ueberspringenGesperrt;
+      }
+    } else if (ansicht === 'umlaufbahn') {
+      this.shopWeiter();
+    } else {
+      this.freigeben();
+    }
+  }
+
+  /** Sternkarte und Planetenschirm: einmal erklären, dabei ist nur der Weg nach vorn bedienbar. */
+  redeAufSchirm(key, saetze, opt) {
+    this.frei = opt.frei;
+    this.ziel = opt.ziel;
+    this.seite = '';
+    this.markiere();
+    const stand = this.stand;
+    if (stand.gesagt.includes(key) || this.redet === key) return;
+    this.redet = key;
+    this.sprich(key, saetze, { pose: 'neutral' }).then((ok) => {
+      if (this.redet === key) this.redet = null;
+      if (!ok) return;
+      if (!stand.gesagt.includes(key)) stand.gesagt.push(key);
+      this.speichern();
+    });
+  }
+
+  /* ---------------- Der erste Shop ---------------- */
+
+  /** Die Schritte des Shops: Art, Sätze, was bedienbar ist, wann eine Aufgabe erfüllt ist. */
+  shopSchritte() {
+    const lauf = this.lauf;
+    const T = RL_TXT_FUEHRUNG.shop;
+    const shop = () => lauf.daten.shop || {};
+    const pack = () => (shop().packs || {}).sternbilder || null;
+    const geld = () => lauf.daten.geld;
+    const gekauft = () => (shop().angebote || []).some((a) => a.gekauft);
+    const kaufbar = () => (shop().angebote || []).some((a) => !a.gekauft && a.preis <= geld());
+    const nichts = () => false;
+    return {
+      geld: { art: 'reden', saetze: () => T.geld({ geld: geld() }), frei: nichts, ziel: '.rl-geld', seite: 'rechts' },
+      angebote: { art: 'reden', saetze: () => T.angebote(), frei: nichts, ziel: '.rl-shop-kacheln', seite: 'rechts' },
+      details: {
+        art: 'aufgabe', satz: () => T.details(), seite: 'rechts',
+        frei: (a, dat, el) => a === 'details' && !!(el && el.closest && el.closest('.rl-angebot-kachel')),
+        ziel: '.rl-angebot-kachel [data-rl="details"]',
+        fertig: () => this.detailsGesehen,
+      },
+      pack: {
+        art: 'aufgabe', satz: () => T.pack({ preis: pack() ? pack().preis : 0 }), seite: 'rechts',
+        frei: (a, dat) => (a === 'pack-oeffnen' && dat.pack === 'sternbilder') || a === 'details',
+        ziel: '.rl-pack[data-pack="sternbilder"] [data-rl="pack-oeffnen"]',
+        fertig: () => !pack() || pack().zustand !== 'zu',
+        ersatz: () => (pack() && pack().zustand === 'zu' && geld() < pack().preis ? T.packZuTeuer() : null),
+      },
+      packwahl: {
+        art: 'aufgabe', seite: 'rechts',
+        satz: () => T.packwahl({ bonus: RL_KONFIG.stufen.bonusProStufe, mitPfeil: !!pack() && (pack().karten || []).some((k) => k.typ === 'PFEIL') }),
+        frei: (a, dat) => (a === 'pack-nehmen' && dat.pack === 'sternbilder') || a === 'details',
+        ziel: '.rl-pack[data-pack="sternbilder"] [data-rl="pack-nehmen"]',
+        fertig: () => !pack() || pack().zustand !== 'offen',
+      },
+      kaufen: {
+        art: 'aufgabe', satz: () => T.kaufen(), seite: 'rechts',
+        frei: (a) => a === 'kaufen' || a === 'aufwertung-ziel' || a === 'wahl-zu' || a === 'details',
+        ziel: '.rl-angebot-kachel:not(.gekauft) [data-rl="kaufen"]:not(:disabled)',
+        fertig: () => gekauft(),
+        ersatz: () => (!gekauft() && !kaufbar() ? T.kaufenZuTeuer() : null),
+      },
+      rest: { art: 'reden', saetze: () => T.rest(), frei: (a) => a === 'deck' || a === 'details', ziel: '[data-rl="deck"], [data-rl="reroll"], .rl-pack[data-pack="planet"]' },
+      ende: { art: 'reden', saetze: () => T.ende(), frei: (a) => a === 'deck' || a === 'details', ziel: '[data-rl="weiter"]', pose: 'freut' },
+    };
+  }
+
+  /** Den Shop-Stand einen Schritt weiterstellen (oder abschließen). */
+  shopNaechster(key) {
+    const i = RL_FUEHRUNG_SHOP_FOLGE.indexOf(key);
+    const naechster = RL_FUEHRUNG_SHOP_FOLGE[i + 1] || null;
+    const stand = this.stand;
+    if (naechster) {
+      stand.shop = naechster;
+      this.speichern();
+      this.shopWeiter();
+      return;
+    }
+    this.abschliessen();
+  }
+
+  /** Die Führung ist durch: Stand merken, alles freigeben, Profil benachrichtigen. */
+  abschliessen() {
+    const stand = this.stand;
+    if (stand.fertig) return;
+    stand.shop = 'fertig';
+    stand.fertig = true;
+    this.speichern();
+    this.freigeben();
+    this.beiFertig();
+    this.neuZeichnen();          // der Schirm verliert Sperren und Hinweistitel
+  }
+
+  /** Das Details-Fenster beobachten: solange es offen ist, schweigt V2-A2; nach dem Schließen geht es weiter. */
+  beobachteDetails() {
+    const w = this.wurzel;
+    if (!w || this.beobachter || typeof MutationObserver === 'undefined') return;
+    this.beobachter = new MutationObserver(() => {
+      const offen = !!w.querySelector(':scope > .rl-ebene[data-ebene="details"]');
+      if (offen && !this.detailsOffen) {
+        this.detailsOffen = true;
+        if (this.sextant && !this.redet) this.sextant.weg();
+      } else if (!offen && this.detailsOffen) {
+        this.detailsOffen = false;
+        this.detailsGesehen = true;
+        if (this.aktiv() && this.ansicht === 'umlaufbahn') this.shopWeiter();
+      }
+    });
+    this.beobachter.observe(w, { childList: true });
+  }
+
+  /** Den laufenden Shop-Schritt zeigen — nach jedem Zeichnen und nach jedem erledigten Schritt. */
+  shopWeiter() {
+    if (!this.aktiv()) { this.freigeben(); return; }
+    const stand = this.stand;
+    if (stand.fertig) { this.freigeben(); return; }
+    if (!stand.shop || !RL_FUEHRUNG_SHOP_FOLGE.includes(stand.shop)) stand.shop = RL_FUEHRUNG_SHOP_FOLGE[0];
+    this.beobachteDetails();
+    const schritte = this.shopSchritte();
+    const key = stand.shop;
+    const s = schritte[key];
+
+    if (s.art === 'aufgabe') {
+      if (s.fertig()) { this.shopNaechster(key); return; }
+      const ersatz = s.ersatz ? s.ersatz() : null;
+      if (ersatz) {
+        // Die Aufgabe geht nicht (Geld fehlt): kurz sagen, dann weiter.
+        this.frei = () => false;
+        this.ziel = null;
+        this.markiere();
+        if (this.redet === key) return;
+        this.redet = key;
+        this.sprich(key + ':ersatz', ersatz, { pose: 'neutral', seite: s.seite }).then((ok) => {
+          if (this.redet === key) this.redet = null;
+          if (ok) this.shopNaechster(key);
+        });
+        return;
+      }
+      this.frei = s.frei;
+      this.ziel = s.ziel;
+      this.seite = s.seite || '';
+      this.markiere();
+      if (this.detailsOffen) return;                  // erst wieder reden, wenn das Fenster zu ist
+      const text = s.satz();
+      if (this.sextant.sichtbar && this.sextant.text === text) return;
+      this.reihenfolge.push(key);
+      this.sextant.sag(text, { bleibt: true, pose: 'neutral', seite: s.seite });
+      return;
+    }
+
+    // Reden-Schritt: erklären, dabei ist (fast) nichts bedienbar; nach „Alles klar" der nächste Schritt.
+    this.frei = s.frei;
+    this.ziel = s.ziel;
+    this.seite = s.seite || '';
+    this.markiere();
+    if (this.redet === key) return;
+    this.redet = key;
+    this.sprich(key, s.saetze(), { pose: s.pose || 'neutral', seite: s.seite, schluss: key === 'ende' ? RL_TXT_UI.allesKlar : RL_TXT_UI.weiter }).then((ok) => {
+      if (this.redet === key) this.redet = null;
+      if (ok) this.shopNaechster(key);
+    });
+  }
+
+  /* ---------------- Der Übungskampf ---------------- */
+
+  /**
+   * Die Haken für den Übungskampf (rl-kampf-ui reicht sie an start.js durch).
+   * @param {object} kampf   RlKampf (uebung: true)
+   * @param {object} uebung  RlUebung
+   */
+  fuerKampf(kampf, uebung) {
+    const T = RL_TXT_FUEHRUNG.kampf;
+    const fuehrung = this;
+    const spiel = kampf.spiel;
+    const m = kampf.menschIdx;
+    const schritte = uebung.schritte();
+    const st = { angesagt: -1, kommentiert: -1, wertung: false };
+    const sortiert = (werte) => [...werte].sort((a, b) => a - b);
+
+    /** Das eigene Sternbild mit genau diesen Werten (nach einem Schritt: das Ergebnis). */
+    const eigenesSb = (werte) => {
+      const soll = sortiert(werte).join(',');
+      return spiel.spieler[m].sternbilder.find((sb) => sortiert(sb.karten.map((k) => k.wert)).join(',') === soll) || null;
+    };
+    const kontextFuer = (schritt, nachher) => {
+      const mu = schritt.muster;
+      const k = {
+        hand: mu.hand || [], mitte: mu.mitte || [], zielWerte: mu.zielWerte || [],
+        zuege: kampf.zuegeJeRunde, minHand: CONFIG.zug.klauenMinHandkarten,
+        proKarte: RL_KONFIG.geld.proGeklauterKarte, geld: kampf.geldZuwachs,
+      };
+      if (nachher) {
+        const sb = eigenesSb([...(mu.zielWerte || []), ...(mu.hand || []), ...(mu.mitte || [])]);
+        k.karten = sb ? sb.karten.length : 0;
+        k.punkte = sb ? spiel.punkteVon(sb, m) : 0;
+      }
+      return k;
+    };
+    const ansage = (i) => {
+      const schritt = schritte[i];
+      if (!schritt || !T[schritt.key]) return Promise.resolve(false);
+      // Nach der Ansage den Tisch neu zeichnen: dann steht „Noch mal erklären" in der Fußleiste.
+      return fuehrung.sprich('kampf:' + schritt.key, T[schritt.key].vor(kontextFuer(schritt, false)), { pose: 'neutral', seite: 'rechts' })
+        .then((ok) => { if (ok) fuehrung.tischZeichnen(); return ok; });
+    };
+
+    return {
+      uebung,
+      zustand: st,
+
+      /** Nur der angesagte Zug bleibt übrig — solange der Aufbau intakt ist. */
+      optionenFiltern(optionen) {
+        const a = uebung.erlaubteAktion(optionen.aktionen);
+        if (!a) return optionen;
+        return { ...optionen, aktionen: [a], kosmische: [], nova: [], jokerTausch: [], versiegelnFrei: [], spiegel: [] };
+      },
+
+      nurGefuehrt() { return !!uebung.schritt() && uebung.intakt; },
+
+      abgelehntText() { return this.nurGefuehrt() ? T.abgelehnt : ''; },
+
+      /**
+       * Vor jedem Weiterlaufen der Tisch-Schleife: nach dem eigenen Zug die Erklärung (hält die Bots an, bis
+       * sie bestätigt ist), vor dem eigenen Zug die Ansage (hält nichts an — wer zieht, löst sie ab).
+       */
+      warteVorWeiter(ablauf) {
+        if (!uebung.intakt) return null;
+        const n = uebung.schrittNr();
+        if (n > 0 && st.kommentiert < n - 1) {
+          st.kommentiert = n - 1;
+          const schritt = schritte[n - 1];
+          if (schritt && T[schritt.key]) {
+            return fuehrung.sprich('kampf:' + schritt.key + ':danach', T[schritt.key].danach(kontextFuer(schritt, true)),
+              { pose: RL_FUEHRUNG_KAMPF_POSE[schritt.key] || 'neutral', seite: 'rechts', schluss: RL_TXT_UI.weiter });
+          }
+        }
+        if (ablauf.istMensch() && st.angesagt < n && schritte[n]) {
+          st.angesagt = n;
+          ansage(n);
+        }
+        return null;
+      },
+
+      /** Die Aufgabe in die Fußleiste, die Ziele ins Sichtmodell, den richtigen Knopf hervorheben. */
+      sichtErweitern(s) {
+        const schritt = uebung.schritt();
+        if (!s.dranMensch || !schritt || !uebung.intakt) return;
+        const z = uebung.ziele();
+        if (!z) return;
+        const hand = s.z.spieler[m].hand || [];
+        const wertVon = (liste, id) => { const k = liste.find((x) => x.id === id); return k ? k.wert : null; };
+        const sollHand = z.hand.map((id) => wertVon(hand, id));
+        const sollMitte = z.mitte.map((id) => wertVon(s.z.mitte, id));
+        const passtZu = (soll, ids, liste) => {
+          const rest = [...soll];
+          for (const id of ids) {
+            const i = rest.indexOf(wertVon(liste, id));
+            if (i < 0) return false;
+            rest.splice(i, 1);
+          }
+          return true;
+        };
+        let zielSb = null;
+        for (const [sbId, v] of s.zieleSb) if (v && v.art === 'ZIEL') zielSb = sbId;
+        const falsch = !passtZu(sollHand, s.auswahlHand, hand) || !passtZu(sollMitte, s.auswahlMitte, s.z.mitte)
+          || (zielSb != null && zielSb !== z.sbId);
+        const gewaehlt = s.auswahlHand.size + s.auswahlMitte.size > 0 || zielSb != null;
+        const fertigGewaehlt = gewaehlt && !falsch && !s.hinweisIstFehler;
+        s.rlFuehrung = { ...z, sollHand, sollMitte, fertigGewaehlt };
+        if (falsch) {
+          s.hinweis = T.falscheKarte;
+          s.hinweisIstFehler = true;
+        } else if (fertigGewaehlt) {
+          // Die Prüfung des Tisches sagt schon, was herauskommt („Das geht: … Unten bestätigen.").
+        } else {
+          s.hinweis = T.aufgabeKopf(uebung.schrittNr() + 1, schritte.length) + T[schritt.key].aufgabe(kontextFuer(schritt, false));
+          s.hinweisIstFehler = false;
+        }
+        // Der Knopf, um den es geht, pulst: „… versiegeln" bzw. der Bestätigen-Knopf bei passender Auswahl.
+        for (const k of s.knoepfe || []) {
+          const istZiel = z.knopf === 'VERSIEGELN' ? /versiegeln/i.test(k.text || '') : (fertigGewaehlt && /haupt/.test(k.klasse || '') && !k.aus);
+          if (istZiel) k.klasse = ((k.klasse || '') + ' rl-tut-ziel').trim();
+        }
+      },
+
+      /** Nach dem Zeichnen: die anzutippenden Karten und das Ziel-Sternbild leuchten, bis sie gewählt sind. */
+      nachZeichnen(s, dom) {
+        const z = s.rlFuehrung;
+        if (!z) return;
+        const hand = s.z.spieler[m].hand || [];
+        const markiere = (bereich, liste, soll, auswahl) => {
+          if (!bereich) return;
+          const rest = [...soll];
+          for (const id of auswahl) {             // schon Gewähltes abziehen
+            const k = liste.find((x) => x.id === id);
+            const i = k ? rest.indexOf(k.wert) : -1;
+            if (i >= 0) rest.splice(i, 1);
+          }
+          for (const k of liste) {
+            if (auswahl.has(k.id)) continue;
+            const i = rest.indexOf(k.wert);
+            if (i < 0) continue;
+            rest.splice(i, 1);
+            const e = bereich.querySelector('.karte[data-id="' + k.id + '"]');
+            if (e) e.classList.add('rl-tut-ziel');
+          }
+        };
+        markiere(dom.meineHand, hand, z.sollHand, s.auswahlHand);
+        markiere(dom.mitteKarten, s.z.mitte, z.sollMitte, s.auswahlMitte);
+        if (z.sbId != null) {
+          let gewaehlt = false;
+          for (const [sbId, v] of s.zieleSb) if (v && v.art === 'ZIEL' && sbId === z.sbId) gewaehlt = true;
+          const e = document.querySelector('.sternbild[data-sb="' + z.sbId + '"]');
+          if (e && !gewaehlt) e.classList.add('rl-tut-ziel');
+        }
+      },
+
+      /** Knopf „Noch mal erklären" in der Fußleiste, solange eine Aufgabe läuft und V2-A2 schweigt. */
+      knoepfe(s) {
+        if (!s.dranMensch || !this.nurGefuehrt() || fuehrung.sextant.sichtbar) return [];
+        return [{ text: T.nochmal, klasse: '', tun: () => { ansage(uebung.schrittNr()); } }];
+      },
+
+      /** Neben dem Rundenende-Fenster: die Wertung erklären (einmal). */
+      wertung() {
+        if (st.wertung) return;
+        st.wertung = true;
+        const punkte = spiel.spieler.map((sp) => sp.punkte);
+        const g = uebung.gegnerIdx;
+        const runde = spiel.rundenPunkte[spiel.rundenPunkte.length - 1] || [];
+        fuehrung.sprich('kampf:wertung', T.wertung({ ich: punkte[m], gegner: punkte[g], trost: Math.max(0, punkte[g] - (runde[g] || 0)) }),
+          { pose: 'freut', seite: 'rechts' });
+      },
+    };
+  }
+
+  /** Neben dem Sieg-Fenster des Übungskampfes. */
+  kampfEnde(kontext = {}) {
+    if (!this.lauf || !this.lauf.daten.tutorial) return Promise.resolve(false);
+    return this.sprich('kampf:sieg', RL_TXT_FUEHRUNG.kampf.sieg(kontext), { pose: 'freut', seite: 'rechts' });
   }
 }
 
@@ -14022,13 +14759,14 @@ class RlTutorial {
 /* ------------------------------------------------------------------ */
 
 /**
- * Das Objekt, das rl-start.js an den elf Stellen ruft.
+ * Das Objekt, das rl-start.js an den Stellen des Laufs ruft.
  *
- * @param {object|null} lauf    RlLauf (null vor dem ersten Lauf — dann zählt das Profil)
- * @param {object} profil       Profil (tutorialGesehen, hinweise)
- * @param {{sextant:RlSextant, profilSpeichern?:(profil:object)=>void}} opt
+ * @param {object|null} lauf    RlLauf (null vor dem ersten Lauf)
+ * @param {object} profil       Profil (tutorialGesehen, tutorialGeschafft, hinweise)
+ * @param {{sextant:RlSextant, wurzel?:HTMLElement, profilSpeichern?:(profil:object)=>void, laufSpeichern?:()=>void}} opt
  * @returns {{
  *   tutorial: RlTutorial,
+ *   fuehrung: RlFuehrung,
  *   aktiv: () => boolean,
  *   sag: (ausloeser:string, kontext?:object) => Promise<boolean>,
  *   hinweis: (key:string) => Promise<boolean>,
@@ -14040,36 +14778,61 @@ class RlTutorial {
 function rlTutorialHaken(lauf, profil, opt = {}) {
   const sextant = opt.sextant || null;
   const speichern = opt.profilSpeichern || (() => {});
-  // Geführt ist der Lauf, der es sagt; vor dem ersten Lauf zählt der Profil-Merker (Punkt 1).
-  const aktiv = () => (lauf ? !!lauf.daten.tutorial : !!profil && !profil.tutorialGesehen);
+  const hinweise = () => {
+    if (!profil) return { ersteElite: false, bosse: [], gezeigt: [] };
+    if (!profil.hinweise || typeof profil.hinweise !== 'object') profil.hinweise = { ersteElite: false, bosse: [], gezeigt: [] };
+    if (!Array.isArray(profil.hinweise.bosse)) profil.hinweise.bosse = [];
+    if (!Array.isArray(profil.hinweise.gezeigt)) profil.hinweise.gezeigt = [];
+    return profil.hinweise;
+  };
+
+  const fuehrung = new RlFuehrung({
+    lauf, sextant, wurzel: opt.wurzel || null,
+    speichern: opt.laufSpeichern || (() => {}),
+    neuZeichnen: opt.neuZeichnen || (() => {}),
+    tischZeichnen: opt.tischZeichnen || (() => {}),
+    beiFertig: () => {
+      if (profil && !profil.tutorialGeschafft) { profil.tutorialGeschafft = true; profil.tutorialGesehen = true; speichern(profil); }
+    },
+  });
+  // Geführt ist der Teil des Laufs, den die Führung spricht — dort schweigen die einmaligen Hinweise.
+  const aktiv = () => fuehrung.aktiv();
   const tutorial = new RlTutorial(rlTutorialSchritte(), {
     sextant,
-    aktiv,
-    beiEnde: () => {
-      if (profil && !profil.tutorialGesehen) { profil.tutorialGesehen = true; speichern(profil); }
+    gesperrt: aktiv,
+    gemerkt: (key) => hinweise().gezeigt.includes(key),
+    merken: (key) => {
+      if (!profil) return;
+      const h = hinweise();
+      if (!h.gezeigt.includes(key)) { h.gezeigt.push(key); speichern(profil); }
     },
   });
 
-  /** Erstmalige Ereignisse im normalen Lauf (§5.6): ein Satz, ohne Knopf, im Profil gemerkt. */
+  /** Erstmalige Ereignisse (§5.6): ein Satz, ohne Knopf, im Profil gemerkt. */
   const erstesMal = (key, planet) => {
     if (!sextant || !sextant.bereit || !profil) return Promise.resolve(false);
-    if (aktiv()) return Promise.resolve(false);          // im Tutorial erklärt das der Punkt selbst
-    if (!profil.hinweise) profil.hinweise = { ersteElite: false, bosse: [] };
+    if (aktiv()) return Promise.resolve(false);
+    const h = hinweise();
     let text = null;
-    if (key === 'elite' && !profil.hinweise.ersteElite) {
-      profil.hinweise.ersteElite = true;
+    let geaendert = false;
+    if (key === 'elite' && !h.ersteElite) {
+      h.ersteElite = true;
+      geaendert = true;
       text = RL_TXT_SEXTANT.ersteElite;
-    } else if (key === 'boss' && planet && !profil.hinweise.bosse.includes(planet)) {
-      profil.hinweise.bosse.push(planet);
-      text = RL_TXT_SEXTANT.ersterBoss;
+    } else if (key === 'boss' && planet && !h.bosse.includes(planet)) {
+      h.bosse.push(planet);
+      geaendert = true;
+      // Kam gerade erst die lange Boss-Erklärung (Planetenschirm), wäre der Satz doppelt.
+      if (!tutorial.gezeigt.has('vorBoss')) text = RL_TXT_SEXTANT.ersterBoss;
     }
+    if (geaendert) speichern(profil);
     if (!text) return Promise.resolve(false);
-    speichern(profil);
     return sextant.sag(text, { pose: key === 'boss' ? 'warnt' : 'neutral', seite: 'rechts' });
   };
 
   return {
     tutorial,
+    fuehrung,
     aktiv,
     sag: (ausloeser, kontext) => tutorial.sag(ausloeser, kontext),
     hinweis: (key) => tutorial.sag(RL_TUTORIAL_KAMPF_AUSLOESER[key] || key),
@@ -14175,6 +14938,8 @@ function rlSchirmKlick(wurzel, tabelle) {
     const tun = tabelle[ziel.dataset.rl];
     if (typeof tun !== 'function') return;
     ev.preventDefault();
+    // Pflicht-Tutorial: der Wächter der Führung (rl-tutorial.js) lässt nur den gezeigten Schritt durch.
+    if (typeof wurzel.rlKlickWaechter === 'function' && wurzel.rlKlickWaechter(ziel.dataset.rl, { ...ziel.dataset }, ziel) === false) return;
     tun({ ...ziel.dataset }, ziel, ev);
   };
   wurzel.rlKlickHandler = handler;
@@ -14935,14 +15700,22 @@ function rlPackWaehlen(lauf, shop, art, id) {
  * Umlaufbahn-Shop nach einem Lakaien-Sieg. Verbraucht `lauf.daten.garantie` (sie gilt für
  * diesen Shop samt Rerolls) und legt den Zustand in `lauf.daten.shop`.
  */
-function rlUmlaufbahn(lauf, rng = null) {
+function rlUmlaufbahn(lauf, rng = null, opt = {}) {
   const d = lauf.daten;
   const shop = {
     art: 'UMLAUFBAHN', angebote: [], rerolls: 0, rerollPreis: RL_KONFIG.shop.reroll.start,
     garantie: !!d.garantie, garantieErfuellt: false, naechsteId: 1, packs: rlPacksNeu(lauf),
   };
   d.garantie = false;
-  rlUmlaufbahnFuellen(lauf, shop, rng ?? rlShopRng(lauf, 'angebote', 0));
+  // Pflicht-Tutorial: der erste Shop zeigt feste Angebote (`opt.angebote` = Katalogschlüssel), damit die Führung
+  // weiß, was da liegt und was es kostet. Ein Reroll würfelt danach wie immer.
+  const fest = Array.isArray(opt.angebote) ? opt.angebote.map((key) => RL_KATALOG[key]).filter(Boolean) : [];
+  if (fest.length) {
+    shop.angebote = fest.map((e) => rlAngebotAus(e, rlNeueId(shop)));
+    shop.fest = true;
+  } else {
+    rlUmlaufbahnFuellen(lauf, shop, rng ?? rlShopRng(lauf, 'angebote', 0));
+  }
   d.shop = shop;
   return shop;
 }
@@ -16353,10 +17126,77 @@ function rlSternwarteModal(wurzel, lauf, warte, rueckrufe = {}) {
  * Zahlenkarten nach Wert, dann die kosmischen. Nur Anzeige.
  * @param {KartenSpec[]} deckSpec
  * @param {{schliessen?:()=>void}} [rueckrufe]
- * @param {{zustand?:Object<string,'stapel'|'hand'|'gespielt'>, stufen?:object, stufenBonus?:number, stufenMax?:number}} [opt]
+ * @param {{zustand?:Object<string,'stapel'|'hand'|'gespielt'>, stufen?:object, stufenBonus?:number, stufenMax?:number, module?:string[], vorrat?:string[]}} [opt]
+ *   module/vorrat (lauf.daten.module / .vorrat): Abschnitt „An Bord" (.rl-deck-bord) mit Namen und Wirkung;
  *   zustand (Kampf, RlKampf.deckZustand()): je uid, wo die Karte gerade ist — die Karten tragen data-zustand,
  *   darüber steht die Zeile .rl-deck-stand; stufen (lauf.daten.stufen): die Sternbildstufen als Zeile .rl-deck-stufen.
  */
+/**
+ * „An Bord": Module und Vorräte mit Namen und Wirkung (Spieltest-Runde 3 — man vergaß im Kampf, was man gekauft hatte).
+ */
+function rlShopDeckBordEl(module, vorrat) {
+  const kasten = rlSchirmEl('div', 'rl-deck-bord');
+  kasten.appendChild(rlSchirmEl('h4', 'rl-deck-gruppe', RL_TXT_SCHIRM.anBord + ' · ' + ((module || []).length + (vorrat || []).length)));
+  if (!(module || []).length && !(vorrat || []).length) {
+    kasten.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.anBordLeer));
+    return kasten;
+  }
+  const liste = rlSchirmEl('ul', 'rl-deck-bord-liste');
+  for (const key of module || []) {
+    const li = rlSchirmEl('li', 'rl-deck-bord-eintrag');
+    li.dataset.modul = key;
+    const bild = rlSchirmEl('span', 'rl-deck-bord-bild');
+    bild.innerHTML = rlModulSvg(key, 40);
+    li.appendChild(bild);
+    const text = rlSchirmEl('span', 'rl-deck-bord-text');
+    text.appendChild(rlSchirmEl('b', '', rlText(RL_TXT_MODUL, key)));
+    text.appendChild(rlSchirmEl('span', '', rlText(RL_TXT_MODUL, key, 'text')));
+    li.appendChild(text);
+    li.appendChild(rlSchirmEl('span', 'rl-deck-bord-art', RL_TXT_SCHIRM.modulDauerhaft));
+    liste.appendChild(li);
+  }
+  for (const key of vorrat || []) {
+    const li = rlSchirmEl('li', 'rl-deck-bord-eintrag');
+    li.dataset.vorrat = key;
+    li.appendChild(rlSchirmEl('span', 'rl-deck-bord-bild vorrat', ''));
+    const text = rlSchirmEl('span', 'rl-deck-bord-text');
+    text.appendChild(rlSchirmEl('b', '', rlText(RL_TXT_VORRAT, key)));
+    text.appendChild(rlSchirmEl('span', '', rlText(RL_TXT_VORRAT, key, 'text')));
+    li.appendChild(text);
+    li.appendChild(rlSchirmEl('span', 'rl-deck-bord-art', RL_TXT_SCHIRM.vorratEinmal));
+    liste.appendChild(li);
+  }
+  kasten.appendChild(liste);
+  return kasten;
+}
+
+/** „Besondere Karten": was Riese, Überriese, Leucht-, Anker-, Spiegel- und Planetenkarten im Deck bewirken — mit Anzahl. */
+function rlShopDeckBesondereEl(deck) {
+  const K = RL_KONFIG.karten;
+  const zeilen = [
+    ['riese', deck.filter((k) => k.stufe === 1).length, RL_TXT_SCHIRM.besonders.riese(K.riese)],
+    ['ueberriese', deck.filter((k) => k.stufe === 2).length, RL_TXT_SCHIRM.besonders.ueberriese(K.ueberriese)],
+    ['leucht', deck.filter((k) => k.leucht).length, RL_TXT_SCHIRM.besonders.leucht(K.leucht)],
+    ['anker', deck.filter((k) => k.anker).length, RL_TXT_SCHIRM.besonders.anker],
+    ['spiegel', deck.filter((k) => k.spiegel).length, RL_TXT_SCHIRM.besonders.spiegel],
+    ['typbonus', deck.filter((k) => k.typBonus).length, RL_TXT_SCHIRM.besonders.typbonus],
+    ['sternschnuppe', deck.filter((k) => k.art === 'STERNSCHNUPPE').length, RL_TXT_SCHIRM.besonders.sternschnuppe],
+  ].filter((z) => z[1] > 0);
+  if (!zeilen.length) return null;
+  const kasten = rlSchirmEl('div', 'rl-deck-besondere');
+  kasten.appendChild(rlSchirmEl('h4', 'rl-deck-gruppe', RL_TXT_SCHIRM.besondereKarten));
+  const liste = rlSchirmEl('ul', 'rl-deck-besondere-liste');
+  for (const [art, n, text] of zeilen) {
+    const li = rlSchirmEl('li', '');
+    li.dataset.marke = art;
+    li.appendChild(rlSchirmEl('b', '', n + '× '));
+    li.appendChild(document.createTextNode(text));
+    liste.appendChild(li);
+  }
+  kasten.appendChild(liste);
+  return kasten;
+}
+
 function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
   const deck = deckSpec || [];
   const zustand = opt && opt.zustand ? opt.zustand : null;
@@ -16372,6 +17212,10 @@ function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
     const K = RL_KONFIG.stufen;
     kasten.appendChild(rlShopDeckStufenEl(opt.stufen, opt.stufenBonus ?? K.bonusProStufe, opt.stufenMax ?? (K.max ?? K.schwellen.length)));
   }
+  // Module und Vorräte an Bord, dazu die Legende der besonderen Karten (Spieltest-Runde 3).
+  if (opt && (opt.module || opt.vorrat)) kasten.appendChild(rlShopDeckBordEl(opt.module, opt.vorrat));
+  const besondere = rlShopDeckBesondereEl(deck);
+  if (besondere) kasten.appendChild(besondere);
   const zahlen = deck.filter((k) => k.art === 'ZAHL');
   const kosmische = deck.filter((k) => k.art !== 'ZAHL');
   kasten.appendChild(rlSchirmEl('h4', 'rl-deck-gruppe', RL_TXT_SCHIRM.zahlen + ' · ' + zahlen.length));
@@ -16678,6 +17522,18 @@ class RlLauf {
 
   istBossKampf() { return this.d.kampfIndex >= RL_KONFIG.lauf.lakaienProPlanet; }
 
+  /**
+   * Der geführte Teil des Pflicht-Tutorials (Spieltest-Runde 3): im Tutorial-Lauf alles bis zum Verlassen des
+   * ersten Shops — Sternkarte, Planetenschirm, Übungskampf (rl-uebung.js) und die erste Umlaufbahn.
+   * `shopFertig()` zählt den Kampfplatz weiter, damit endet die Führung von selbst; die Oberfläche beendet sie
+   * schon vorher über `daten.fuehrung.fertig` (V2-A2 hat den Shop zu Ende erklärt, der Rest des Shops ist frei).
+   */
+  istGefuehrt() {
+    const d = this.d;
+    if (d.fuehrung && d.fuehrung.fertig) return false;
+    return !!d.tutorial && d.platz === 1 && d.kampfIndex === 0 && d.uebersprungen === 0 && d.phase !== 'ENDE' && d.phase !== 'IMFLUG';
+  }
+
   /** Gegnerplan des aktuellen Planeten. */
   planAktuell() { return this.d.gegnerPlan[this.planetAktuell()]; }
 
@@ -16809,6 +17665,7 @@ class RlLauf {
     const d = this.d;
     if (d.phase !== 'PLANET') throw new Error('Überspringen nur auf dem Planetenschirm');
     if (this.istBossKampf()) throw new Error('Der Boss lässt sich nicht überspringen');
+    if (this.istGefuehrt()) throw new Error('Der Übungskampf lässt sich nicht überspringen');
     d.garantie = true;
     if (!ohneSchuld) d.bossSchuld += RL_KONFIG.boss.schuldProUebersprungenem;
     d.uebersprungen++;
@@ -17312,16 +18169,20 @@ function rlKampfUiFaehigkeitText(e, name) {
  *   beiEnde: rl-start verarbeitet das Ergebnis (Shop, Planet, Lauf-Ende)
  *   hinweis: V2-A2-Punkte aus dem Kampf heraus ('klau', 'wertung', 'bossSchaden')
  *   regelnHtml: der Regeltext des Modus für das Regelfenster (rl-start.js baut ihn aus RL_TXT_REGELN)
+ *   fuehrung: die Haken des Übungskampfes (RlFuehrung.fuerKampf, Pflicht-Tutorial) — beschränkt die Züge auf den
+ *     angesagten, schreibt die Aufgabe in die Fußleiste, lässt die Ziele leuchten und hält die Bots für Erklärungen an
  */
 function rlModusFuer(kampf, lauf, kontext = {}) {
   const m = kampf.menschIdx;
   const zaehler = { ereignisNr: 0, rundenGezeigt: 0, endeGemeldet: false };
   const bossName = () => (kampf.boss ? kampf.boss.name : '');
+  const f = kontext.fuehrung || null;          // Pflicht-Tutorial: Haken des Übungskampfes
 
   const modus = {
     kampf,
     lauf,
     tempo: null,
+    fuehrung: f,                // Haken des Übungskampfes (oder null) — für Prüfgriffe und Selbsttest
 
     botFuer(idx) {
       return kampf.botFuer(idx);
@@ -17334,6 +18195,8 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
         stufen: lauf.daten.stufen,
         stufenBonus: RL_KONFIG.stufen.bonusProStufe,
         stufenMax: RL_KONFIG.stufen.max,
+        module: lauf.daten.module,       // Spieltest-Runde 3: auch im Kampf nachsehen, was an Bord ist
+        vorrat: lauf.daten.vorrat,
       });
     },
 
@@ -17364,7 +18227,15 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       rl.deckAnsehen = () => modus.deckAnsehen();
       s.rl = rl;
       s.rundenGesamt = kampf.runden;
+      if (f) f.sichtErweitern(s);
     },
+
+    /* ---- Führung im Übungskampf (start.js fragt diese Haken nur, wenn es sie gibt) ---- */
+    optionenFiltern(optionen) { return f ? f.optionenFiltern(optionen) : optionen; },
+    nurGefuehrt() { return f ? f.nurGefuehrt() : false; },
+    abgelehntText() { return f ? f.abgelehntText() : ''; },
+    warteVorWeiter(ablauf) { return f ? f.warteVorWeiter(ablauf) : null; },
+    nachZeichnen(s, dom) { if (f) f.nachZeichnen(s, dom); },
 
     knoepfe(s) {
       const knoepfe = [];
@@ -17377,6 +18248,7 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
           tun: () => { modus.deckAnsehen(); },
         });
       }
+      if (f) for (const k of f.knoepfe(s)) knoepfe.push(k);
       return knoepfe;
     },
 
@@ -17418,7 +18290,8 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
         for (let i = 0; i < punkte.length; i++) if (i !== m) bester = Math.max(bester, punkte[i]);
         zeilen.push(RL_TXT_KAMPF.rundeLakaiStand(punkte[m], bester));
       }
-      if (zaehler.rundenGezeigt === 0 && kontext.hinweis) kontext.hinweis('wertung');
+      if (f) f.wertung(a);
+      else if (zaehler.rundenGezeigt === 0 && kontext.hinweis) kontext.hinweis('wertung');
       zaehler.rundenGezeigt = runde;
       return { zeilen, fuss: a.beendet ? '' : RL_TXT_KAMPF.rundeFuss };
     },
@@ -17853,9 +18726,12 @@ class RlKampf {
    * @param {object|object[]} gegner  GegnerSpec oder Liste (Duo, Schwarm, Zwillinge)
    * @param {number} seed     Seed der Partie (Vorgabe: lauf.daten.kampfSeed)
    * @param {{menschIdx?:number, protokoll?:boolean, namen?:string[], menschName?:string,
-   *   menschBot?:Function, planet?:string, himmelWahlManuell?:number[]}} [opts]
+   *   menschBot?:Function, planet?:string, himmelWahlManuell?:number[],
+   *   runden?:number, zuegeJeRunde?:number, bots?:Object<number,Function>, uebung?:boolean}} [opts]
    *   menschBot: Bot für den Sitz des Menschen (Simulation; Vorgabe botNormal)
    *   planet: Planet des Kampfes (Vorgabe lauf.planetAktuell())
+   *   runden, zuegeJeRunde, bots, uebung: der Übungskampf des Pflicht-Tutorials (rl-uebung.js) — eigene Länge,
+   *     Skript-Bot je Sitz, und `ergebnis().sieg` ist immer true (Grund 'UEBUNG', wenn die Punkte nicht reichten)
    */
   constructor(lauf, gegner, seed, opts = {}) {
     if (!lauf || !lauf.daten) throw new Error('RlKampf braucht einen Lauf');
@@ -17907,6 +18783,10 @@ class RlKampf {
     const R = RL_KONFIG.partie.runden;
     this.runden = this.istBoss ? R.boss : R.lakai[Math.min(lauf.daten.kampfIndex ?? 0, R.lakai.length - 1)];
     this.zuegeJeRunde = RL_KONFIG.partie.zuegeJeRunde ?? null;
+    // Übungskampf des Pflicht-Tutorials (rl-uebung.js): eigene Rundenzahl und Zugzahl, und er ist nicht zu verlieren.
+    if (opts.runden != null) this.runden = Math.max(1, Math.floor(opts.runden));
+    if (opts.zuegeJeRunde != null) this.zuegeJeRunde = Math.max(1, Math.floor(opts.zuegeJeRunde));
+    this.uebung = !!opts.uebung && !this.istBoss;
 
     // Zähler dieses Kampfes
     this.geld = 0;
@@ -17983,6 +18863,8 @@ class RlKampf {
     this.bots = new Array(n).fill(null);
     for (let i = 0; i < n; i++) {
       this.bots[i] = i === m ? (opts.menschBot ?? botNormal) : rlBotFuer(this.gegnerVonSitz[i], { menschIdx: m });
+      // Übungskampf: ein Skript-Bot je Sitz (`opts.bots[sitz]`) ersetzt das Verhalten.
+      if (opts.bots && typeof opts.bots[i] === 'function') this.bots[i] = opts.bots[i];
     }
 
     // Punkte: Stufen und Deck-Boni des Menschen (rl-lauf), Privileg-Boni der Gegner.
@@ -18060,9 +18942,11 @@ class RlKampf {
     } else {
       sieg = punkte[m] >= bester;
       grund = sieg ? 'PUNKTE' : 'PUNKTE_VERLOREN';
+      // Der Übungskampf des Pflicht-Tutorials geht nie verloren.
+      if (this.uebung && !sieg) { sieg = true; grund = 'UEBUNG'; }
     }
     return {
-      sieg, grund, fertig: this.istFertig(),
+      sieg, grund, fertig: this.istFertig(), uebung: !!this.uebung,
       geld: this.geld, stufenZaehler: { ...this.stufenZaehler },
       klaus: this.klaus, geklaut: this.geklaut, verloren: this.verloren,
       punkte, punkteMensch: punkte[m], punkteBesterGegner: bester,
@@ -18102,7 +18986,7 @@ class RlKampf {
       stufenMax: RL_KONFIG.stufen.max,
       stufenZaehler: { ...this.stufenZaehler },
       platz: d.platz, kampfIndex: d.kampfIndex, istBoss: this.istBoss, runden: this.runden, zuegeJeRunde: this.zuegeJeRunde,
-      menschIdx: this.menschIdx,
+      menschIdx: this.menschIdx, uebung: !!this.uebung,
     };
     if (this.lauf.hatModul('sichtluke')) {
       const deck = this.spiel.spieler[this.menschIdx].deck;
@@ -18195,6 +19079,7 @@ class RlKampf {
       const schaden = Math.max(0, e.zuwachs[this.menschIdx] ?? 0);
       bz.leben = Math.max(0, bz.leben - schaden);
       bz.letzteAenderung = { schaden, heilung: 0 };
+      bz.aenderungNr = (bz.aenderungNr ?? 0) + 1;     // Kennung für die Oberfläche: jede Änderung wird einmal animiert
       this.merke({ art: 'SCHADEN', idx: bz.idx[0], betrag: schaden, leben: bz.leben, lebenMax: bz.lebenMax }, e);
       this.spiel.log(`${bz.name} verliert ${schaden} Leben (${bz.leben} von ${bz.lebenMax})`);
       if (bz.leben <= 0) {
@@ -18325,6 +19210,283 @@ class RlKampf {
   }
 }
 
+/* ===== engine\src\roguelike\rl-uebung.js ===== */
+/**
+ * Roguelike-Modus — der Übungskampf des Pflicht-Tutorials (Spieltest-Runde 3, Spezifikation §15).
+ *
+ * Der erste Kampf des geführten Laufs ist gestellt: Hand, Mitte und die nächsten Karten beider Decks
+ * und des Himmels liegen fest, der Gegner spielt ein Skript, und der Mensch darf je Zug genau den
+ * einen gezeigten Zug spielen (bauen → klauen → erweitern → versiegeln). So geht der Kampf immer
+ * gleich aus — und weil `RlKampf` im Übungskampf nie `sieg: false` meldet, ist er nicht zu verlieren.
+ *
+ * Gestellt wird NACH dem Austeilen der ersten Runde: `rlUebungKampf` startet den Ablauf selbst
+ * (der Mensch beginnt) und ordnet dann dieselben Kartenobjekte um — nichts wird erfunden, Deck-
+ * und Himmelsbestand bleiben, wie sie sind. Fehlt eine Karte für den Aufbau (fremdes Deck, anderes
+ * Regelwerk), bleibt der Kampf ein freier Übungskampf: `uebung.intakt === false`, alle Züge erlaubt,
+ * der Gegner wirft nur ab.
+ *
+ * Exporte: RL_UEBUNG_AUFBAU, RL_UEBUNG_SCHRITTE, RL_UEBUNG_GEGNER_ZUEGE, RL_UEBUNG_SHOP_ANGEBOTE, RlUebung, rlUebungKampf.
+ *
+ * Top-Level-Namen dieser Datei: RL_UEBUNG_AUFBAU, RL_UEBUNG_SCHRITTE, RL_UEBUNG_GEGNER_ZUEGE, RL_UEBUNG_SHOP_ANGEBOTE,
+ *   rlUebungIstSchlicht, rlUebungNimm, rlUebungWerte, rlUebungGleich, rlUebungPasst, rlUebungAbwurf,
+ *   RlUebung, rlUebungKampf.
+ */
+
+/**
+ * Der gestellte Tisch (Werte von Zahlenkarten). `menschZieht`/`gegnerZieht`/`himmelZieht` sind die
+ * nächsten Karten der Stapel in Ziehreihenfolge. Der Gegner bekommt so viele Handkarten, wie seine
+ * Hand fasst (vier, mit dem Privileg „Fünf Handkarten" fünf).
+ */
+const RL_UEBUNG_AUFBAU = {
+  menschHand: [5, 6, 11, 12],
+  menschZieht: [4, 1, 9, 2, 10, 3],
+  gegnerHand: [8, 9, 1, 2, 12],
+  gegnerZieht: [6, 11, 4, 7, 5, 10],
+  mitte: [12, 7, 2, 10, 1, 3, 11, 9, 1],
+  himmelZieht: [11, 9, 6, 2, 12],
+};
+
+/**
+ * Die Züge des Menschen. `muster` beschreibt den einen erlaubten Zug: Art, Typ, die Werte aus Hand und
+ * Mitte und das Ziel (`neu` = neues Sternbild, `eigen` = das eigene mit den Werten `zielWerte`,
+ * `gegner` = das fremde mit den Werten `zielWerte`). Die Texte dazu stehen in rl-texte.js unter `key`.
+ */
+const RL_UEBUNG_SCHRITTE = [
+  { key: 'bauen', muster: { art: 'BAUEN', ziel: 'neu', hand: [5, 6], mitte: [7] } },
+  { key: 'klauen', muster: { art: 'KLAUEN', ziel: 'gegner', zielWerte: [8, 9, 10], hand: [11, 12], mitte: [] } },
+  { key: 'erweitern', muster: { art: 'BAUEN', ziel: 'eigen', zielWerte: [5, 6, 7], hand: [4], mitte: [] } },
+  { key: 'versiegeln', muster: { art: 'VERSIEGELN', ziel: 'eigen', zielWerte: [4, 5, 6, 7] } },
+];
+
+/** Die Züge des Gegners, Zug für Zug. `behalte`: Werte, die ein Abwurf nicht treffen darf (er braucht sie später). */
+const RL_UEBUNG_GEGNER_ZUEGE = [
+  { muster: { art: 'BAUEN', ziel: 'neu', hand: [8, 9], mitte: [10] } },
+  { abwurf: true, behalte: [1, 2] },
+  { muster: { art: 'BAUEN', ziel: 'neu', hand: [1, 2], mitte: [3] } },
+  { abwurf: true, behalte: [] },
+];
+
+/**
+ * Die festen Angebote des ersten Shops im geführten Lauf (Katalogschlüssel für `rlUmlaufbahn(lauf, null, {angebote})`):
+ * eine Zahlenkarte, zwei kosmische Karten (grau und blau) und ein Modul (grün) — alles nach dem Sternbilderpack bezahlbar.
+ */
+const RL_UEBUNG_SHOP_ANGEBOTE = ['leucht-7', 'komet', 'nebel', 'zinsmodul'];
+
+/** Eine schlichte Zahlenkarte (keine Spiegel-, Leucht-, Anker- oder aufgewertete Karte). */
+function rlUebungIstSchlicht(k) {
+  return istZahl(k) && !k.spiegel && !k.leucht && !k.anker && !k.stufe && !k.typBonus;
+}
+
+/** Die erste schlichte Zahlenkarte mit diesem Wert aus dem Vorrat nehmen (oder null). */
+function rlUebungNimm(vorrat, wert) {
+  const i = vorrat.findIndex((k) => rlUebungIstSchlicht(k) && k.wert === wert);
+  return i >= 0 ? vorrat.splice(i, 1)[0] : null;
+}
+
+/** Sortierte Werte zu einer Id-Liste (null, sobald eine Id fehlt oder keine Zahl ist). */
+function rlUebungWerte(ids, karten) {
+  const out = [];
+  for (const id of ids ?? []) {
+    const k = karten.find((x) => x.id === id);
+    if (!k || !istZahl(k)) return null;
+    out.push(k.wert);
+  }
+  return out.sort((a, b) => a - b);
+}
+
+function rlUebungGleich(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  const x = [...a].sort((p, q) => p - q), y = [...b].sort((p, q) => p - q);
+  return x.every((w, i) => w === y[i]);
+}
+
+/** Passt eine Aktion aus `generiereAktionen` auf das Muster? */
+function rlUebungPasst(spiel, idx, aktion, muster) {
+  if (!aktion || !muster || aktion.art !== muster.art) return false;
+  const sp = spiel.spieler[idx];
+  const werteVon = (besitzer, sbId) => {
+    const sb = spiel.findeSb(besitzer, sbId);
+    return sb ? sb.karten.map((k) => k.wert) : null;
+  };
+  if (muster.art === 'VERSIEGELN') return rlUebungGleich(werteVon(idx, aktion.sbId), muster.zielWerte);
+  if (muster.art !== 'BAUEN' && muster.art !== 'KLAUEN') return false;
+  if (!rlUebungGleich(rlUebungWerte(aktion.handIds, sp.hand), muster.hand)) return false;
+  if (!rlUebungGleich(rlUebungWerte(aktion.mitteIds, spiel.mitte), muster.mitte ?? [])) return false;
+  if (muster.ziel === 'neu') return muster.art === 'BAUEN' && !aktion.sbId;
+  if (muster.ziel === 'eigen') return !!aktion.sbId && rlUebungGleich(werteVon(idx, aktion.sbId), muster.zielWerte);
+  if (muster.ziel === 'gegner') return aktion.opferIdx != null && rlUebungGleich(werteVon(aktion.opferIdx, aktion.sbId), muster.zielWerte);
+  return false;
+}
+
+/** Abwurf des Skript-Gegners: die höchste Zahl, die er nicht mehr braucht (sonst irgendeine Karte). */
+function rlUebungAbwurf(spiel, idx, behalte = []) {
+  const sp = spiel.spieler[idx];
+  if (!sp || sp.mussAbwerfen > 0 || !sp.hand.length) return null;
+  let karte = null;
+  for (const k of sp.hand) {
+    if (!istZahl(k) || behalte.includes(k.wert)) continue;
+    if (!karte || k.wert > karte.wert) karte = k;
+  }
+  if (!karte) karte = sp.hand.find((k) => !istZahl(k)) ?? sp.hand[0];
+  spiel.log(`${sp.name} zögert.`);
+  return { art: 'ABWERFEN', handIds: [karte.id], gewinn: 0, punkteNachher: 0, aussetzer: true };
+}
+
+/**
+ * Zustand des Übungskampfes: welcher Schritt dran ist, welcher Zug erlaubt ist, was anzutippen ist.
+ * Zählt die fertigen Züge des Menschen über das Engine-Ereignis ZUG_ENDE.
+ */
+class RlUebung {
+  /** @param {RlKampf} kampf  ein mit `uebung: true` gebauter Kampf (rlUebungKampf) */
+  constructor(kampf) {
+    this.kampf = kampf;
+    this.spiel = kampf.spiel;
+    this.menschIdx = kampf.menschIdx;
+    this.gegnerIdx = kampf.sitzVonGegner[0];
+    this.intakt = false;          // der Tisch steht wie geplant, die Schritte gelten
+    this.fertigeZuege = 0;        // abgeschlossene Züge des Menschen
+    this.gegnerZuege = 0;
+    this.abmelden = this.spiel.beiEreignis((e) => {
+      if (e.art === 'ZUG_ENDE' && e.idx === this.menschIdx) this.fertigeZuege++;
+    });
+  }
+
+  /** Den Tisch stellen (nach `ablauf.start()`). Liefert true, wenn alle Karten da waren. */
+  stellen() {
+    const s = this.spiel;
+    const A = RL_UEBUNG_AUFBAU;
+    const mensch = s.spieler[this.menschIdx];
+    const gegner = s.spieler[this.gegnerIdx];
+    if (!s.eigeneDecks || !mensch || !gegner || s.runde !== 1) return false;
+
+    const stelleSitz = (sp, handWerte, ziehWerte) => {
+      const vorrat = [...sp.hand, ...sp.deck];
+      const hand = [], zieht = [];
+      for (const w of handWerte) { const k = rlUebungNimm(vorrat, w); if (!k) return false; hand.push(k); }
+      for (const w of ziehWerte) { const k = rlUebungNimm(vorrat, w); if (!k) return false; zieht.push(k); }
+      sp.hand = hand;
+      sp.deck = [...vorrat, ...zieht.reverse()];   // gezogen wird vom Ende (pop)
+      sp.gesehen = null;
+      return true;
+    };
+    const gegnerHand = A.gegnerHand.slice(0, Math.max(4, spielRegel(s, this.gegnerIdx, 'handkarten')));
+    // Erst prüfen, dann umstellen: beide Sitze und der Himmel an Kopien, damit ein Fehlschlag nichts verändert.
+    const sicherung = { mh: mensch.hand, md: mensch.deck, gh: gegner.hand, gd: gegner.deck, mitte: s.mitte, himmel: s.himmelDeck };
+    const zurueck = () => {
+      mensch.hand = sicherung.mh; mensch.deck = sicherung.md; gegner.hand = sicherung.gh; gegner.deck = sicherung.gd;
+      s.mitte = sicherung.mitte; s.himmelDeck = sicherung.himmel;
+      return false;
+    };
+    if (!stelleSitz(mensch, A.menschHand, A.menschZieht)) return zurueck();
+    if (!stelleSitz(gegner, gegnerHand, A.gegnerZieht)) return zurueck();
+
+    const vorrat = [...s.mitte, ...s.himmelDeck];
+    const ziel = mitteGroesse(s.runde);
+    const mitte = [], zieht = [];
+    for (const w of A.mitte.slice(0, ziel)) { const k = rlUebungNimm(vorrat, w); if (!k) return zurueck(); mitte.push(k); }
+    for (const w of A.himmelZieht) { const k = rlUebungNimm(vorrat, w); if (!k) return zurueck(); zieht.push(k); }
+    // Verlangt das Regelwerk eine größere Mitte als der Aufbau kennt, füllen beliebige Zahlen auf.
+    while (mitte.length < ziel) {
+      const i = vorrat.findIndex((k) => rlUebungIstSchlicht(k));
+      if (i < 0) break;
+      mitte.push(vorrat.splice(i, 1)[0]);
+    }
+    s.mitte = mitte;
+    s.himmelDeck = [...vorrat, ...zieht.reverse()];
+    this.intakt = true;
+    return true;
+  }
+
+  /** Nummer des laufenden Schritts (0-basiert) — gleich der Zahl fertiger Züge des Menschen. */
+  schrittNr() { return this.fertigeZuege; }
+
+  /** Der laufende Schritt oder null (Skript zu Ende oder Aufbau nicht intakt). */
+  schritt() {
+    if (!this.intakt) return null;
+    return RL_UEBUNG_SCHRITTE[this.fertigeZuege] ?? null;
+  }
+
+  /** Alle Schritte (für Texte und Zähler der Oberfläche). */
+  schritte() { return RL_UEBUNG_SCHRITTE; }
+
+  /**
+   * Die eine erlaubte Aktion des laufenden Schritts aus den legalen Aktionen — oder null, wenn der
+   * Mensch nicht dran ist, kein Schritt läuft oder der Zug wider Erwarten nicht legal ist (dann gilt
+   * der Aufbau als gebrochen und alles ist erlaubt).
+   */
+  erlaubteAktion(aktionen = null) {
+    const schritt = this.schritt();
+    if (!schritt || !this.kampf.ablauf.istMensch()) return null;
+    const liste = aktionen ?? generiereAktionen(this.spiel, this.menschIdx);
+    const treffer = liste.find((a) => rlUebungPasst(this.spiel, this.menschIdx, a, schritt.muster)) ?? null;
+    if (!treffer) this.intakt = false;
+    return treffer;
+  }
+
+  /** Ist diese Aktion im laufenden Schritt erlaubt? Ohne Schritt: alles. */
+  erlaubt(aktion) {
+    const schritt = this.schritt();
+    if (!schritt) return true;
+    return rlUebungPasst(this.spiel, this.menschIdx, aktion, schritt.muster);
+  }
+
+  /**
+   * Was anzutippen ist: Karten-Ids aus Hand und Mitte, das Ziel-Sternbild (`sbId`, `sbBesitzer`) und
+   * ob es ein Knopf der Leiste ist (`knopf: 'VERSIEGELN'`). Null ohne Schritt.
+   */
+  ziele() {
+    const a = this.erlaubteAktion();
+    if (!a) return null;
+    const sbBesitzer = a.sbId == null ? null : (a.art === 'KLAUEN' ? a.opferIdx : this.menschIdx);
+    return {
+      art: a.art, hand: [...(a.handIds ?? [])], mitte: [...(a.mitteIds ?? [])],
+      sbId: a.sbId ?? null, sbBesitzer, knopf: a.art === 'VERSIEGELN' ? 'VERSIEGELN' : null,
+    };
+  }
+
+  /** Der Skript-Bot des Gegners (Signatur wie jeder Bot: `(spiel, idx) => {aktion}`). */
+  bot() {
+    return (spiel, idx) => {
+      const zug = this.intakt ? RL_UEBUNG_GEGNER_ZUEGE[this.gegnerZuege] : null;
+      this.gegnerZuege++;
+      if (zug && zug.muster) {
+        const a = generiereAktionen(spiel, idx).find((x) => rlUebungPasst(spiel, idx, x, zug.muster));
+        if (a) return { aktion: a };
+      }
+      const abwurf = rlUebungAbwurf(spiel, idx, zug && zug.behalte ? zug.behalte : []);
+      return abwurf ? { aktion: abwurf } : { aktion: null };
+    };
+  }
+
+  /** Hörer abmelden (der Kampf meldet seinen eigenen in `beenden()` ab). */
+  beenden() {
+    if (this.abmelden) { this.abmelden(); this.abmelden = null; }
+  }
+}
+
+/**
+ * Den Übungskampf bauen: RlKampf mit eigener Länge (eine Runde, so viele Züge wie Schritte),
+ * Skript-Bot, „nicht zu verlieren"; der Mensch beginnt, der Ablauf ist gestartet, der Tisch gestellt.
+ * @param {object} lauf    RlLauf im geführten Teil (`lauf.istGefuehrt()`)
+ * @param {object} gegner  GegnerSpec des ersten Lakaien (kein Duo)
+ * @param {number} seed
+ * @param {object} [opts]  wie RlKampf (menschName, protokoll …)
+ * @returns {{kampf:RlKampf, uebung:RlUebung}}
+ */
+function rlUebungKampf(lauf, gegner, seed, opts = {}) {
+  const spec = Array.isArray(gegner) ? gegner[0] : gegner;
+  const menschIdx = opts.menschIdx ?? 0;
+  const kampf = new RlKampf(lauf, spec, seed, {
+    ...opts, menschIdx, runden: 1, zuegeJeRunde: RL_UEBUNG_SCHRITTE.length, uebung: true,
+  });
+  const uebung = new RlUebung(kampf);
+  kampf.bots[uebung.gegnerIdx] = uebung.bot();   // der Skript-Gegner ersetzt das Verhalten des Lakaien
+  kampf.spiel.starterIdx = menschIdx;            // der Mensch beginnt — sonst verschöbe sich das Skript
+  kampf.ablauf.start();
+  uebung.stellen();
+  return { kampf, uebung };
+}
+
 /* ===== app\roguelike\rl-start.js ===== */
 /**
  * Roguelike-Modus „Raubzug" — Modus-Steuerung (Spezifikation §1, §5.1, §5.2, §5.6).
@@ -18338,9 +19500,10 @@ class RlKampf {
  * demselben Seed neu (Hinweis des V2-A2).
  *
  * Der V2-A2 (#rl-figur) und das Tutorial liegen in rl-tutorial.js: `rlS.sextant` (RlSextant)
- * spricht, `rlS.tutorial` (rlTutorialHaken) kennt die elf Punkte des geführten Laufs (§5.6) und
- * die kurzen Ein-Satz-Blasen bei erstmaligen Ereignissen. Diese Datei ruft die Haken nur an
- * den elf Stellen — kein Zugzwang, der Lauf ist echt.
+ * spricht, `rlS.tutorial` (rlTutorialHaken) trägt die Führung des Pflicht-Tutorials (`.fuehrung`,
+ * RlFuehrung: Sternkarte → Planetenschirm → Übungskampf → erster Shop, nur der gezeigte Schritt ist
+ * bedienbar) und die einmaligen Hinweise danach (erster echter Kampf, Boss, Im Flug, Lauf-Ende).
+ * Solange `profil.tutorialGeschafft` fehlt, ist jeder neue Lauf der geführte (Spieltest-Runde 3).
  *
  * Schnittstelle zu start.js (`rlStartEinrichten(api)`):
  *   api.dom            DOM-Griffe (modal, modalInhalt, tisch …)
@@ -18351,7 +19514,8 @@ class RlKampf {
  *
  * Top-Level-Namen dieser Datei: RL_START_TUTORIAL_SEED, rlS,
  *   rlStartEsc, rlStartSpeichern, rlStartFehler, rlStartFrage, rlStartSchirmAn, rlStartTischAn,
- *   rlStartZurueckZurEbene, rlStartZuruecksetzen, rlStartSextantWeg, rlStartHaken, rlStartHakenNeu, rlStartStationen,
+ *   rlStartZurueckZurEbene, rlStartZuruecksetzen, rlStartSextantWeg, rlStartHaken, rlStartHakenNeu, rlStartFuehrung,
+ *   rlStartTutorialGeschafft, rlStartStationen,
  *   rlStartStationSetzen, rlStartTu, rlStartZeigeAktuell, rlStartZeigeKarte, rlStartZeigePlanet,
  *   rlStartZeigeSternwarte, rlStartZeigeUmlaufbahn, rlStartZeigeImFlug, rlStartZeigeEnde,
  *   rlStartProfilFortschreiben, rlStartKampfStarten, rlStartKampfBeendet, rlStartNachKampf,
@@ -18368,6 +19532,7 @@ const rlS = {
   profil: null,
   lauf: null,
   kampf: null,
+  uebung: null,               // RlUebung des geführten Übungskampfes (Pflicht-Tutorial), sonst null
   modus: null,
   abgeschlossen: null,        // der Kampf, dessen Ergebnis schon verarbeitet ist
   name: 'Du',
@@ -18442,6 +19607,7 @@ function rlStartZuruecksetzen() {
   rlS.profil = rlProfilLaden();      // der Speicher ist leer → frisches Profil
   rlS.lauf = null;
   rlS.kampf = null;
+  rlS.uebung = null;
   rlS.modus = null;
   rlS.abgeschlossen = null;
   rlS.startGesagt = false;           // V2-A2 begrüßt wieder wie beim ersten Besuch
@@ -18463,10 +19629,33 @@ function rlStartHaken() {
   return rlS.tutorial;
 }
 
-/** Neuen Haken anlegen (je Lauf einer: die Merker der elf Punkte gehören zum Lauf). */
+/**
+ * Neuen Haken anlegen (je Lauf einer: die Führung des Pflicht-Tutorials gehört zum Lauf). Der Wächter der Führung
+ * hängt am Klick-Verteiler der Schirme — im geführten Teil ist nur der gezeigte Schritt bedienbar.
+ */
 function rlStartHakenNeu(lauf) {
-  rlS.tutorial = rlTutorialHaken(lauf, rlS.profil, { sextant: rlS.sextant, profilSpeichern: rlProfilSpeichern });
+  rlS.tutorial = rlTutorialHaken(lauf, rlS.profil, {
+    sextant: rlS.sextant, wurzel: rlS.schirm, profilSpeichern: rlProfilSpeichern,
+    laufSpeichern: () => rlStartSpeichern(),
+    neuZeichnen: () => { if (rlS.lauf === lauf && rlS.schirm && !rlS.schirm.hidden) rlStartZeigeAktuell(); },
+    tischZeichnen: () => { if (rlS.api && rlS.api.zeichne) rlS.api.zeichne(); },
+  });
+  if (rlS.schirm) rlS.schirm.rlKlickWaechter = (aktion, daten, el) => rlS.tutorial.fuehrung.waechter(aktion, daten, el);
   return rlS.tutorial;
+}
+
+/** Die Führung des laufenden Laufs (RlFuehrung). */
+function rlStartFuehrung() {
+  return rlStartHaken().fuehrung;
+}
+
+/** Das Pflicht-Tutorial gilt als geschafft (Führung zu Ende oder erster Shop des Tutorial-Laufs verlassen). */
+function rlStartTutorialGeschafft() {
+  const p = rlS.profil;
+  if (!p || p.tutorialGeschafft) return;
+  p.tutorialGeschafft = true;
+  p.tutorialGesehen = true;
+  rlProfilSpeichern(p);
 }
 
 /* ------------------------------------------------------------------ */
@@ -18510,7 +19699,7 @@ function rlStartTu(fn) {
 
 /** Zusätze für die Deckansicht außerhalb des Kampfes: die Sternbildstufen (Spieltest-Runde 1). */
 function rlStartDeckOpt(lauf) {
-  return { stufen: lauf.daten.stufen, stufenBonus: RL_KONFIG.stufen.bonusProStufe, stufenMax: RL_KONFIG.stufen.max };
+  return { stufen: lauf.daten.stufen, stufenBonus: RL_KONFIG.stufen.bonusProStufe, stufenMax: RL_KONFIG.stufen.max, module: lauf.daten.module, vorrat: lauf.daten.vorrat };
 }
 
 /** Den Schirm zur Phase des Laufs zeigen. */
@@ -18535,7 +19724,7 @@ function rlStartZeigeKarte() {
     waehle: (key) => rlStartTu(() => lauf.waehlePlanet(key, rlS.profil)),
     landen: () => rlStartTu(() => lauf.waehlePlanet(lauf.planetAktuell(), rlS.profil)),
   });
-  rlStartHaken().sag('karte', { platz: lauf.daten.platz });
+  rlStartFuehrung().schirm('karte', { planetName: rlText(RL_TXT_PLANET, lauf.planetAktuell()) });
 }
 
 function rlStartZeigePlanet() {
@@ -18560,11 +19749,10 @@ function rlStartZeigePlanet() {
     });
   }
   rlPlanetZeigen(rlS.schirm, lauf, rueckrufe, { stationen: rlStartStationen() });
+  rlStartFuehrung().schirm('planet', { schuld: RL_KONFIG.boss.schuldProUebersprungenem });
   if (lauf.istBossKampf()) {
     const boss = lauf.planAktuell().boss;
     rlStartHaken().sag('vorBoss', { bossName: boss ? boss.name : '', runden: lauf.rundenFuer() });
-  } else {
-    rlStartHaken().sag('planet', { schuld: RL_KONFIG.boss.schuldProUebersprungenem });
   }
 }
 
@@ -18582,7 +19770,11 @@ function rlStartZeigeSternwarte() {
 function rlStartZeigeUmlaufbahn() {
   const lauf = rlS.lauf;
   const d = lauf.daten;
-  if (!d.shop || d.shop.art !== 'UMLAUFBAHN') { rlUmlaufbahn(lauf); rlStartSpeichern(); }
+  // Im geführten Lauf liegt im ersten Shop ein festes Angebot (die Führung weiß, was es kostet).
+  if (!d.shop || d.shop.art !== 'UMLAUFBAHN') {
+    rlUmlaufbahn(lauf, null, lauf.istGefuehrt() ? { angebote: RL_UEBUNG_SHOP_ANGEBOTE } : {});
+    rlStartSpeichern();
+  }
   rlStartSchirmAn();
   rlUmlaufbahnZeigen(rlS.schirm, lauf, d.shop, {
     kaufen: (id, uid) => rlStartTu(() => { rlKaufen(lauf, d.shop, id, uid ? { uid } : {}); }),
@@ -18595,10 +19787,15 @@ function rlStartZeigeUmlaufbahn() {
     packOeffnen: (art) => rlStartTu(() => rlPackOeffnen(lauf, d.shop, art)),         // Packs (Spieltest-Runde 2)
     packWaehlen: (art, id) => rlStartTu(() => rlPackWaehlen(lauf, d.shop, art, id)),
     deckAnsehen: () => rlDeckAnsicht(rlS.schirm, lauf.daten.deck, {}, rlStartDeckOpt(lauf)),
-    weiter: () => rlStartTu(() => { rlSternwarteSchliessen(lauf); lauf.shopFertig(); }),
+    weiter: () => rlStartTu(() => {
+      // Wer den ersten Shop des Tutorial-Laufs verlässt, hat das Pflicht-Tutorial hinter sich.
+      if (d.tutorial && d.platz === 1 && d.kampfIndex === 0) rlStartTutorialGeschafft();
+      rlSternwarteSchliessen(lauf);
+      lauf.shopFertig();
+    }),
   });
   if (d.sternwarte) rlStartZeigeSternwarte();
-  rlStartHaken().sag('umlaufbahn');
+  rlStartFuehrung().schirm('umlaufbahn');
 }
 
 function rlStartZeigeImFlug() {
@@ -18621,6 +19818,7 @@ function rlStartZeigeImFlug() {
     weiter: () => rlStartTu(() => { rlSternwarteSchliessen(lauf); lauf.shopFertig(); }),
   });
   if (d.sternwarte) rlStartZeigeSternwarte();
+  rlStartFuehrung().schirm('imflug');
   rlStartHaken().sag('imflug');
 }
 
@@ -18632,6 +19830,7 @@ function rlStartZeigeEnde() {
     neu: () => rlStartZurueckZurEbene(),
     menue: () => { rlStartSextantWeg(); rlS.api.zeigeStart(); },
   });
+  rlStartFuehrung().schirm('ende');
   rlStartHaken().sag('ende', { ergebnis: lauf.daten.ergebnis });
 }
 
@@ -18662,20 +19861,27 @@ function rlStartKampfStarten(neu) {
   if (d.phase !== 'KAMPF') { rlStartZeigeAktuell(); return; }
   rlStartSpeichern();
   const gegner = lauf.naechsterGegner();
+  const haken = rlStartHaken();
+  // Pflicht-Tutorial: der erste Kampf des geführten Laufs ist der gestellte Übungskampf (rl-uebung.js) —
+  // feste Karten, Skript-Gegner, nur der angesagte Zug, nicht zu verlieren.
+  const gefuehrt = lauf.istGefuehrt() && !Array.isArray(gegner);
   let kampf;
+  let uebung = null;
   try {
-    kampf = new RlKampf(lauf, gegner, d.kampfSeed, { menschName: rlS.name, protokoll: true });
+    if (gefuehrt) ({ kampf, uebung } = rlUebungKampf(lauf, gegner, d.kampfSeed, { menschName: rlS.name, protokoll: true }));
+    else kampf = new RlKampf(lauf, gegner, d.kampfSeed, { menschName: rlS.name, protokoll: true });
   } catch (e) {
     rlStartFehler(e);
     return;
   }
   rlS.kampf = kampf;
+  rlS.uebung = uebung;
   rlS.abgeschlossen = null;
-  const haken = rlStartHaken();
   const modus = rlModusFuer(kampf, lauf, {
     beiEnde: (k) => rlStartKampfBeendet(k),
-    hinweis: (key) => haken.hinweis(key),      // klau, wertung, bossSchaden → Tutorial-Punkte 5, 6, 9
+    hinweis: (key) => haken.hinweis(key),      // bossSchaden → einmaliger Hinweis „erster Schaden"
     regelnHtml: () => rlStartRegelnHtml(true), // Abschnitt „Raubzug" vor den Grundregeln (Knopf „Regeln" im Kampf)
+    fuehrung: uebung ? haken.fuehrung.fuerKampf(kampf, uebung) : null,
   });
   rlS.modus = modus;
   rlStartSextantWeg();
@@ -18683,10 +19889,11 @@ function rlStartKampfStarten(neu) {
   rlS.api.neuesSpielAus({ ablauf: kampf.ablauf, laenge: 'kurz', menschIdx: kampf.menschIdx, modus });
 
   const haupt = Array.isArray(gegner) ? gegner[0] : gegner;
+  if (uebung) return;                          // im Übungskampf spricht die Führung (Ansage des ersten Zuges)
   if (neu === false) haken.satz(RL_TXT_KAMPF.neustart, { pose: 'warnt', seite: 'rechts' });
-  else if (haken.aktiv()) haken.sag('kampfbeginn', { runden: kampf.runden, zuege: kampf.zuegeJeRunde, gegnerName: haupt.name });
   else if (haupt.boss) haken.erstesMal('boss', lauf.planetAktuell());
   else if (haupt.elite) haken.erstesMal('elite');
+  else haken.sag('ernst', { runden: kampf.runden, zuege: kampf.zuegeJeRunde });   // der erste echte Kampf — je Profil einmal
 }
 
 /** Kampfende (aus S.modus.beiEnde): Ergebnis in den Lauf, speichern, Fenster, dann weiter. */
@@ -18697,6 +19904,7 @@ function rlStartKampfBeendet(kampf) {
   const d = lauf.daten;
   const erg = kampf.ergebnis();
   kampf.beenden();
+  if (rlS.uebung) { rlS.uebung.beenden(); rlS.uebung = null; }
   const kampfIndex = d.kampfIndex;
   const planet = lauf.planetAktuell();
   const geldVorher = d.geld;
@@ -18723,13 +19931,15 @@ function rlStartKampfBeendet(kampf) {
   zeilen.push(T.punkteZeile(erg.punkteMensch, erg.punkteBesterGegner));
   if (erg.geld > 0) zeilen.push(T.geldZeile(erg.geld));
   const praemie = d.geld - geldVorher - (erg.geld || 0);
-  if (praemie > 0) zeilen.push(T.bossBonusZeile(praemie));
+  if (praemie > 0) zeilen.push(T.bossBonusZeile(praemie, lauf.hatModul('zinsmodul')));
   zeilen.push(T.geldStand(d.geld));
   if (d.phase === 'ENDE') zeilen.push(d.ergebnis === 'SIEG' ? T.laufGelungen : T.laufVorbei);
   const knopf = d.phase === 'UMLAUFBAHN' ? T.weiterUmlaufbahn : d.phase === 'IMFLUG' ? T.weiterFlug : T.weiterEnde;
   const html = '<ul class="rl-kampf-ende">' + zeilen.map((z) => '<li>' + rlStartEsc(z) + '</li>').join('') + '</ul>';
   zeigeModal(rlS.api.dom, titel, html,
     [{ text: knopf, klasse: 'haupt', tun: () => { schliesseModal(rlS.api.dom); rlStartNachKampf(); } }], true);
+  // Übungskampf: V2-A2 erklärt neben dem Fenster die Prämie und kündigt den Shop an.
+  if (erg.uebung && erg.sieg) rlStartFuehrung().kampfEnde({ praemie: Math.max(0, praemie), geld: d.geld });
 }
 
 /** Nach dem Kampfende-Fenster: Tisch verlassen und den nächsten Schirm zeigen. */
@@ -18810,29 +20020,29 @@ function rlStartRegelnZeigen() {
 /* ------------------------------------------------------------------ */
 
 /**
- * Neuer Lauf. Ohne `tutorial` ist der erste Lauf des Profils der geführte (§5.6, fester Seed).
+ * Neuer Lauf. Solange das Profil das Pflicht-Tutorial nicht geschafft hat (`tutorialGeschafft`), ist JEDER neue
+ * Lauf der geführte: Standarddeck, Stufe 1, Frostpfad, fester Seed — Deck- und Stufenwahl gelten erst danach.
+ * Der geführte Teil reicht bis zum Ende des ersten Shops, dann läuft derselbe Lauf frei weiter.
  * @param {{deck?:string, stufe?:number, seed?:number, startort?:string, tutorial?:boolean}} o
  */
 function rlStartNeuerLauf(o = {}) {
   const profil = rlS.profil;
-  const tutorial = o.tutorial ?? !profil.tutorialGesehen;
-  const seed = o.seed ?? (tutorial ? RL_START_TUTORIAL_SEED : (Math.random() * 2 ** 32) >>> 0);
+  const tutorial = o.tutorial ?? !profil.tutorialGeschafft;
+  if (tutorial) o = { ...o, deck: 'standard', stufe: 1, startort: 'frost', seed: o.seed ?? RL_START_TUTORIAL_SEED };
+  const seed = o.seed ?? ((Math.random() * 2 ** 32) >>> 0);
   const deckWahl = o.deck && profil.decks.includes(o.deck) ? o.deck : 'standard';
   const schwierigkeit = Math.max(1, Math.min(profil.schwierigkeit, Number(o.stufe) || 1));
   const startort = o.startort && profil.planeten.includes(o.startort) ? o.startort : profil.startort;
   rlS.lauf = RlLauf.neu({ seed, schwierigkeit, deckWahl, startort, profil, tutorial });
   rlS.kampf = null;
+  rlS.uebung = null;
   rlS.abgeschlossen = null;
-  const haken = rlStartHakenNeu(rlS.lauf);
-  // Der geführte Lauf gilt als gesehen, sobald er beginnt — ein abgebrochener wiederholt sich nicht.
+  rlStartHakenNeu(rlS.lauf);
+  // Die Begrüßung gilt als gesehen, sobald der geführte Lauf beginnt; GESCHAFFT ist das Tutorial erst nach dem
+  // ersten Shop — ein abgebrochener geführter Lauf beginnt beim nächsten „Raubzug beginnen" von vorn.
   if (!profil.tutorialGesehen) { profil.tutorialGesehen = true; rlProfilSpeichern(profil); }
+  rlS.startGesagt = true;
   rlStartSpeichern();
-  // Punkt 1 („start") kommt normalerweise auf dem Startschirm; wer das Tutorial später noch
-  // einmal ansieht, bekommt ihn hier vor der Sternkarte — gekürzt, ohne Deckwahl.
-  if (tutorial) {
-    if (rlS.startGesagt) haken.tutorial.merke('start');
-    else { rlS.startGesagt = true; haken.sag('start', { wiederholung: true }); }
-  }
   rlStartZeigeAktuell();
   return rlS.lauf;
 }
@@ -18848,6 +20058,7 @@ function rlStartFortsetzen() {
     return false;
   }
   rlS.kampf = null;
+  rlS.uebung = null;
   rlS.abgeschlossen = null;
   rlStartHakenNeu(rlS.lauf);
   rlStartZeigeAktuell();
@@ -18889,14 +20100,20 @@ function rlStartStand() {
     frei: profil.decks.includes(key),
   }));
   const stufen = [1, 2, 3].filter((n) => n <= profil.schwierigkeit);
-  // Beim ersten Besuch der Ebene begrüßt der V2-A2 (§5.6, Punkt 1) — über einen Haken ohne
-  // Lauf, damit der Punkt nicht am Merker eines früheren Tutorial-Laufs hängt.
-  if (!profil.tutorialGesehen && !rlS.startGesagt) {
+  // Solange das Pflicht-Tutorial aussteht, begrüßt der V2-A2 beim ersten Besuch der Ebene (je Profil einmal) —
+  // über einen Haken ohne Lauf, damit der Punkt nicht am Merker eines früheren Laufs hängt.
+  const pflicht = !profil.tutorialGeschafft;
+  if (pflicht && !rlS.startGesagt) {
     rlS.startGesagt = true;
     const haken = rlS.lauf ? rlTutorialHaken(null, profil, { sextant: rlS.sextant, profilSpeichern: rlProfilSpeichern }) : rlStartHaken();
     haken.sag('start');
   }
   return {
+    // Pflicht-Tutorial: die Ebene zeigt dann nur „Raubzug beginnen" (Deck- und Stufenwahl kommen danach).
+    pflicht,
+    pflichtKnopf: RL_TXT_FUEHRUNG.ebene.knopf,
+    pflichtHinweis: RL_TXT_FUEHRUNG.ebene.hinweis,
+    tutorialKnopf: RL_TXT_FUEHRUNG.ebene.wiederholen,
     laufVorhanden: rlLaufGespeichert(),
     decks,
     stufen,
@@ -18937,10 +20154,7 @@ function rlStartEinrichten(api) {
       },
       tutorial: () => {
         rlS.name = gemerkterName();
-        const los = () => {
-          rlS.profil.tutorialGesehen = false;
-          rlStartNeuerLauf({ deck: 'standard', stufe: 1, startort: 'frost', seed: RL_START_TUTORIAL_SEED, tutorial: true });
-        };
+        const los = () => rlStartNeuerLauf({ tutorial: true });   // Tutorial wiederholen: derselbe geführte Lauf
         if (rlLaufGespeichert()) rlStartFrage(RL_TXT_KAMPF.laufVerwerfen, RL_TXT_KAMPF.laufVerwerfenText, RL_TXT_KAMPF.verwerfen, los);
         else los();
       },
@@ -18963,6 +20177,8 @@ function rlStartEinrichten(api) {
     speichern: () => rlStartSpeichern(),
     sextant: (text, opt) => rlS.sextant.sag(text, opt),
     tutorial: () => rlS.tutorial,
+    fuehrung: () => rlStartFuehrung(),
+    uebung: () => rlS.uebung,
     regeln: () => rlStartRegelnZeigen(),
     regelnHtml: () => rlStartRegelnHtml(),
   };
@@ -19011,7 +20227,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '18.09.2026 23:19';
+const BAU_STAND = '19.09.2026 00:41';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -19374,6 +20590,15 @@ function weiterLaufen() {
   const lauf = ++botLaufNr;
   const gilt = () => S.ablauf === a && lauf === botLaufNr;
   zeichne();
+  // Roguelike-Führung: der Modus darf die Schleife anhalten, bis eine Erklärung bestätigt ist
+  // (S.modus-Vertrag: warteVorWeiter liefert eine Promise oder null).
+  if (S.modus && S.modus.warteVorWeiter) {
+    const warten = S.modus.warteVorWeiter(a);
+    if (warten && typeof warten.then === 'function') {
+      warten.then(() => { if (gilt()) weiterLaufen(); });
+      return;
+    }
+  }
   if (a.beendet) {
     if (S.modus) {
       // Im Modus endet die Partie mit der letzten Wertung (Rundenzahl oder Boss
@@ -19695,7 +20920,8 @@ function pruefeAuswahl() {
   // Die gefundene Aktion wird auf die tatsächlich angeklickten Karten
   // umgeschrieben — sonst legt die Engine andere, wertgleiche Karten ab.
   if (treffer) {
-    return { aktion: { ...treffer, handIds: [...S.auswahlHand], mitteIds: [...S.auswahlMitte] } };
+    // … und die Punkte aus genau diesen Karten nachgerechnet (eine Leuchtkarte zählt anders als ihre schlichte Schwester).
+    return { aktion: mitEchtenPunkten({ ...treffer, handIds: [...S.auswahlHand], mitteIds: [...S.auswahlMitte] }) };
   }
 
   // Im Tutorial ist die Aktionsliste absichtlich auf den einen gesuchten Zug
@@ -19703,6 +20929,11 @@ function pruefeAuswahl() {
   if (S.tutorial) {
     return { grund: 'Das wäre im Spiel erlaubt — hier geht es gerade nur um den einen Zug, '
       + 'den die Karte oben nennt.' };
+  }
+  // Dasselbe im geführten Übungskampf des Roguelike-Modus (S.modus-Vertrag: abgelehntText).
+  if (S.modus && S.modus.abgelehntText) {
+    const t = S.modus.abgelehntText();
+    if (t) return { grund: t };
   }
 
   // Hierher kommt man nur, wenn die Engine etwas verbietet, das oben nicht
@@ -19736,6 +20967,22 @@ function baueSicht() {
       kosmische: S.optionen.kosmische.filter((x) => S.tutorial.erlaubtKosmisch(x)),
       nova: [],
       jokerTausch: [],
+    };
+  }
+  // Roguelike-Führung (Pflicht-Tutorial): der Modus darf die Züge auf den einen gezeigten beschränken.
+  if (S.modus && S.modus.optionenFiltern && S.optionen) {
+    S.optionen = S.modus.optionenFiltern(S.optionen) || S.optionen;
+  }
+  // Anzeige mit den echten Punkten (Stufen, Leucht-, Riesen-, Planetenkarten) — siehe mitEchtenPunkten().
+  if (S.modus && S.optionen) {
+    const spielJetzt = a.spiel;
+    S.optionen = {
+      ...S.optionen,
+      aktionen: S.optionen.aktionen.map(mitEchtenPunkten),
+      versiegelnFrei: (S.optionen.versiegelnFrei || []).map((w) => {
+        const sb = spielJetzt.findeSb(S.menschIdx, w.sbId);
+        return sb ? { ...w, punkte: spielJetzt.punkteVon(sb, S.menschIdx) } : w;
+      }),
     };
   }
 
@@ -19929,6 +21176,73 @@ function baueTipps(s) {
   }
 }
 
+/**
+ * Anzeige-Punkte einer Aktion: generiereAktionen() rechnet mit den Rohpunkten der Form. Im Roguelike-Modus
+ * kommen Sternbildstufen, Leucht-, Riesen- und Planetenkarten, Deck-Boni und Drachenatem dazu — all das kennt
+ * `spiel.punkteVon`. Hier wird `punkteNachher`/`gewinn` für den Menschen aus genau den Karten nachgerechnet, die
+ * die Aktion bewegt (bei der Prüfung der Auswahl: die wirklich angetippten). Im Grundspiel ist das Ergebnis
+ * dasselbe wie vorher. Die Engine liest beide Felder nicht; die Bots rechnen weiter mit ihren eigenen Werten.
+ */
+function mitEchtenPunkten(a) {
+  const spiel = S.ablauf && S.ablauf.spiel;
+  if (!a || !spiel || typeof spiel.punkteVon !== 'function') return a;
+  const m = S.menschIdx;
+  const ich = spiel.spieler[m];
+  if (!ich) return a;
+  const ausHand = (a.handIds || []).map((id) => ich.hand.find((k) => k.id === id)).filter(Boolean);
+  const ausMitte = (a.mitteIds || []).map((id) => spiel.mitte.find((k) => k.id === id)).filter(Boolean);
+  const wert = (karten) => spiel.punkteVon({ karten }, m);
+  try {
+    switch (a.art) {
+      case 'BAUEN': {
+        const sb = a.sbId ? spiel.findeSb(m, a.sbId) : null;
+        if (a.sbId && !sb) return a;
+        const nachher = wert([...(sb ? sb.karten : []), ...ausHand, ...ausMitte]);
+        return { ...a, punkteNachher: nachher, gewinn: nachher - (sb ? spiel.punkteVon(sb, m) : 0) };
+      }
+      case 'KLAUEN': {
+        const sb = spiel.findeSb(a.opferIdx, a.sbId);
+        if (!sb) return a;
+        const nachher = wert([...sb.karten, ...ausHand, ...ausMitte]);
+        return { ...a, punkteNachher: nachher, gewinn: nachher };
+      }
+      case 'RAUB': {
+        const sb = spiel.findeSb(a.opferIdx, a.sbId);
+        if (!sb) return a;
+        const nachher = wert([...sb.karten]);
+        return { ...a, punkteNachher: nachher, gewinn: nachher };
+      }
+      case 'JOKERKLAU': {
+        const sb = spiel.findeSb(a.opferIdx, a.sbId);
+        const joker = sb ? sb.karten.find((k) => k.art === 'STERNSCHNUPPE') : null;
+        if (!joker) return a;
+        const nachher = wert([joker, ...ausHand, ...ausMitte]);
+        return { ...a, punkteNachher: nachher, gewinn: nachher };
+      }
+      case 'VERSIEGELN': {
+        const sb = spiel.findeSb(m, a.sbId);
+        return sb ? { ...a, punkteNachher: spiel.punkteVon(sb, m) } : a;
+      }
+      case 'DRACHE': {
+        const x = spiel.findeSb(m, a.sbIdA), y = spiel.findeSb(m, a.sbIdB);
+        if (!x || !y) return a;
+        const nachher = wert([...x.karten, ...y.karten]);
+        return { ...a, punkteNachher: nachher, gewinn: nachher - spiel.punkteVon(x, m) - spiel.punkteVon(y, m) };
+      }
+      case 'DRACHENKLAU': {
+        const eigen = spiel.findeSb(m, a.sbIdEigen), fremd = spiel.findeSb(a.opferIdx, a.sbId);
+        if (!eigen || !fremd) return a;
+        const nachher = wert([...eigen.karten, ...fremd.karten]);
+        return { ...a, punkteNachher: nachher, gewinn: nachher - spiel.punkteVon(eigen, m) };
+      }
+      default:
+        return a;
+    }
+  } catch {
+    return a;
+  }
+}
+
 function tippWert(a) {
   switch (a.art) {
     case 'KLAUEN': return a.punkteNachher - a.entschaedigung + 0.5;
@@ -19987,9 +21301,35 @@ function baueKnoepfe(s) {
   const opt = S.optionen;
   const etwasGewaehlt = S.auswahlHand.size > 0 || S.auswahlMitte.size > 0;
 
+  /*
+     Roguelike (Spieltest-Runde 3): Versiegeln gehört zum angetippten Sternbild. Ohne Auswahl stand sonst für
+     JEDES eigene Sternbild ein Knopf in der Leiste — bei vier Sternbildern las man vor lauter Knöpfen nichts
+     mehr. Jetzt: eigenes Sternbild antippen → genau sein Versiegeln-Knopf (oder der Grund, warum es nicht geht).
+     Das Grundspiel bleibt, wie es war.
+  */
+  const eigenesZiel = S.modus && S.zielSb && !etwasGewaehlt && !S.jokerZiel
+    ? (s.z.spieler[S.menschIdx].sternbilder.find((x) => x.id === S.zielSb) || null) : null;
+  if (eigenesZiel) {
+    const name = `${typText(eigenesZiel.typ)} versiegeln`;
+    const frei = (opt.versiegelnFrei || []).find((w) => w.sbId === eigenesZiel.id);
+    const zug = opt.aktionen.find((x) => x.art === 'VERSIEGELN' && x.sbId === eigenesZiel.id);
+    if (frei) {
+      knoepfe.push({ text: `${name} — gratis (${frei.punkte} P. sicher)`, klasse: 'haupt', titel: 'Freie Aktion — kostet keinen Zug, macht das Sternbild unantastbar.' });
+      tun.push(() => { S.ablauf.spiel.versiegelnFrei(S.menschIdx, frei.sbId); auswahlLeeren(); zeichne(); });
+    } else if (zug) {
+      knoepfe.push({ text: `${name} (${zug.punkteNachher} P. sicher)`, klasse: 'haupt', titel: 'Kostet einen ganzen Zug, macht das Sternbild unantastbar.' });
+      tun.push(() => fuehreAus(zug));
+    } else {
+      const grund = eigenesZiel.versiegelt ? 'Dieses Sternbild ist schon versiegelt.'
+        : `Versiegeln geht gerade nicht — höchstens ${CONFIG.zug.versiegelnProRunde} Siegel je Runde.`;
+      knoepfe.push({ text: name, klasse: 'haupt', aus: true, titel: grund });
+      tun.push(() => {});
+    }
+  }
+
   // Der Hauptknopf: immer da, sobald Karten gewählt sind. Er prüft und führt
   // aus — oder sagt, woran es liegt. Kein Menü fertiger Züge mehr.
-  if (etwasGewaehlt || S.zielSb || S.jokerZiel) {
+  if (!eigenesZiel && (etwasGewaehlt || S.zielSb || S.jokerZiel)) {
     const p = pruefeAuswahl();
     if (p.aktion) {
       const a = p.aktion;
@@ -20041,7 +21381,8 @@ function baueKnoepfe(s) {
      zusammen. Wer die zweite von zwei Fünfen anwählte, bekam sonst keinen
      Knopf. Die Engine nimmt jede Handkarten-Id an.
   */
-  if (S.auswahlHand.size === 1 && !S.tutorial) {
+  const nurGefuehrt = !!(S.modus && S.modus.nurGefuehrt && S.modus.nurGefuehrt());   // Roguelike-Übungskampf: nur der gezeigte Zug
+  if (S.auswahlHand.size === 1 && !S.tutorial && !nurGefuehrt) {
     const id = [...S.auswahlHand][0];
     const mit = S.auswahlMitte.size;
     // „Abwerfen" klang nach Verlust. Tatsächlich wird am Zugende wieder auf
@@ -20070,7 +21411,8 @@ function baueKnoepfe(s) {
 
   if (!etwasGewaehlt) {
     // Gratis versiegeln (Roguelike-Privileg): freie Aktion, zählt aufs Rundenlimit.
-    for (const w of opt.versiegelnFrei || []) {
+    // Im Roguelike-Modus steht Versiegeln nur beim angetippten Sternbild (siehe oben).
+    for (const w of (S.modus ? [] : opt.versiegelnFrei || [])) {
       const sb = s.z.spieler[S.menschIdx].sternbilder.find((x) => x.id === w.sbId);
       knoepfe.push({
         text: `${typText(sb ? sb.typ : null)} gratis versiegeln (${w.punkte})`,
@@ -20095,7 +21437,7 @@ function baueKnoepfe(s) {
         tun.push(() => fuehreAus(a));
       }
     }
-    for (const a of opt.aktionen) {
+    for (const a of (S.modus ? [] : opt.aktionen)) {
       if (a.art === 'VERSIEGELN') {
         const sb = s.z.spieler[S.menschIdx].sternbilder.find((x) => x.id === a.sbId);
         knoepfe.push({
@@ -20158,13 +21500,20 @@ function baueKnoepfe(s) {
         + `Handkarte${n === 1 ? '' : 'n'} zum Abwerfen und tippe seinen Pfeil an.`;
     } else {
       s.hinweis = 'Du bist dran. Wähle Karten aus deiner Hand und aus der Mitte. '
-        + 'Ein Sternbild anklicken heißt: dort anlegen oder es klauen.';
+        + (S.modus
+          ? 'Ein Sternbild antippen heißt: dort anlegen, es klauen — oder dein eigenes versiegeln.'
+          : 'Ein Sternbild anklicken heißt: dort anlegen oder es klauen.');
     }
     // Funkspruch (Roguelike): die obersten Deckkarten stehen bis zum nächsten Ziehen hier.
     const gesehen = s.z.spieler[S.menschIdx].gesehen;
     if (gesehen && gesehen.length) {
       s.hinweis = `Funkspruch — oben auf deinem Deck: ${gesehen.map(karteText).join(', ')}. ` + s.hinweis;
     }
+  } else if (eigenesZiel) {
+    // Roguelike: ein eigenes Sternbild ist angetippt, noch keine Karte dazu.
+    s.hinweis = `${typText(eigenesZiel.typ)} ${werteText(eigenesZiel.karten.map((k) => k.wert).filter((w) => w != null).sort((x, y) => x - y))} — ${eigenesZiel.punkte} Punkte. `
+      + (eigenesZiel.versiegelt ? 'Schon versiegelt: niemand kommt mehr heran.'
+        : 'Versiegeln macht es unantastbar. Oder tippe Handkarten an, um hier anzulegen.');
   } else {
     // Hier steht entweder, was herauskommt, oder woran es scheitert.
     const p = pruefeAuswahl();
@@ -20215,6 +21564,8 @@ function zeichne() {
   zeichneLeiste(dom, s);
   zeichneProtokoll(dom, S.ablauf.spiel.protokoll.slice(-250));
   markiereWlKarten(s);
+  // Roguelike-Führung: die anzutippenden Karten und Sternbilder hervorheben (S.modus-Vertrag: nachZeichnen).
+  if (S.modus && S.modus.nachZeichnen) S.modus.nachZeichnen(s, dom);
   // (Der Erzaehler zeichnet sich selbst - siehe erzaehler.js.)
   dom.ichName.textContent = s.z.spieler[S.menschIdx].name;
   const meine = s.z.spieler[S.menschIdx].sternbilder;
@@ -20889,6 +22240,7 @@ const rlStart = rlStartEinrichten({
   tischVerlassen,
   zeigeStart,
   startschirm: () => startschirm,
+  zeichne: () => { if (S.ablauf && !dom.tisch.hidden) zeichne(); },   // Führung: Tisch nach einem Schrittwechsel neu zeichnen
 });
 
 const startschirm = baueStartschirm({
