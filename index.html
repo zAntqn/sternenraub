@@ -3832,26 +3832,30 @@ body[data-modus="roguelike"] .stapel.anklickbar:focus-visible { outline: 2px sol
 /* Platz unter dem Inhalt, damit das Ziel über V2-A2 gerollt werden kann (die Packs liegen unten). */
 #rl-schirm[data-fuehrung] .rl-schirm-innen { padding-bottom: 250px; }
 
-/* Das Ziel pulst: Knöpfe, Kacheln und Bereiche auf den Schirmen … */
-#rl-schirm .rl-tut-ziel { position: relative; z-index: 1; animation: rl-tut-puls 1100ms ease-in-out infinite; }
-#rl-schirm .rl-geld.rl-tut-ziel, #rl-schirm .rl-shop-kacheln.rl-tut-ziel, #rl-schirm .rl-pack.rl-tut-ziel {
-  border-radius: 12px; animation-name: rl-tut-rahmen;
+/* Das Ziel trägt einen ZEIGER: weiß gestrichelter Rahmen und ein hüpfender Pfeil darüber — auf den Schirmen (Knöpfe,
+   Kacheln, Bereiche) wie am Tisch (anzutippende Karten, Ziel-Sternbild, Knopf der Fußleiste). Gold trägt seit
+   Spieltest-Runde 6 nur noch die AUSWAHL (Abschnitt 28): neue Spieler lasen die goldene Marke als „ist schon gewählt". */
+#rl-schirm .rl-tut-ziel { position: relative; z-index: 1; outline: 3px dashed #fff; outline-offset: 4px; animation: rl-tut-puls 1100ms ease-in-out infinite; }
+#rl-schirm .rl-geld.rl-tut-ziel, #rl-schirm .rl-shop-kacheln.rl-tut-ziel, #rl-schirm .rl-pack.rl-tut-ziel { border-radius: 12px; }
+body[data-modus="roguelike"] .karte.rl-tut-ziel { outline: 3px dashed #fff; outline-offset: 3px; animation: rl-tut-puls 1000ms ease-in-out infinite; z-index: 2; }
+body[data-modus="roguelike"] .sternbild.rl-tut-ziel { position: relative; outline: 3px dashed #fff; outline-offset: 2px; animation: rl-tut-puls 1000ms ease-in-out infinite; border-radius: 10px; cursor: pointer; }
+body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel { position: relative; outline: 3px dashed #fff; outline-offset: 3px; animation: rl-tut-puls 1000ms ease-in-out infinite; }
+#rl-schirm .rl-tut-ziel::before,
+body[data-modus="roguelike"] .karte.rl-tut-ziel::before,
+body[data-modus="roguelike"] .sternbild.rl-tut-ziel::before,
+body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel::before {
+  content: ""; position: absolute; left: 50%; bottom: calc(100% + 7px); width: 24px; height: 28px; margin-left: -12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28'%3E%3Cpath d='M8 2h8v12h6L12 26 2 14h6z' fill='%23fff' stroke='%23141414' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(2px 2px 0 #000);
+  animation: rl-tut-zeiger 800ms ease-in-out infinite; pointer-events: none; z-index: 6;
 }
-/* … und am Tisch: die anzutippenden Karten, das Ziel-Sternbild, der Knopf in der Fußleiste. */
-body[data-modus="roguelike"] .karte.rl-tut-ziel { animation: rl-tut-karte 1000ms ease-in-out infinite; z-index: 2; }
-body[data-modus="roguelike"] .sternbild.rl-tut-ziel { animation: rl-tut-rahmen 1000ms ease-in-out infinite; border-radius: 10px; cursor: pointer; }
-body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel { animation: rl-tut-puls 1000ms ease-in-out infinite; }
 @keyframes rl-tut-puls {
-  0%, 100% { box-shadow: var(--rl-schatten), 0 0 0 0 rgba(242, 198, 64, .0); }
-  50%      { box-shadow: var(--rl-schatten), 0 0 0 7px rgba(242, 198, 64, .85); }
+  0%, 100% { outline-color: rgba(255, 255, 255, .5); }
+  50%      { outline-color: #fff; }
 }
-@keyframes rl-tut-rahmen {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(242, 198, 64, .35); }
-  50%      { box-shadow: 0 0 0 6px rgba(242, 198, 64, .9); }
-}
-@keyframes rl-tut-karte {
-  0%, 100% { translate: 0 0; box-shadow: var(--rl-schatten-klein), 0 0 0 2px rgba(242, 198, 64, .55); }
-  50%      { translate: 0 -6px; box-shadow: var(--rl-schatten), 0 0 0 5px rgba(242, 198, 64, .95); }
+@keyframes rl-tut-zeiger {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -8px; }
 }
 
 /* Gesperrter Klick: die Blase ruckelt kurz — „erst das hier". */
@@ -3865,8 +3869,10 @@ body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel { animation: rl-tut-puls
 
 @media (prefers-reduced-motion: reduce) {
   #rl-schirm .rl-tut-ziel, body[data-modus="roguelike"] .karte.rl-tut-ziel,
-  body[data-modus="roguelike"] .sternbild.rl-tut-ziel, body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel {
-    animation: none; box-shadow: var(--rl-schatten), 0 0 0 5px rgba(242, 198, 64, .9);
+  body[data-modus="roguelike"] .sternbild.rl-tut-ziel, body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel,
+  #rl-schirm .rl-tut-ziel::before, body[data-modus="roguelike"] .karte.rl-tut-ziel::before,
+  body[data-modus="roguelike"] .sternbild.rl-tut-ziel::before, body[data-modus="roguelike"] #leiste .knopf.rl-tut-ziel::before {
+    animation: none; outline-color: #fff;
   }
   #rl-figur.ruckelt .rl-blase { animation: none; }
 }
@@ -4043,6 +4049,40 @@ body[data-modus="roguelike"] .rl-gegner-info:focus-visible { outline: 2px solid 
   body[data-modus="roguelike"] .sternbild.ziel:has(.sb-marke.drachenklau), body[data-modus="roguelike"] #meine-hand.rl-hand-ruf .karte { animation: none; }
 }
 .rl-form-tip .form-punkte::before { content: "Punkte: "; font-family: var(--grotesk, sans-serif); font-size: 11px; letter-spacing: 0; opacity: .75; }
+
+/* ---------- 28. Auswahl am Tisch (Spieltest-Runde 6) ---------- */
+/* Gewählt = bunt und bleibt es: Goldring, Leuchten, Haken-Marke, deutlich angehoben. Vorher hob sich eine gewählte
+   Karte nur vier Pixel — und die goldene Tutorial-Marke („hier tippen") wurde für die Auswahl gehalten. Jetzt trägt
+   NUR die Auswahl Gold; der Tutorial-Zeiger ist weiß (Abschnitt 23). Gilt im ganzen Raubzug, nicht nur im Tutorial. */
+body[data-modus="roguelike"] .karte.gewaehlt {
+  border-color: #B8860B;
+  box-shadow: var(--rl-schatten), 0 0 0 4px var(--rl-gold), 0 0 20px 6px rgba(242, 198, 64, .6);
+  z-index: 3;
+}
+body[data-modus="roguelike"] .kartenreihe.hand .karte.gewaehlt:nth-child(n),
+body[data-modus="roguelike"] .kartenreihe.hand .karte.gewaehlt:hover:nth-child(n) { rotate: 0deg; translate: 0 -14px; }
+body[data-modus="roguelike"] .karte.gewaehlt::after {
+  content: ""; position: absolute; top: -10px; right: -10px; width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--tinte, #141414); box-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 4;
+  background: var(--rl-gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4.5 10.5l3.6 3.6 7.4-8' fill='none' stroke='%23141414' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 15px no-repeat;
+}
+/* Das angetippte Ziel-Sternbild (anlegen oder klauen) trägt denselben Goldring. */
+body[data-modus="roguelike"] .sternbild.gewaehlt {
+  border-color: var(--rl-gold);
+  box-shadow: 0 0 0 3px var(--rl-gold), 0 0 18px 4px rgba(242, 198, 64, .5);
+}
+/* Mitte-Sperre: sind so viele Mittelkarten gewählt wie erlaubt, treten die übrigen zurück (antippbar bleibt, der Tipp erklärt). */
+body[data-modus="roguelike"] .karte.rl-mitte-zu { opacity: .42; filter: grayscale(.75); cursor: not-allowed; }
+body[data-modus="roguelike"] .karte.rl-mitte-zu:hover { translate: 0 0; transform: none; }
+body[data-modus="roguelike"] #mitte-hinweis.rl-mitte-voll { color: var(--rl-gold); font-weight: 700; opacity: 1; }
+/* Die Mitte ist ein Rollbereich (overflow) — eine angehobene Karte würde oben abgeschnitten. Deshalb bleibt die gewählte
+   Mittelkarte liegen, und der Bereich bekommt oben Luft für Goldring und Haken (ohne die Bretthöhe zu ändern). */
+body[data-modus="roguelike"] #mitte-karten { padding-top: 9px; margin-top: -9px; }
+body[data-modus="roguelike"] #mitte-karten .karte.gewaehlt { transform: none; }
+body[data-modus="roguelike"] #mitte-karten .karte.gewaehlt::after { top: -7px; right: -7px; width: 20px; height: 20px; background-size: 13px; }
+/* Der Tutorial-Zeiger an einer Mittelkarte sitzt IM Kartenkopf (über der Mitte ist kein Platz, der Rollbereich schnitte ihn ab). */
+body[data-modus="roguelike"] #mitte-karten .karte.rl-tut-ziel::before { bottom: auto; top: -9px; width: 20px; height: 24px; margin-left: -10px; animation-name: rl-tut-zeiger-mitte; }
+@keyframes rl-tut-zeiger-mitte { 0%, 100% { translate: 0 0; } 50% { translate: 0 6px; } }
 
 </style>
 <style>
@@ -10395,7 +10435,7 @@ const RL_TXT_FUEHRUNG = {
     bauen: {
       vor: (k) => [
         'Der Kampftisch. Unten liegt deine Hand — sie kommt aus deinem eigenen Deck. Die Karten in der Mitte gehören niemandem.',
-        `Dieser Kampf dauert eine Runde mit ${k.zuege ?? 4} Zügen. Wer danach mehr Punkte hat, gewinnt. Ich sage dir jeden Zug an — die Karten dafür leuchten.`,
+        `Dieser Kampf dauert eine Runde mit ${k.zuege ?? 4} Zügen. Wer danach mehr Punkte hat, gewinnt. Ich sage dir jeden Zug an: Ein weißer Pfeil zeigt, wo du tippst. Was du angetippt hast, bekommt einen Goldrand — das heißt: gewählt.`,
         `Bau einen Pfeil, das sind Zahlen in Folge: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann ${rlTxtWerteListe(k.mitte)} in der Mitte — und bestätige unten.`,
       ],
       aufgabe: (k) => `Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an, dann ${rlTxtWerteListe(k.mitte)} in der Mitte. Danach unten bestätigen.`,
@@ -11168,6 +11208,7 @@ function sternbildEl(sb, opt = {}) {
   if (sb.versiegelt) e.classList.add('versiegelt');
   if (sb.sicher) e.classList.add('sicher');
   if (opt.ziel) e.classList.add('ziel');
+  if (opt.gewaehlt) e.classList.add('gewaehlt');   // das angetippte Ziel-Sternbild (Raubzug: trägt den Goldring der Auswahl)
   if (opt.gefahr) e.classList.add('gefahr');
   if (opt.jokerChance) e.classList.add('joker-chance');
   if (opt.frisch) e.classList.add('frisch');
@@ -11420,6 +11461,7 @@ function zeichneGegner(dom, s) {
       const ziel = s.zieleSb.get(sb.id);
       box.appendChild(sternbildEl(sb, {
         ziel: !!ziel,
+        gewaehlt: !!ziel && ziel.art === 'ZIEL',
         zielText: ziel ? aktionText(ziel, s.z) : '',
         // Roguelike: jedes fremde Sternbild lässt sich antippen — geht Klauen nicht, steht unten, warum.
         anklickbar: s.dranMensch && (!sb.sicher || !!rl),
@@ -11455,12 +11497,20 @@ function zeichneGegner(dom, s) {
 function zeichneMitte(dom, s) {
   leere(dom.mitteKarten);
   for (const k of s.z.mitte) {
-    dom.mitteKarten.appendChild(karteEl(k, 'mitte', {
+    const e = karteEl(k, 'mitte', {
       gewaehlt: s.auswahlMitte.has(k.id),
       spielbar: s.spielbareMitte.has(k.id),
       tot: !s.spielbareMitte.has(k.id) && !s.auswahlMitte.has(k.id),
-    }));
+    });
+    // Raubzug (Spieltest-Runde 6): sind so viele Mittelkarten gewählt wie erlaubt, sind die übrigen zu — abgeblendet,
+    // aber antippbar, damit der Tipp erklären kann, warum es nicht weitergeht.
+    if (s.mitteVoll && !s.auswahlMitte.has(k.id) && s.spielbareMitte.has(k.id)) {
+      e.classList.add('rl-mitte-zu');
+      e.title = 'Mehr Karten aus der Mitte gehen in einem Zug nicht.';
+    }
+    dom.mitteKarten.appendChild(e);
   }
+  dom.mitteHinweis.classList.toggle('rl-mitte-voll', !!s.mitteVoll);
   if (s.z.nova) {
     /*
        Die Nova ist die einzige Karte, deren Besitz öffentlich ist. Genau davon
@@ -11627,6 +11677,7 @@ function zeichneIch(dom, s) {
     const ziel = s.zieleSb.get(sb.id);
     dom.meineSternbilder.appendChild(sternbildEl(sb, {
       ziel: !!ziel,
+      gewaehlt: !!ziel && ziel.art === 'ZIEL',
       zielText: ziel ? aktionText(ziel, s.z) : '',
       // Roguelike: auch ein fertiges eigenes Sternbild lässt sich antippen — zum Versiegeln (Spieltest-Runde 5).
       anklickbar: s.dranMensch && (!sb.sicher || !!s.rl),
@@ -21684,7 +21735,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '19.09.2026 12:52';
+const BAU_STAND = '19.09.2026 15:25';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -22601,6 +22652,13 @@ function baueSicht() {
 
   s.novaMoeglich = !!z.nova && S.optionen.nova.length > 0;
   s.mitteHinweis = `höchstens ${CONFIG.zug.bauenMaxAusMitte} nehmen`;
+  // Raubzug (Spieltest-Runde 6): die Mitte zählt mit — und ist zu, sobald die Grenze erreicht ist (ansicht.js blendet ab).
+  if (S.modus) {
+    const grenze = mitteGrenze();
+    const genommen = S.auswahlMitte.size;
+    s.mitteVoll = genommen >= grenze;
+    s.mitteHinweis = genommen ? `${genommen} von ${grenze} genommen${s.mitteVoll ? ' — mehr geht nicht' : ''}` : `höchstens ${grenze} nehmen`;
+  }
 
   if (S.zeigeTipps) baueTipps(s);
   baueKnoepfe(s);
@@ -23201,11 +23259,25 @@ function karteGeklickt(ort, id, el) {
     if (AKTIONS_KOSMISCH.indexOf(karte.art) >= 0) { kosmischGeklickt(karte); return; }
     umschalten(S.auswahlHand, id);
   } else if (ort === 'mitte') {
-    // Auch zu viele Mittelkarten darf man wählen — die Prüfung sagt dann,
+    // Grundspiel: auch zu viele Mittelkarten darf man wählen — die Prüfung sagt dann,
     // dass es zu viele sind. Stilles Ignorieren erklärt nichts.
+    // Raubzug (Spieltest-Runde 6): die Karte über der Grenze lässt sich gar nicht erst anwählen — neue Spieler
+    // hielten drei, vier gewählte Mittelkarten für erlaubt. Der Tipp sagt, warum; abwählen geht immer.
+    if (S.modus && !S.auswahlMitte.has(id) && S.auswahlMitte.size >= mitteGrenze()) {
+      const n = mitteGrenze();
+      zeichne();
+      blinken(`Mehr als ${n === 2 ? 'zwei Karten' : n === 1 ? 'eine Karte' : n + ' Karten'} aus der Mitte ${n === 1 ? 'geht' : 'gehen'} nicht — tipp eine gewählte an, um sie zurückzulegen.`);
+      return;
+    }
     umschalten(S.auswahlMitte, id);
   }
   zeichne();
+}
+
+/** So viele Mittelkarten darf der Mensch in einem Zug höchstens nehmen (Sitzregeln des Modus eingerechnet). */
+function mitteGrenze() {
+  const spiel = S.ablauf.spiel;
+  return Math.max(spielRegel(spiel, S.menschIdx, 'bauenMaxAusMitte'), spielRegel(spiel, S.menschIdx, 'klauenMaxAusMitte'));
 }
 
 function umschalten(menge, id) {
