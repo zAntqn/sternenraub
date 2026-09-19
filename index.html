@@ -3936,6 +3936,114 @@ body[data-rl-redet="1"] #modal .modal-knoepfe .knopf { pointer-events: none; opa
 }
 @media (prefers-reduced-motion: reduce) { .rl-skip-praemie { animation: none; box-shadow: var(--rl-schatten), 0 0 18px 3px rgba(242, 198, 64, .7); } }
 
+/* ==================================================================== */
+/*  27. Spieltest-Runde 5: Drachenklau, Rundenprämie, Reiseroute,        */
+/*      Werkstatt, Formen-Schwebekarte, Gegner-Fenster, Sofort-Pack      */
+/* ==================================================================== */
+
+/* Fertige Sternbilder tragen im Raubzug KEINEN gestrichelten Rand und keine Marke „nicht klaubar" mehr — sicher ist nur,
+   was versiegelt ist (der Sechser-Pfeil ist per Drachenklau zu holen, kosmische Karten treffen alles Unversiegelte). */
+body[data-modus="roguelike"] .sternbild.sicher:not(.versiegelt):not(.ziel):not(.gefahr):not(.joker-chance) { border: 2px solid transparent; padding: var(--raum-halb); }
+body[data-modus="roguelike"] .sb-marke.drachenklau,
+body[data-modus="roguelike"] .sb-marke.drachengefahr {
+  font-family: var(--display); letter-spacing: .05em; font-size: 11px; line-height: 1.2; padding: 1px 7px;
+  border: 1.5px solid var(--tinte); border-radius: 999px; color: var(--tinte); background: var(--rl-gold); box-shadow: 2px 2px 0 #000;
+}
+body[data-modus="roguelike"] .sb-marke.drachengefahr { background: #F08A7C; }
+body[data-modus="roguelike"] .sternbild.ziel:has(.sb-marke.drachenklau) { border-color: var(--rl-gold); animation: rl-drachen-puls 1400ms ease-in-out infinite; }
+@keyframes rl-drachen-puls { 0%, 100% { box-shadow: 0 0 0 0 rgba(242, 198, 64, 0); } 50% { box-shadow: 0 0 14px 3px rgba(242, 198, 64, .75); } }
+/* Drachenklau: jetzt sind Handkarten zum Abwerfen anzutippen — die Hand ruft. */
+body[data-modus="roguelike"] #meine-hand.rl-hand-ruf .karte:not(.gewaehlt) { animation: rl-hand-ruf 900ms ease-in-out infinite; }
+@keyframes rl-hand-ruf { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 7px var(--rl-gold)) brightness(1.08); } }
+
+/* Gegnerfigur und Schild sind antippbar: was kann dieser Gegner? */
+body[data-modus="roguelike"] .rl-gegner-info { cursor: help; }
+body[data-modus="roguelike"] .gegner-privileg.rl-gegner-info::after {
+  content: "i"; display: inline-grid; place-items: center; width: 15px; height: 15px; margin-left: 6px; vertical-align: 1px;
+  border: 1.5px solid currentColor; border-radius: 50%; font: 700 10px/1 var(--grotesk, sans-serif); opacity: .85;
+}
+body[data-modus="roguelike"] .rl-gegner-info:hover { filter: brightness(1.12); }
+body[data-modus="roguelike"] .rl-gegner-info:focus-visible { outline: 2px solid var(--planet-hell); outline-offset: 3px; border-radius: 6px; }
+.rl-ebene[data-ebene="gegner"] .rl-ebene-kasten { max-width: 760px; }
+.rl-ebene[data-ebene="gegner"] .rl-gegner-himmel { margin-top: var(--raum); }
+
+/* Rundenprämie: Chip vor den Sternbildstufen */
+.rl-praemie-chip {
+  display: inline-flex; align-items: baseline; gap: 6px; padding: 1px 9px; margin-right: 6px;
+  border: 1.5px solid var(--tinte); border-radius: 999px; background: rgba(8, 12, 23, .55); color: var(--schrift); font-size: 12px; white-space: nowrap;
+}
+.rl-praemie-chip .rl-praemie-geld { font-family: var(--display); font-weight: 400; letter-spacing: .04em; color: var(--schrift-leise); }
+.rl-praemie-chip[data-erreicht="1"] { background: #FFF3B0; color: var(--tinte); box-shadow: 2px 2px 0 #000; }
+.rl-praemie-chip[data-erreicht="1"] .rl-praemie-geld { color: #7A5A00; }
+.rl-praemie-chip .rl-praemie-naechste { opacity: .75; }
+@media (max-width: 720px) { .rl-praemie-chip .rl-praemie-naechste { display: none; } }
+
+/* Reiseroute: Spaltenköpfe und „vorbeigeflogen" */
+.rl-karte-route .rl-karte-etappe {
+  position: absolute; top: 3%; transform: translateX(-50%); z-index: 1; padding: 2px 12px; white-space: nowrap;
+  font-family: var(--display); letter-spacing: .1em; text-transform: uppercase; font-size: 13px; color: var(--schrift-leise);
+  border: 2px solid rgba(140, 147, 168, .45); border-radius: 999px; background: rgba(8, 12, 23, .6);
+}
+.rl-karte-route .rl-karte-etappe[data-jetzt="1"] { color: var(--tinte); background: var(--rl-gold); border-color: var(--tinte); box-shadow: 2px 2px 0 #000; }
+.rl-karte-punkt[data-zustand="vorbei"] { cursor: default; opacity: .22; filter: grayscale(.8); }
+.rl-karte-punkt[data-zustand="vorbei"] .rl-karte-name { color: var(--schrift-leise); }
+.rl-karte-route .rl-karte-punkt[data-zustand="fern"] { opacity: .62; }
+.rl-legende-eintrag[data-zustand="vorbei"] .rl-legende-marke { background: var(--schrift-leise); opacity: .3; }
+@media (max-width: 720px) { .rl-karte-route .rl-karte-etappe { font-size: 10px; padding: 1px 7px; letter-spacing: .05em; } }
+
+/* Sprung durch den Hyperraum */
+.rl-sprung {
+  position: fixed; inset: 0; z-index: 60; overflow: hidden; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 50%, #1B2A55 0%, #070B1E 55%, #02030A 100%);
+  animation: rl-sprung-blende var(--rl-sprung-dauer, 1150ms) ease-in both;
+}
+.rl-sprung-tunnel { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.rl-sprung-streif {
+  position: absolute; left: 0; top: 0; width: 3px; height: 46vmax; transform-origin: 50% 0;
+  transform: rotate(var(--w)) translateY(6vmax) scaleY(.02);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(198, 240, 255, .95) var(--l, 60%), rgba(255, 255, 255, 0) 100%);
+  animation: rl-sprung-streif var(--rl-sprung-dauer, 1150ms) cubic-bezier(.6, 0, .9, .4) both;
+  animation-delay: calc(var(--v, 0) * -1s);
+}
+.rl-sprung-ziel { position: relative; width: 120px; filter: drop-shadow(0 0 22px rgba(255, 255, 255, .55)); animation: rl-sprung-ziel var(--rl-sprung-dauer, 1150ms) cubic-bezier(.5, 0, .8, .3) both; }
+.rl-sprung-ziel svg { display: block; width: 100%; height: auto; }
+.rl-sprung-text { position: absolute; bottom: 9%; left: 0; right: 0; text-align: center; font-family: var(--display); letter-spacing: .14em; text-transform: uppercase; color: #C6F0FF; font-size: 15px; text-shadow: 2px 2px 0 #000; }
+@keyframes rl-sprung-streif { 0% { transform: rotate(var(--w)) translateY(6vmax) scaleY(.02); opacity: 0; } 25% { opacity: 1; } 100% { transform: rotate(var(--w)) translateY(9vmax) scaleY(1.6); opacity: 1; } }
+@keyframes rl-sprung-ziel { 0% { transform: scale(.05); opacity: 0; } 55% { transform: scale(.35); opacity: 1; } 100% { transform: scale(2.4); opacity: 1; } }
+@keyframes rl-sprung-blende { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 1; } }
+
+/* Werkstatt in der Umlaufbahn */
+.rl-shop > .rl-aufwertung { position: relative; margin-top: var(--raum2); }
+.rl-aufwertung[data-erschoepft="1"] .rl-deckreihe { opacity: .5; }
+.rl-aufwertung .rl-werkstatt-zu { color: var(--rl-gold); }
+
+/* Formen-Schwebekarte: beim Überfahren / Antippen eines Sternbildtyps */
+.rl-form-tip-traeger { position: relative; cursor: help; }
+.rl-form-tip-traeger:focus-visible { outline: 2px solid var(--planet-hell); outline-offset: 2px; }
+.rl-form-tip {
+  display: none; position: absolute; z-index: 30; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+  width: max-content; max-width: min(340px, 86vw); padding: 8px 12px; text-align: left; white-space: normal;
+  background: #10172B; color: var(--schrift); border: var(--rl-rand, 3px) solid var(--tinte); border-radius: 10px; box-shadow: 4px 4px 0 #000;
+  font-family: var(--grotesk, sans-serif); font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; line-height: 1.35;
+}
+.rl-form-tip-traeger:hover > .rl-form-tip, .rl-form-tip-traeger:focus > .rl-form-tip, .rl-form-tip-traeger:focus-within > .rl-form-tip { display: block; }
+.rl-form-tip .form-zeile { border-bottom: 0; padding: 0; }
+.rl-form-tip .form-zeile .karte { --karte-b: 30px; --karte-h: 42px; }
+.rl-form-tip .form-beispiel { display: flex; flex-wrap: nowrap; gap: 3px; margin: 4px 0; }
+.rl-form-tip .rl-form-tip-stufe { display: block; margin-top: 4px; color: var(--rl-gold); }
+.rl-deck-stufen .rl-deck-stufe:first-of-type > .rl-form-tip, .rl-deck-stufen .rl-deck-stufe:nth-of-type(2) > .rl-form-tip { left: 0; transform: none; }
+.rl-deck-stufen .rl-deck-stufe:last-of-type > .rl-form-tip { left: auto; right: 0; transform: none; }
+.rl-pack-typkarte.rl-form-tip-traeger > .rl-form-tip { bottom: auto; top: calc(100% + 6px); }
+
+/* Sofort-Pack (Überspring-Prämie): die Ebene über dem Planetenschirm */
+.rl-ebene[data-ebene="sofortpack"] .rl-ebene-kasten { max-width: 900px; }
+.rl-ebene[data-ebene="sofortpack"] .rl-pack { margin-top: var(--raum); }
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-modus="roguelike"] .sternbild.ziel:has(.sb-marke.drachenklau), body[data-modus="roguelike"] #meine-hand.rl-hand-ruf .karte { animation: none; }
+}
+.rl-form-tip .form-punkte::before { content: "Punkte: "; font-family: var(--grotesk, sans-serif); font-size: 11px; letter-spacing: 0; opacity: .75; }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -5537,9 +5645,14 @@ function generiereAktionen(spiel, spielerIdx) {
   }
 
   /* ---------- Versiegeln ---------- */
+  // Roguelike (Regel `versiegelnFertig`, Spieltest-Runde 5): auch ein FERTIGES, unversiegeltes Sternbild darf
+  // versiegelt werden — der Sechser-Pfeil ist dort per Drachenklau zu holen, und kosmische Karten treffen alles
+  // Unversiegelte. Im Grundspiel (Regel aus) bleibt es dabei: fertig = kein Versiegeln.
+  const versiegelnFertig = !!spielRegel(spiel, spielerIdx, 'versiegelnFertig');
   if (sp.versiegelungenDieseRunde < CONFIG.zug.versiegelnProRunde) {
     for (const sb of sp.sternbilder) {
-      if (istSicher(sb)) continue;
+      if (sb.versiegelt) continue;
+      if (istSicher(sb) && !versiegelnFertig) continue;
       const b = bewerte(sb.karten);
       if (!b.gueltig) continue;
       aktionen.push({ art: 'VERSIEGELN', sbId: sb.id, gewinn: 0, punkteNachher: b.punkte });
@@ -8126,6 +8239,8 @@ function aktionText(a, z) {
       const opfer = z.spieler[a.opferIdx]?.name ?? 'Gegner';
       return `${opfer}s Sechser-Pfeil klauen und den Drachen zusammensetzen`;
     }
+    case 'DRACHENPARTNER':
+      return 'Dein Pfeil für den Drachenklau — tippe den fremden Sechser-Pfeil an';
     default:
       return a.art;
   }
@@ -10120,7 +10235,7 @@ const RL_TXT_DECK = {
 const RL_TXT_MODUL = {
   sichtluke:     { name: 'Sichtluke',     text: 'Die oberste Karte deines Decks liegt offen.' },
   peilsender:    { name: 'Peilsender',    text: 'Du siehst den nächsten Gegner, bevor du landest.' },
-  werkbank:      { name: 'Werkbank',      text: 'Aufwertungen kosten zwei weniger.' },
+  werkbank:      { name: 'Werkbank',      text: 'Aufwertungen in der Werkstatt (in jedem Shop) kosten zwei weniger.' },
   magnetnetz:    { name: 'Magnetnetz',    text: 'Zu Zugbeginn holst du die oberste Zahl deiner Ablage auf die Hand.' },
   bergungsrecht: { name: 'Bergungsrecht', text: 'Wird dir geklaut, bekommst du doppelte Trostpunkte.' },
   zinsmodul:     { name: 'Zinsmodul',     text: 'Nach jedem Kampf ein Geld je volle zehn, höchstens drei.' },
@@ -10204,6 +10319,7 @@ const RL_TXT_SEXTANT = {
   ernst: (k) => [
     `Ab jetzt ist es ernst: ${k.runden === 1 || !k.runden ? 'eine Runde' : k.runden + ' Runden'} mit ${k.zuege ?? 9} Zügen, und der Lakai spielt wirklich mit.`,
     'Wer am Ende mehr Punkte hat, gewinnt — Gleichstand reicht dir. Verlierst du, ist der Lauf vorbei.',
+    'Und: Punkte sind Geld. Am Ende jeder Runde gibt es Münzen für deine Auslage — über deinen Sternbildern steht, wie viel gerade und ab wann es mehr wird.',
   ],
   vorBoss: (k) => [
     `${k.bossName ? k.bossName + '. ' : ''}Der Boss hat eine Lebensleiste — jede deiner Rundenwertungen ist Schaden.`,
@@ -10404,10 +10520,13 @@ const RL_TXT_SCHIRM = {
   keineModule: 'keine Module',
   kursFrage: (name) => `Kurs auf ${name} setzen?`,
   abbrechen: 'Abbrechen',
-  landenHinweis: (name) => `Platz 1 ist dein Startort: ${name}.`,
-  waehleHinweis: 'Wähle einen erreichbaren Planeten.',
+  landenHinweis: (name) => `Deine Reise beginnt auf ${name}. Dahinter liegen die nächsten Systeme — nach jedem Boss wählst du, wohin der Sprung geht.`,
+  waehleHinweis: 'Der Boss ist besiegt — wähle den nächsten Planeten deiner Route.',
+  etappen: ['Start', 'Zweites System', 'Drittes System'],
+  etappeNr: (n) => `Etappe ${n}`,
+  sprung: 'Sprung durch den Hyperraum …',
   reiseGesperrt: 'Erst den Planeten abschließen, dann geht die Reise weiter.',
-  legende: { standort: 'Standort', ziel: 'erreichbar', besucht: 'besucht', gesperrt: 'noch nicht freigeschaltet', fern: 'nicht erreichbar' },
+  legende: { standort: 'Standort', ziel: 'jetzt wählbar', besucht: 'besucht', gesperrt: 'noch nicht freigeschaltet', fern: 'liegt weiter vorn', vorbei: 'vorbeigeflogen' },
   skizze: 'Kartenskizze',
   skizzeText: 'Die Lakaien der erreichbaren Planeten liegen offen:',
   // Planetenschirm
@@ -10430,8 +10549,10 @@ const RL_TXT_SCHIRM = {
     titel: 'Überspringen bringt',
     preis: (n) => `Preis: Der Boss bekommt ${n} Leben mehr.`,
     garantie: { name: 'Seltenes Angebot', text: 'Im nächsten Shop liegt sicher ein Angebot 2. Größe oder besser.' },
-    sternbilderpack: { name: 'Gratis-Sternbilderpack', text: 'Das Sternbilderpack im nächsten Shop kostet nichts.' },
-    planetenpack: { name: 'Gratis-Planetenpack', text: 'Das Planetenpack im nächsten Shop kostet nichts.' },
+    sternbilderpack: { name: 'Sternbilderpack — sofort', text: 'Das Pack geht sofort auf: eines von drei Sternbildern steigt eine Stufe.' },
+    planetenpack: { name: 'Planetenpack — sofort', text: 'Das Pack geht sofort auf: eine von drei Karten dieses Planeten kommt in dein Deck.' },
+    sofortTitel: 'Deine Prämie: das Pack geht auf',
+    sofortText: 'Nimm eine der Karten — danach geht es auf dem Planeten weiter.',
     modul: { name: 'Gutes Modul', text: 'Im nächsten Shop liegt sicher ein Modul 3. Größe oder besser.' },
     geld: { name: (n) => `${n} Münzen sofort`, text: 'Das Geld wird dir sofort gutgeschrieben.' },
     gratis: 'gratis',
@@ -10443,7 +10564,8 @@ const RL_TXT_SCHIRM = {
   },
   notrufHinweis: 'Mit Notruf: überspringen ohne Bossschuld.',
   notrufNutzen: 'Notruf einsetzen',
-  zurKarteGesperrt: 'Zur Karte geht es erst nach dem Boss.',
+  zurKarteGesperrt: 'Zurück zur Sternkarte geht es nur vor dem ersten Kampf auf diesem Planeten — danach erst wieder nach dem Boss.',
+  zurKarteFrei: 'Noch ist hier nichts passiert: du kannst zurück zur Sternkarte.',
   alterBekannter: (name) => `Ein alter Bekannter: ${name}`,
   // Shops
   umlaufbahn: 'Umlaufbahn',
@@ -10455,7 +10577,9 @@ const RL_TXT_SCHIRM = {
   kabinett: 'Kosmisches Kabinett',
   schiffsmodul: 'Schiffsmodul',
   luftschleuse: 'Luftschleuse',
-  aufwertung: 'Aufwertung',
+  aufwertung: 'Werkstatt',
+  werkstattStempel: (n) => (n == null ? 'beliebig oft' : n === 1 ? 'einmal je Besuch' : `${n}-mal je Besuch`),
+  werkstattErschoepft: 'Für diesen Besuch erschöpft — im nächsten Shop wieder.',
   vorrat: 'Vorrat',
   keinVorrat: 'kein Vorrat an Bord',
   einsetzen: 'einsetzen',
@@ -10528,6 +10652,7 @@ const RL_TXT_SCHIRM = {
   lakaien: 'Lakaien',
   gegnerVorschau: 'Nächster Gegner',
   zuZweit: (n) => `Du kämpfst gegen ${n} Gegner zugleich.`,
+  bossLebenJetzt: (jetzt, max) => `noch ${jetzt} von ${max}`,
   bossZeile: (leben, runden) => `Leben ${leben} · ${runden === 1 ? '1 Runde' : runden + ' Runden'}`,
   lakaiZeile: (runden) => `${runden === 1 ? '1 Runde' : runden + ' Runden'} · Sieg bei mindestens gleich vielen Punkten`,
   // Packs (Spieltest-Runde 2)
@@ -10607,6 +10732,14 @@ const RL_TXT_KAMPF = {
   punkteZeile: (du, gegner) => `Du ${du} Punkte · bester Gegner ${gegner} Punkte`,
   bossLebenZeile: (leben, max) => `Bossleben am Ende: ${leben} von ${max}`,
   geldZeile: (n) => `+${n} Geld in diesem Kampf`,
+  geldZeileRunden: (n) => `+${n} Geld Rundenprämie (für deine Punkte je Runde)`,
+  geldZeileKlau: (n) => `+${n} Geld fürs Klauen`,
+  // Rundenprämie (Spieltest-Runde 5): der Chip über der eigenen Auslage
+  praemiePunkte: (p) => `Auslage ${p} P.`,
+  praemieGeld: (g) => (g > 0 ? `Prämie +${g}` : 'noch keine Prämie'),
+  praemieNaechste: (ab, g) => `ab ${ab} P. +${g}`,
+  praemieTitel: 'Rundenprämie: Am Ende jeder Runde gibt es Münzen für die Punkte deiner Auslage — es zählt die höchste erreichte Schwelle. Klauen bringt weiter Geld obendrauf.',
+  gegnerInfoTitel: 'Dein Gegner',
   bossBonusZeile: (n, mitZins = false) => `+${n} Geld Siegprämie${mitZins ? ' (mit Zinsen aus dem Zinsmodul)' : ''}`,
   drachenklauHinweis: (opfer, n) => `Drachenklau möglich: ${opfer}s fertiger Sechser-Pfeil ergänzt deinen zum Drachen. Wähle mindestens ${n} ${n === 1 ? 'Handkarte' : 'Handkarten'} zum Abwerfen und tippe seinen Pfeil an.`,
   deckStapelTitel: 'Antippen: dein Deck ansehen — was noch im Stapel liegt, was auf der Hand ist und was schon gespielt wurde.',
@@ -10623,6 +10756,8 @@ const RL_TXT_KAMPF = {
   rundeSchaden: (name, betrag, leben, max) => `${name} verliert ${betrag} Leben — ${leben} von ${max}`,
   rundeHeilung: (name, betrag, leben, max) => `${name} heilt ${betrag} Leben — ${leben} von ${max}`,
   rundeGeld: (n, gesamt) => `+${n} Geld geklaut — ${gesamt} an Bord`,
+  rundePraemie: (n, punkte) => `+${n} Geld Rundenprämie für ${punkte} Punkte`,
+  rundePraemieKeine: (punkte, ab) => `Keine Rundenprämie: ${punkte} Punkte — ab ${ab} gibt es Münzen`,
   rundeBossTot: (name) => `${name} ist besiegt!`,
   rundeBossStand: (name, leben, max, rest) => `${name}: ${leben} von ${max} Leben · noch ${rest} ${rest === 1 ? 'Runde' : 'Runden'}`,
   rundeLakaiStand: (du, gegner) => `Stand: du ${du}, bester Gegner ${gegner} — Sieg bei mindestens gleich vielen Punkten.`,
@@ -10659,8 +10794,10 @@ const RL_TXT_REGELN = {
   trenner: 'Darunter: die Grundregeln von Sternenraub.',
   abschnitte: (k) => [
     { titel: 'Der Lauf', html:
-      `<p>Ein Lauf führt über <b>${k.planeten} Planeten</b> (Platz 1 bis ${k.planeten}). Platz 1 ist dein Startort, danach wählst du auf der
-      Sternkarte unter den Nachbarn, die noch frei sind. Zurück geht es nie. <b>Ein Leben:</b> verlierst du einen Kampf, ist der Lauf vorbei.</p>` },
+      `<p>Ein Lauf führt über <b>${k.planeten} Planeten</b> (Platz 1 bis ${k.planeten}). Die Sternkarte zeigt deine <b>Reiseroute</b>: vorn der
+      Startplanet, dahinter je System die Planeten zur Wahl — nach jedem Boss springst du ins nächste System und wählst einen davon.
+      Solange auf einem Planeten noch nicht gekämpft wurde, kommst du von dort zurück zur Sternkarte. <b>Ein Leben:</b> verlierst du einen
+      Kampf, ist der Lauf vorbei — der nächste Lauf beginnt auf dem Planeten, an dem du gescheitert bist.</p>` },
     { titel: 'Kämpfe', html:
       `<p>Auf jedem Planeten warten <b>${k.lakaien} Lakaien</b> und der <b>Boss</b>. Der dritte Lakai ist eine <b>Elite</b> mit eigener Fähigkeit.</p>
       <ul>
@@ -10671,24 +10808,28 @@ const RL_TXT_REGELN = {
       </ul>
       <table class="regel-tabelle">${k.bosse.map((b) => `<tr><td>${b.name}</td><td>${b.heil}</td></tr>`).join('')}</table>` },
     { titel: 'Überspringen', html:
-      `<p>Lakaien darfst du überspringen. Dafür hat die nächste Umlaufbahn <b>sicher ein Angebot 2. Größe oder besser</b>, aber der Boss
-      dieses Planeten bekommt <b>+${k.schuld} Leben</b>. Mit dem Vorrat <b>Notruf</b> überspringst du ohne Bossschuld.</p>` },
+      `<p>Lakaien darfst du überspringen. Dafür gibt es eine <b>Prämie</b>, die der Planetenschirm vorher zeigt: ein <b>Pack, das sofort
+      aufgeht</b> (Sternbilder oder Planetenkarten), sicher ein seltenes Angebot oder ein gutes Modul im nächsten Shop, oder Münzen auf die
+      Hand. Der Preis: der Boss dieses Planeten bekommt <b>+${k.schuld} Leben</b>. Mit dem Vorrat <b>Notruf</b> überspringst du ohne Bossschuld.</p>` },
     { titel: 'Geld', html:
-      `<p>Geld gibt es <b>fürs Klauen</b>: ${k.proKarte === 1 ? 'eine Münze' : k.proKarte + ' Münzen'} je geklauter Karte (Klau, Raub und Drachenklau;
-      ein herausgeklauter Joker bringt nichts), dazu eine <b>Prämie je besiegtem Lakaien</b> (${k.lakaiPraemie}). Ein Bosssieg bringt
+      `<p>Am Ende jeder Runde gibt es die <b>Rundenprämie</b> für die Punkte deiner Auslage: ${k.rundenPraemie} — es zählt die höchste
+      erreichte Schwelle, der Stand steht im Kampf über deiner Auslage. <b>Klauen</b> bringt Geld obendrauf:
+      ${k.proKarte === 1 ? 'eine Münze' : k.proKarte + ' Münzen'} je geklauter Karte (Klau, Raub und Drachenklau;
+      ein herausgeklauter Joker bringt nichts). Dazu kommt eine <b>Prämie je besiegtem Lakaien</b> (${k.lakaiPraemie}). Ein Bosssieg bringt
       <b>+${k.bossSiegBonus}</b>; besiegst du denselben Boss ein zweites Mal, gibt es statt seines Decks <b>+${k.zweiterBossSieg}</b>.
       Startgeld je Schwierigkeit: ${k.startgeld}.</p>` },
     { titel: 'Shops', html:
       `<ul>
         <li><b>Umlaufbahn</b> (nach jedem Lakaien): ${k.angebote} Angebote — eine Zahl, eine kosmische Karte, eine Zahl oder kosmische Karte,
-        dazu Modul, Vorrat, Sternwarte oder Aufwertung. <b>Neu würfeln</b> kostet ${k.rerollStart}, jedes weitere Mal ${k.rerollPlus} mehr.</li>
+        dazu Modul, Vorrat oder Sternwarte. <b>Neu würfeln</b> kostet ${k.rerollStart}, jedes weitere Mal ${k.rerollPlus} mehr.</li>
         <li><b>Packs</b> (in beiden Shops, je einmal): das <b>Sternbilderpack</b> (${k.packSternbilder} Geld) deckt drei Sternbilder auf, eines
         davon steigt eine Stufe; das <b>Planetenpack</b> (${k.packPlanet} Geld) deckt drei Karten auf, die es nur auf diesem Planeten gibt,
         eine kommt in dein Deck. Das nächste Pack gibt es im nächsten Shop.</li>
         <li>Jedes Angebot hat einen <b>Details</b>-Knopf mit der langen Erklärung und einem Beispiel.</li>
         <li><b>Im Flug</b> (nach dem Boss): <b>Kartenmarkt</b> (${k.kartenmarkt} Zahlen), <b>Kosmisches Kabinett</b> (${k.kabinett} kosmische),
-        ein <b>Schiffsmodul</b> (nicht rerollbar) und die <b>Luftschleuse</b>: bis zu ${k.luftschleuse} Karten aus dem Deck werfen. Dazu die
-        Aufwertung zum Riesen.</li>
+        ein <b>Schiffsmodul</b> (nicht rerollbar) und die <b>Luftschleuse</b>: bis zu ${k.luftschleuse} Karten aus dem Deck werfen.</li>
+        <li><b>Werkstatt</b> (in jedem Shop): eine Zahlenkarte zum <b>Riesen</b> (${k.preise.riese} Geld) oder einen Riesen zum <b>Überriesen</b>
+        (${k.preise.ueberriese} Geld) aufwerten — in der Umlaufbahn einmal je Besuch, im Flug beliebig oft. Das Modul Werkbank macht es billiger.</li>
         <li><b>Sternwarte</b>: ${k.sternwarteAufdecken} zufällige Karten aufdecken, bis zu ${k.sternwarteNehmen} nehmen.</li>
         <li>Das Deck hat mindestens ${k.minGroesse} und höchstens ${k.maxGroesse} Karten; ein Modul höchstens einmal je Lauf.</li>
       </ul>` },
@@ -10709,8 +10850,9 @@ const RL_TXT_REGELN = {
       `<p>Liegt bei dir ein fertiger Sechser-Pfeil (1–6 oder 7–12) und bei einem Gegner das <b>unversiegelte Gegenstück</b>, darfst du es klauen:
       Wirf mindestens so viele Handkarten ab, wie du zum Klauen brauchst, und tippe seinen Pfeil an — beide Pfeile werden sofort zum
       <b>Drachen</b> (${k.drache} Punkte). Der Bestohlene bekommt Trostpunkte, du das Geld für sechs geklaute Karten. Davor schützen nur das
-      <b>Siegel</b>, eine Ankerkarte im Pfeil und Nebel — die Marke „nicht klaubar" und Privilegien wie die unklaubaren Pfeile des Lotsen
-      schützen <b>nicht</b>. Die Gegner dürfen das auch — versiegle deinen Sechser-Pfeil, wenn du ihn behalten willst.</p>` },
+      <b>Siegel</b>, eine Ankerkarte im Pfeil und Nebel — Privilegien wie die unklaubaren Pfeile des Lotsen schützen <b>nicht</b>.
+      Die Gegner dürfen das auch. Deshalb lässt sich im Raubzug <b>jedes</b> Sternbild versiegeln, auch ein fertiges: eigenes Sternbild
+      antippen, dann „versiegeln". Eine Marke „nicht klaubar" gibt es hier nicht — sicher ist nur, was versiegelt ist.</p>` },
     { titel: 'Besondere Karten', html:
       `<ul>
         <li><b>Riese</b> +${k.riese}, <b>Überriese</b> +${k.ueberriese} Punkte je Wertung (Aufwertung einer Zahlenkarte; Überriese nur auf einen Riesen).</li>
@@ -10880,6 +11022,21 @@ function rlPrivilegEl(info) {
   return e;
 }
 
+/**
+ * Roguelike (Spieltest-Runde 5): Figur und Schild des Gegners öffnen ein Fenster mit allem, was er kann (Verhalten,
+ * Privilegien, Fähigkeit, Boss-Stärke, Heilung, Leben) — `s.rl.gegnerInfoZeigen(idx)` aus rl-kampf-ui.js.
+ */
+function rlGegnerInfoAn(element, rl, idx, info) {
+  const zeigen = rl && typeof rl.gegnerInfoZeigen === 'function' ? rl.gegnerInfoZeigen : null;
+  if (!zeigen || !element) return;
+  element.classList.add('rl-gegner-info');
+  element.setAttribute('role', 'button');
+  element.tabIndex = 0;
+  element.title = ((info && info.name) ? info.name + ' — ' : '') + 'antippen: was kann dieser Gegner?';
+  element.onclick = (ev) => { ev.stopPropagation(); zeigen(idx); };
+  element.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); zeigen(idx); } };
+}
+
 /** Eine aufsteigende Zahl (Geld, Schaden, Heilung) über einem Platz. */
 function rlZahlMarke(buehne, daten, klasse, vorzeichen) {
   if (!daten || !(daten.betrag > 0)) return;
@@ -11024,8 +11181,11 @@ function sternbildEl(sb, opt = {}) {
      Schwarzes Loch, Urknall und Nova schützt allein das Siegel.
      Deshalb steht es jetzt als Wort da.
   */
+  // Roguelike (Spieltest-Runde 5): dort gibt es die Marke „nicht klaubar" nicht — ein fertiger Sechser-Pfeil ist per
+  // Drachenklau zu holen, kosmische Karten treffen alles Unversiegelte. Sicher ist nur, was versiegelt ist.
   if (sb.versiegelt) kopf.appendChild(el('span', 'sb-marke versiegelt', 'versiegelt'));
-  else if (sb.sicher) kopf.appendChild(el('span', 'sb-marke fertig', 'nicht klaubar'));
+  else if (sb.sicher && !opt.ohneFertigMarke) kopf.appendChild(el('span', 'sb-marke fertig', 'nicht klaubar'));
+  if (opt.marke) { const mk = el('span', 'sb-marke ' + (opt.marke.klasse || ''), opt.marke.text); if (opt.marke.titel) mk.title = opt.marke.titel; kopf.appendChild(mk); }
   kopf.appendChild(el('span', 'sb-punkte', String(sb.punkte)));
   e.appendChild(kopf);
 
@@ -11201,6 +11361,7 @@ function zeichneGegner(dom, s) {
       fig.dataset.figur = rlGegnerFigurKey(info);
       fig.innerHTML = rlGegnerFigurSvg(info, { hoehe: info.boss ? 116 : 92 });
       if (info.name) fig.title = info.name;
+      rlGegnerInfoAn(fig, rl, sp.idx, info);
       art.classList.add('mit-figur');
       art.appendChild(fig);
     }
@@ -11221,7 +11382,9 @@ function zeichneGegner(dom, s) {
     art.appendChild(kopf);
 
     if (info && (info.verhalten || (info.privilegien && info.privilegien.length) || info.boss || info.elite)) {
-      art.appendChild(rlPrivilegEl(info));
+      const schild = rlPrivilegEl(info);
+      rlGegnerInfoAn(schild, rl, sp.idx, info);
+      art.appendChild(schild);
     }
     if (boss && sp.idx === bossLeisteBei && !rl) art.appendChild(rlBossLeisteEl(boss));
     // Spielbrett: der Gegner hält seine Handkarten als Fächer vor sich (Rücken in Planetenfarbe).
@@ -11250,8 +11413,11 @@ function zeichneGegner(dom, s) {
       box.appendChild(sternbildEl(sb, {
         ziel: !!ziel,
         zielText: ziel ? aktionText(ziel, s.z) : '',
-        anklickbar: s.dranMensch && !sb.sicher,
-        anklickText: 'Antippen: hier klauen. Dazu mindestens zwei eigene Handkarten wählen.',
+        // Roguelike: jedes fremde Sternbild lässt sich antippen — geht Klauen nicht, steht unten, warum.
+        anklickbar: s.dranMensch && (!sb.sicher || !!rl),
+        anklickText: rl && sb.sicher ? 'Antippen: unten steht, ob und wie du herankommst.' : 'Antippen: hier klauen. Dazu mindestens zwei eigene Handkarten wählen.',
+        ohneFertigMarke: !!rl,
+        marke: ziel && ziel.art === 'DRACHENKLAU' ? { klasse: 'drachenklau', text: 'Drachenklau möglich', titel: 'Dieser Sechser-Pfeil ergänzt deinen zum Drachen: antippen, Handkarten zum Abwerfen wählen, klauen.' } : null,
         jokerChance: s.jokerSb.has(sb.id),
         jokerHolbar: s.dranMensch && s.jokerSb.has(sb.id),
         jokerGewaehlt: s.jokerZiel,
@@ -11409,6 +11575,17 @@ function rlStufenZeichnen(dom, s) {
   }
   leere(leiste);
   leiste.hidden = false;
+  // Rundenprämie (Spieltest-Runde 5): was die Auslage gerade wert ist, was das an Münzen bringt, wo die nächste Schwelle liegt.
+  if (rl.rundenPraemie) {
+    const p = rl.rundenPraemie;
+    const chip = el('span', 'rl-praemie-chip');
+    chip.dataset.erreicht = p.geld > 0 ? '1' : '0';
+    chip.appendChild(el('span', 'rl-praemie-punkte', RL_TXT_KAMPF.praemiePunkte(p.punkte)));
+    chip.appendChild(el('b', 'rl-praemie-geld', RL_TXT_KAMPF.praemieGeld(p.geld)));
+    if (p.naechste) chip.appendChild(el('span', 'rl-praemie-naechste', RL_TXT_KAMPF.praemieNaechste(p.naechste.ab, p.naechste.geld)));
+    chip.title = RL_TXT_KAMPF.praemieTitel;
+    leiste.appendChild(chip);
+  }
   const bonus = rl.stufenBonus ?? 1, max = rl.stufenMax ?? 3;
   leiste.appendChild(el('span', 'rl-stufen-titel', RL_TXT_STUFE.leiste + ':'));
   let n = 0;
@@ -11443,8 +11620,12 @@ function zeichneIch(dom, s) {
     dom.meineSternbilder.appendChild(sternbildEl(sb, {
       ziel: !!ziel,
       zielText: ziel ? aktionText(ziel, s.z) : '',
-      anklickbar: s.dranMensch && !sb.sicher,
-      anklickText: 'Antippen: hier anlegen und das Sternbild vergrößern.',
+      // Roguelike: auch ein fertiges eigenes Sternbild lässt sich antippen — zum Versiegeln (Spieltest-Runde 5).
+      anklickbar: s.dranMensch && (!sb.sicher || !!s.rl),
+      anklickText: s.rl ? 'Antippen: hier anlegen — oder das Sternbild versiegeln.' : 'Antippen: hier anlegen und das Sternbild vergrößern.',
+      ohneFertigMarke: !!s.rl,
+      marke: ziel && ziel.art === 'DRACHENPARTNER' ? { klasse: 'drachenklau', text: 'Drachenklau möglich', titel: 'Dein Pfeil ergänzt den fremden Sechser-Pfeil zum Drachen: tippe seinen an, wähle Handkarten zum Abwerfen, klaue.' }
+        : s.drachenGefahrSb && s.drachenGefahrSb.has(sb.id) ? { klasse: 'drachengefahr', text: 'Drachenklau droht', titel: 'Der Gegner hat den passenden Sechser-Pfeil: er kann diesen hier zum Drachen klauen. Nur das Siegel schützt.' } : null,
       gefahr: s.gefahrSb.has(sb.id),
       frisch: s.frisch.has(sb.id),
       jokerWerte: s.jokerWerte.get(sb.id),
@@ -11458,6 +11639,7 @@ function zeichneIch(dom, s) {
   const handKarten = ich.hand || [];
   // Spielbrett (Roguelike): die Hand liegt als Fächer — rl-brett.css dreht jede Karte nach ihrem Platz (--i von --n).
   if (s.rl) dom.meineHand.style.setProperty('--n', String(handKarten.length)); else dom.meineHand.style.removeProperty('--n');
+  dom.meineHand.classList.toggle('rl-hand-ruf', !!(s.rl && s.handRuf));   // Drachenklau: hier sind jetzt Karten zum Abwerfen anzutippen
   handKarten.forEach((k, i) => {
     const e = karteEl(k, 'hand', {
       gewaehlt: s.auswahlHand.has(k.id),
@@ -13849,13 +14031,22 @@ function bestenlisteEl(typName) {
  * Top-Level-Namen dieser Datei: RL_KONFIG.
  */
 const RL_KONFIG = {
-  lauf: { planetenProLauf: 3, lakaienProPlanet: 3, startgeld: { 1: 8, 2: 5, 3: 3 } },   // Spieltest-Runde 2: ein Pack schon nach dem ersten Lakaien
+  lauf: {
+    planetenProLauf: 3, lakaienProPlanet: 3, startgeld: { 1: 8, 2: 5, 3: 3 },   // Spieltest-Runde 2: ein Pack schon nach dem ersten Lakaien
+    // Reiseroute (Spieltest-Runde 5): der Startplanet steht vorn, danach je Etappe so viele Planeten zur Wahl
+    // (Index = Etappe − 1). Die Summe deckt alle sechs Planeten; gesperrte stehen als „gesperrt" in ihrer Etappe.
+    routeWahl: [1, 2, 3],
+  },
   // Spieltest-Runde 2: kurze Kämpfe — Runden je Kampfplatz [Lakai 1, Lakai 2, Elite] und für den Boss, jede Runde mit
   // festen `zuegeJeRunde` Zügen je Spieler (statt der mit der Rundennummer wachsenden Züge des kurzen Spiels).
   partie: { runden: { lakai: [1, 1, 2], boss: 3 }, zuegeJeRunde: 9, spielart: 'kurz' },
   geld: {
     proGeklauterKarte: 1, bossSiegBonus: 5, zweiterBossSieg: 12,   // zweiter Sieg über denselben Boss: Geld statt Deck
     lakaiSiegBonus: { 1: 4, 2: 3, 3: 2 },                        // Prämie je besiegtem Lakaien (Spieltest-Runde 2: kürzere Kämpfe bringen weniger Klau-Geld)
+    // Rundenprämie (Spieltest-Runde 5): Geld für die eigenen Punkte einer Runde — es zählt die höchste erreichte
+    // Schwelle. Klauen bleibt der Bonus obendrauf. Gemessen (90 Läufe, Spieler-Bot ohne Käufe): im Mittel 47 Punkte je
+    // Runde; ≥ 20 in 97 %, ≥ 35 in 85 %, ≥ 50 in 47 %, ≥ 70 in 6 % der Runden → rund 3 Münzen je Runde, 20 je Planet.
+    rundenPraemie: [{ ab: 20, geld: 2 }, { ab: 35, geld: 3 }, { ab: 50, geld: 4 }, { ab: 70, geld: 6 }],
   },
   boss: {
     // Balance-Runde 12.9.2026 (berichte/roguelike/Balance-Runde.md): Ein Spieler-Bot ohne Käufe macht in einem
@@ -13888,6 +14079,9 @@ const RL_KONFIG = {
     // Spieltest-Runde 2: je Shop einmal ein Sternbilderpack (drei Sternbilder aufgedeckt, eines steigt eine Stufe)
     // und ein Planetenpack (drei Karten, die es nur auf diesem Planeten gibt, eine kommt ins Deck).
     packs: { sternbilder: { preis: 6, wahl: 3 }, planet: { preis: 7, wahl: 3 } },
+    // Werkstatt (Spieltest-Runde 5): Zahlenkarten zum Riesen / Überriesen aufwerten geht in JEDEM Shop — in der
+    // Umlaufbahn so oft je Besuch, im Flug beliebig oft (null). Dafür liegt in der Umlaufbahn kein Aufwertungs-Angebot mehr.
+    werkstatt: { umlaufbahn: 1, imFlug: null },
   },
   schwierigkeit: {
     zweitesPrivilegAb: 2,                            // ab dieser Stufe steht im Gegnerplan ein zweites Privileg
@@ -13903,8 +14097,9 @@ const RL_KONFIG = {
   },   // eliteBossRueckenAb gestrichen: Lakaien und Boss tragen ohnehin denselben Planetenrücken
   // Überspring-Prämien (Spieltest-Runde 3): wer einen Lakaien überspringt, bekommt eine dieser Prämien (Gewichte wie
   // Lose); der Planetenschirm zeigt sie vorher. garantie = Angebot 2. Größe oder besser im nächsten Shop,
-  // sternbilderpack / planetenpack = das Pack im nächsten Shop kostet nichts, modul = dort liegt sicher ein Modul
-  // 3. Größe oder besser, geld = `betrag` Münzen sofort. Der Preis bleibt `boss.schuldProUebersprungenem`.
+  // sternbilderpack / planetenpack = das Pack geht SOFORT auf (Spieltest-Runde 5; vorher: gratis im nächsten Shop),
+  // modul = im nächsten Shop liegt sicher ein Modul 3. Größe oder besser, geld = `betrag` Münzen sofort.
+  // Der Preis bleibt `boss.schuldProUebersprungenem`.
   ueberspringen: {
     praemien: [
       { key: 'garantie', gewicht: 28 },
@@ -13916,7 +14111,9 @@ const RL_KONFIG = {
   },
   // Regeln, die im Raubzug für ALLE Sitze gelten (Spieltest-Runde 1): Drachenklau — ein fertiger, unversiegelter
   // Sechser-Pfeil des Gegners darf geklaut werden, wenn er den eigenen fertigen Sechser-Pfeil zum Drachen ergänzt.
-  regeln: { drachenKlau: true },
+  // versiegelnFertig (Spieltest-Runde 5): auch fertige Sternbilder lassen sich versiegeln — nur das Siegel schützt
+  // vor dem Drachenklau und vor kosmischen Karten.
+  regeln: { drachenKlau: true, versiegelnFertig: true },
 };
 
 /* ===== engine\src\roguelike\rl-karten.js ===== */
@@ -15510,7 +15707,7 @@ function rlTutorialHaken(lauf, profil, opt = {}) {
  * Die kleinen Helfer (rlSchirmEl, rlSchirmKlick, rlSchirmKopfzeile, rlSchirmGeldEl, …)
  * teilt sich rl-shop-ui.js mit dieser Datei.
  *
- * Top-Level-Namen dieser Datei: RL_KARTE_POS, RL_KARTE_VB, RL_KARTE_STERNE, rlSchirmEl,
+ * Top-Level-Namen dieser Datei: RL_KARTE_POS, RL_KARTE_VB, RL_KARTE_STERNE, rlKartePlaetze, rlKarteSprung, rlSchirmEl,
  *   rlSchirmLeeren, rlSchirmKnopf, rlSchirmGeldEl, rlSchirmKopfzeile, rlSchirmKlick,
  *   rlSchirmStart, rlSchirmModulLeiste, rlKarteZustaende, rlKarteSchiffSvg, rlKarteLinienSvg,
  *   rlKartePunktEl, rlKarteZeigen, rlPlanetEliteKey, rlPlanetGegnerEl, rlPlanetStationEl,
@@ -15634,8 +15831,15 @@ function rlSchirmModulLeiste(module) {
 /*  Sternkarte                                                          */
 /* ------------------------------------------------------------------ */
 
-/** Feste Positionen in Prozent der Kartenfläche (§5.3). */
-const RL_KARTE_POS = { frost: [12, 55], doppel: [34, 25], schrott: [36, 80], nebel: [60, 42], kron: [64, 78], nest: [88, 50] };
+/**
+ * Die Sternkarte ist seit der Spieltest-Runde 5 eine REISEROUTE: links der Startplanet, dahinter je Etappe die Planeten
+ * zur Wahl (`lauf.route()`). Die Plätze rechnen sich aus der Route — nicht mehr aus festen Koordinaten, bei denen der
+ * Frostpfad immer vorn lag, auch wenn der Lauf woanders begann.
+ */
+const RL_KARTE_POS = {
+  x: (etappe, etappen) => (etappen <= 1 ? 50 : 13 + (74 * etappe) / (etappen - 1)),
+  y: (i, n) => (n <= 1 ? 52 : 24 + (56 * i) / (n - 1)),
+};
 
 /** Zeichenfläche der Linien: Prozent × 10 bzw. × 5, Seitenverhältnis 2 : 1. */
 const RL_KARTE_VB = { b: 1000, h: 500 };
@@ -15643,27 +15847,39 @@ const RL_KARTE_VB = { b: 1000, h: 500 };
 /** Hintergrundsterne der Karte (Prozent). */
 const RL_KARTE_STERNE = [[5, 12], [22, 18], [30, 60], [50, 92], [75, 15], [80, 90], [95, 20], [55, 60], [14, 92], [90, 78], [47, 8], [70, 60], [25, 40]];
 
+/** Platz jedes Planeten auf der Karte: `{key: {x, y, etappe}}` in Prozent. */
+function rlKartePlaetze(route) {
+  const out = {};
+  route.forEach((planeten, e) => {
+    planeten.forEach((key, i) => { out[key] = { x: RL_KARTE_POS.x(e, route.length), y: RL_KARTE_POS.y(i, planeten.length), etappe: e }; });
+  });
+  return out;
+}
+
 /**
- * Zustand jedes Planeten auf der Karte.
- * standort | ziel | besucht | gesperrt | fern — dazu die Profilmarke (erobert/gescheitert) für ferne Planeten.
+ * Zustand jedes Planeten auf der Route:
+ * standort | ziel (jetzt wählbar) | besucht | vorbei (Etappe liegt hinter dir) | gesperrt (Profil) | fern (kommt noch).
  */
 function rlKarteZustaende(lauf, profil) {
   const d = lauf.daten;
   const hier = lauf.planetAktuell();
   const ziele = new Set(lauf.erreichbar(profil));
   const frei = profil && Array.isArray(profil.planeten) ? new Set(profil.planeten) : null;
-  const erobert = new Set((profil && profil.erobert) || []);
-  const gescheitert = new Set((profil && profil.gescheitert) || []);
+  const route = lauf.route(profil);
+  const etappeJetzt = d.planetenReihe.length - 1;
   const out = {};
-  for (const key of Object.keys(RL_PLANETEN)) {
-    let zustand, bild = '';
-    if (key === hier) { zustand = 'standort'; bild = d.reiseBereit ? 'erobert' : ''; }
-    else if (ziele.has(key)) { zustand = 'ziel'; bild = 'ziel'; }
-    else if (d.planetenReihe.includes(key)) { zustand = 'besucht'; bild = 'erobert'; }
-    else if (frei && !frei.has(key)) { zustand = 'gesperrt'; bild = 'gesperrt'; }
-    else { zustand = 'fern'; bild = gescheitert.has(key) ? 'gescheitert' : (erobert.has(key) ? 'erobert' : ''); }
-    out[key] = { zustand, bild };
-  }
+  route.forEach((planeten, e) => {
+    for (const key of planeten) {
+      let zustand, bild = '';
+      if (key === hier) { zustand = 'standort'; bild = d.reiseBereit ? 'erobert' : ''; }
+      else if (ziele.has(key)) { zustand = 'ziel'; bild = 'ziel'; }
+      else if (d.planetenReihe.includes(key)) { zustand = 'besucht'; bild = 'erobert'; }
+      else if (e <= etappeJetzt) { zustand = 'vorbei'; }
+      else if (frei && !frei.has(key)) { zustand = 'gesperrt'; bild = 'gesperrt'; }
+      else { zustand = 'fern'; }
+      out[key] = { zustand, bild, etappe: e };
+    }
+  });
   return out;
 }
 
@@ -15675,30 +15891,30 @@ function rlKarteSchiffSvg() {
     <path d="M-3 8 L0 16 L3 8Z" fill="#C0463A" stroke="#1B2233" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 }
 
-/** Linien und Hintergrundsterne als SVG (Seitenverhältnis fest 2 : 1, Striche in Bildschirm-Pixeln). */
-function rlKarteLinienSvg(zustaende, reihe) {
-  const P = (k) => [RL_KARTE_POS[k][0] * RL_KARTE_VB.b / 100, RL_KARTE_POS[k][1] * RL_KARTE_VB.h / 100];
-  const nacheinander = (a, b) => reihe.some((k, i) => i > 0 && ((reihe[i - 1] === a && k === b) || (reihe[i - 1] === b && k === a)));
+/** Linien von Etappe zu Etappe und Hintergrundsterne als SVG (Seitenverhältnis fest 2 : 1, Striche in Bildschirm-Pixeln). */
+function rlKarteLinienSvg(zustaende, reihe, route, plaetze) {
+  const P = (k) => [plaetze[k].x * RL_KARTE_VB.b / 100, plaetze[k].y * RL_KARTE_VB.h / 100];
+  const nacheinander = (a, b) => reihe.some((k, i) => i > 0 && reihe[i - 1] === a && k === b);
   let sterne = '';
   for (const [x, y] of RL_KARTE_STERNE) {
     sterne += `<circle cx="${x * 10}" cy="${y * 5}" r="2.2" fill="#fff" opacity=".65"/>`;
   }
-  let linien = '';
-  for (const [a, b] of RL_KARTE_KANTEN) {
-    const A = P(a), B = P(b);
-    const za = zustaende[a].zustand, zb = zustaende[b].zustand;
-    const offen = (za === 'standort' && zb === 'ziel') || (zb === 'standort' && za === 'ziel');
-    const gereist = !offen && nacheinander(a, b);
-    const attr = `x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke-linecap="round" vector-effect="non-scaling-stroke"`;
-    if (offen) {
-      linien += `<line ${attr} stroke="#1B2233" stroke-width="9"/><line ${attr} stroke="#fff" stroke-width="3.5"/>`;
-    } else if (gereist) {
-      linien += `<line ${attr} stroke="#1B2233" stroke-width="7"/><line ${attr} stroke="#F2C640" stroke-width="2.5" opacity=".8"/>`;
-    } else {
-      linien += `<line ${attr} stroke="#8C93A8" stroke-width="3" stroke-dasharray="9 7" opacity=".45"/>`;
+  let leise = '', laut = '';
+  for (let e = 0; e + 1 < route.length; e++) {
+    for (const a of route[e]) {
+      for (const b of route[e + 1]) {
+        const za = zustaende[a].zustand, zb = zustaende[b].zustand;
+        if (za === 'vorbei' || zb === 'vorbei') continue;
+        const A = P(a), B = P(b);
+        const attr = `x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke-linecap="round" vector-effect="non-scaling-stroke"`;
+        if (za === 'standort' && zb === 'ziel') laut += `<line ${attr} stroke="#1B2233" stroke-width="9"/><line ${attr} stroke="#fff" stroke-width="3.5"/>`;
+        else if (nacheinander(a, b)) laut += `<line ${attr} stroke="#1B2233" stroke-width="7"/><line ${attr} stroke="#F2C640" stroke-width="2.5" opacity=".85"/>`;
+        else if (za === 'besucht' && zb !== 'standort') continue;   // von Besuchtem führt nur die geflogene Linie weiter
+        else leise += `<line ${attr} stroke="#8C93A8" stroke-width="3" stroke-dasharray="9 7" opacity=".4"/>`;
+      }
     }
   }
-  return `<svg class="rl-karte-linien" viewBox="0 0 ${RL_KARTE_VB.b} ${RL_KARTE_VB.h}" preserveAspectRatio="none" aria-hidden="true">${sterne}${linien}</svg>`;
+  return `<svg class="rl-karte-linien" viewBox="0 0 ${RL_KARTE_VB.b} ${RL_KARTE_VB.h}" preserveAspectRatio="none" aria-hidden="true">${sterne}${leise}${laut}</svg>`;
 }
 
 /** Ein Planet auf der Karte: Knopf mit Bild, Name, Zustand; am Standort Schiff und Sprechblase. */
@@ -15709,14 +15925,15 @@ function rlKartePunktEl(key, info, opt) {
   if (klickbar) { e.type = 'button'; e.dataset.rl = info.zustand === 'ziel' ? 'planet' : 'landen'; }
   e.dataset.planet = key;
   e.dataset.zustand = info.zustand;
-  e.style.left = RL_KARTE_POS[key][0] + '%';
-  e.style.top = RL_KARTE_POS[key][1] + '%';
+  e.dataset.etappe = String(info.etappe + 1);
+  e.style.left = opt.platz.x + '%';
+  e.style.top = opt.platz.y + '%';
   const bild = rlSchirmEl('span', 'rl-karte-bild');
   bild.innerHTML = rlPlanetSvg(key, 100, info.bild);
   e.appendChild(bild);
   e.appendChild(rlSchirmEl('span', 'rl-karte-name', p.name));
   const legende = RL_TXT_SCHIRM.legende;
-  const zustandText = { standort: legende.standort, ziel: legende.ziel, besucht: legende.besucht, gesperrt: legende.gesperrt, fern: legende.fern }[info.zustand];
+  const zustandText = legende[info.zustand] || '';
   e.title = p.name + ' — ' + zustandText + (p.himmelseffekt ? ' · ' + rlText(RL_TXT_PLANET, key, 'effektLang') : '');
   if (info.zustand === 'standort') {
     const schiff = rlSchirmEl('span', 'rl-karte-schiff-halter');
@@ -15732,6 +15949,37 @@ function rlKartePunktEl(key, info, opt) {
 }
 
 /**
+ * Der Sprung durch den Hyperraum (Spieltest-Runde 5): nach „Kurs setzen" ziehen die Sterne eine gute Sekunde lang zu
+ * Streifen, dann steht der neue Planet da. Ohne Bewegung (Einstellung „aus", „Bewegung reduzieren") geht es sofort weiter.
+ */
+function rlKarteSprung(wurzel, planetKey, dann) {
+  const faktor = bewegungsFaktor();
+  const ruhig = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!faktor || ruhig || !wurzel) { dann(); return; }
+  if (wurzel.querySelector('.rl-sprung')) return;   // ein Sprung läuft schon (Doppelklick)
+  const sprung = rlSchirmEl('div', 'rl-sprung');
+  sprung.dataset.planet = planetKey;
+  sprung.style.setProperty('--rl-sprung-dauer', Math.round(1150 * faktor) + 'ms');
+  const tunnel = rlSchirmEl('div', 'rl-sprung-tunnel');
+  for (let i = 0; i < 44; i++) {
+    const s = rlSchirmEl('i', 'rl-sprung-streif');
+    s.style.setProperty('--w', (i * 360 / 44 + (i % 3) * 2.5).toFixed(1) + 'deg');
+    s.style.setProperty('--v', (((i * 37) % 100) / 100 * 0.45).toFixed(2));
+    s.style.setProperty('--l', (30 + ((i * 53) % 60)) + '%');
+    tunnel.appendChild(s);
+  }
+  sprung.appendChild(tunnel);
+  const ziel = rlSchirmEl('div', 'rl-sprung-ziel');
+  ziel.innerHTML = rlPlanetSvg(planetKey, 120);
+  sprung.appendChild(ziel);
+  sprung.appendChild(rlSchirmEl('span', 'rl-sprung-text', RL_TXT_SCHIRM.sprung));
+  wurzel.appendChild(sprung);
+  let fertig = false;
+  const weiter = () => { if (fertig) return; fertig = true; sprung.remove(); dann(); };
+  setTimeout(weiter, Math.round(1150 * faktor));
+}
+
+/**
  * Sternkarte (`data-ansicht="karte"`).
  * @param {Element} wurzel
  * @param {RlLauf} lauf
@@ -15742,6 +15990,8 @@ function rlKarteZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   const d = lauf.daten;
   const innen = rlSchirmStart(wurzel, 'karte');
   const zustaende = rlKarteZustaende(lauf, profil);
+  const route = lauf.route(profil);
+  const plaetze = rlKartePlaetze(route);
   const platz1 = !d.reiseBereit && d.phase === 'KARTE';
   const ziele = lauf.erreichbar(profil);
   const von = RL_KONFIG.lauf.planetenProLauf;
@@ -15755,12 +16005,17 @@ function rlKarteZeigen(wurzel, lauf, profil, rueckrufe = {}) {
     rechts: [rlSchirmGeldEl(d.geld), deckChip, rlSchirmModulLeiste(d.module)],
   }));
 
-  // Die Karte
-  const karte = rlSchirmEl('div', 'rl-karte');
-  karte.innerHTML = rlKarteLinienSvg(zustaende, d.planetenReihe);
-  for (const key of Object.keys(RL_PLANETEN)) {
-    karte.appendChild(rlKartePunktEl(key, zustaende[key], { landen: platz1 }));
-  }
+  // Die Karte: je Etappe eine Spalte mit Überschrift, die Planeten darunter
+  const karte = rlSchirmEl('div', 'rl-karte rl-karte-route');
+  karte.innerHTML = rlKarteLinienSvg(zustaende, d.planetenReihe, route, plaetze);
+  route.forEach((planeten, e) => {
+    const kopf = rlSchirmEl('span', 'rl-karte-etappe', RL_TXT_SCHIRM.etappen[e] || RL_TXT_SCHIRM.etappeNr(e + 1));
+    kopf.dataset.etappe = String(e + 1);
+    kopf.dataset.jetzt = (d.reiseBereit ? e === d.platz : e === d.planetenReihe.length - 1) ? '1' : '0';
+    kopf.style.left = RL_KARTE_POS.x(e, route.length) + '%';
+    karte.appendChild(kopf);
+    for (const key of planeten) karte.appendChild(rlKartePunktEl(key, zustaende[key], { landen: platz1, platz: plaetze[key] }));
+  });
   innen.appendChild(karte);
 
   // Legende
@@ -15825,7 +16080,7 @@ function rlKarteZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   rlSchirmKlick(wurzel, {
     planet: (dat) => zeigeFrage(dat.planet),
     abbrechen: () => zeigeFrage(null),
-    kurs: (dat) => { if (rueckrufe.waehle) rueckrufe.waehle(dat.planet); },
+    kurs: (dat) => { if (rueckrufe.waehle) rlKarteSprung(wurzel, dat.planet, () => rueckrufe.waehle(dat.planet)); },
     landen: () => { if (rueckrufe.landen) rueckrufe.landen(); },
   });
 }
@@ -15845,7 +16100,7 @@ function rlPlanetEliteKey(spec) {
  * Die Gegnervorschau: Rücken, Name, Verhalten, Privilegien, Fähigkeit, Duo-Partner, Bossleben.
  * `gegner` ist eine GegnerSpec oder ein Array (Duo/Gruppe).
  */
-function rlPlanetGegnerEl(lauf, gegner) {
+function rlPlanetGegnerEl(lauf, gegner, opt = {}) {
   const d = lauf.daten;
   const liste = Array.isArray(gegner) ? gegner : [gegner];
   const haupt = liste[0];
@@ -15865,7 +16120,7 @@ function rlPlanetGegnerEl(lauf, gegner) {
 
   const rechts = rlSchirmEl('div', 'rl-gegner-rechts');
   const rolle = haupt.boss ? RL_TXT_UI.boss : (haupt.elite ? RL_TXT_UI.elite : RL_TXT_UI.lakai);
-  rechts.appendChild(rlSchirmEl('span', 'rl-gegner-rolle', RL_TXT_SCHIRM.gegnerVorschau + ' · ' + rolle));
+  rechts.appendChild(rlSchirmEl('span', 'rl-gegner-rolle', opt.leben !== undefined ? rolle : RL_TXT_SCHIRM.gegnerVorschau + ' · ' + rolle));   // im Kampf (Gegner-Fenster) ohne „Nächster Gegner"
   const gruppe = liste.length > 1 && liste.every((g) => g.gruppeVon);
   let name = haupt.name;
   if (haupt.ersatzBoss) name = RL_TXT_SCHIRM.alterBekannter(rlText(RL_TXT_BOSS, haupt.ersatzBoss));
@@ -15894,7 +16149,8 @@ function rlPlanetGegnerEl(lauf, gegner) {
     const bossKey = haupt.gruppeVon || haupt.key;
     if (RL_TXT_BOSS[bossKey]) zeile(RL_TXT_UI.boss, rlText(RL_TXT_BOSS, bossKey, 'text'));
     const leben = haupt.leben ?? lauf.bossLeben();
-    zeile(RL_TXT_UI.leben, RL_TXT_SCHIRM.bossZeile(leben, lauf.rundenFuer()));
+    // Im Kampf (Gegner-Fenster, `opt.leben`): der aktuelle Stand statt des Startwerts.
+    zeile(RL_TXT_UI.leben, opt.leben ? RL_TXT_SCHIRM.bossLebenJetzt(opt.leben.jetzt, opt.leben.max) : RL_TXT_SCHIRM.bossZeile(leben, lauf.rundenFuer()));
     const heil = RL_BOSSE[bossKey] && RL_BOSSE[bossKey].heilText;
     if (heil) zeile(RL_TXT_SCHIRM.bossHeilt, heil);
     if (d.bossSchuld > 0) rechts.appendChild(rlSchirmEl('p', 'rl-gegner-zeile rl-schuld', RL_TXT_SCHIRM.bossSchuld(d.bossSchuld)));
@@ -16027,7 +16283,8 @@ function rlPlanetZeigen(wurzel, lauf, rueckrufe = {}, opt = {}) {
     }
     skipBox.appendChild(skipKnoepfe);
   }
-  const zurueckFrei = d.kampfIndex === 0 && d.uebersprungen === 0 && !!rueckrufe.zurKarte;
+  // Zurück zur Sternkarte (Spieltest-Runde 5): solange auf diesem Planeten nichts passiert ist.
+  const zurueckFrei = lauf.kannZurKarte() && !!rueckrufe.zurKarte;
   knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.zurKarte, 'klein', { rl: 'karte' }, { aus: !zurueckFrei, titel: zurueckFrei ? '' : RL_TXT_SCHIRM.zurKarteGesperrt }));
   rechts.appendChild(knoepfe);
   if (skipBox) rechts.appendChild(skipBox);
@@ -16163,18 +16420,25 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
  * Planetenpack: die Planetenkarten des aktuellen Planeten), `rlPackWaehlen` nimmt eine davon (Stufe +1 bzw.
  * Karte ins Deck). Zustand zu → offen → fertig, Reload-fest im Shop-Zustand.
  *
+ * Werkstatt (Spieltest-Runde 5): in JEDEM Shop lassen sich Zahlenkarten aufwerten (`shop.werkstatt = {frei}`; Umlaufbahn
+ * `RL_KONFIG.shop.werkstatt.umlaufbahn`-mal je Besuch, im Flug beliebig oft) — `rlWerkstatt`. Dafür zieht die Umlaufbahn
+ * kein Aufwertungs-Angebot mehr. Sofort-Pack: ein Pack als Überspring-Prämie (`lauf.daten.sofortPack`) deckt `rlSofortPack`
+ * sofort auf, `rlSofortPackWaehlen` nimmt eine Karte — ohne Shop, ohne Preis.
+ *
  * Exporte: rlUmlaufbahn, rlImFlug, rlReroll, rlKaufen, rlSternwarte, rlSternwarteNehmen,
- *   rlSternwarteSchliessen, rlLuftschleuse, rlShopAngebote, rlShopRng, rlShopPacks, rlPackOeffnen, rlPackWaehlen.
+ *   rlSternwarteSchliessen, rlLuftschleuse, rlShopAngebote, rlShopRng, rlShopPacks, rlPackOeffnen, rlPackWaehlen,
+ *   rlShopWerkstatt, rlWerkstatt, rlSofortPack, rlSofortPackWaehlen.
  *
  * Top-Level-Namen dieser Datei: RL_SHOP_BEREICH_NR, RL_ZAHL_ZIEHKLASSE, rlShopRng, rlAngebotAus,
  *   rlPoolZahl, rlPoolKosmisch, rlPoolDrittes, rlZieheGroesse, rlZieheAusPool, rlNeueId,
  *   rlUmlaufbahnFuellen, rlPacksNeu, rlPackKandidaten, rlShopPacks, rlPackOeffnen, rlPackWaehlen,
  *   rlUmlaufbahn, rlImFlug, rlShopAngebote, rlReroll, rlKaufen,
- *   rlSternwarte, rlSternwarteNehmen, rlSternwarteSchliessen, rlLuftschleuse.
+ *   rlSternwarte, rlSternwarteNehmen, rlSternwarteSchliessen, rlLuftschleuse,
+ *   rlWerkstattNeu, rlShopWerkstatt, rlWerkstatt, rlSofortPack, rlSofortPackWaehlen.
  */
 
 /** Nummern der Bereiche für die Seed-Ableitung (verschiedene Bereiche, verschiedene Angebote). */
-const RL_SHOP_BEREICH_NR = { angebote: 1, kartenmarkt: 2, kabinett: 3, modul: 4, sternwarte: 5, 'pack-sternbilder': 6, 'pack-planet': 7 };
+const RL_SHOP_BEREICH_NR = { angebote: 1, kartenmarkt: 2, kabinett: 3, modul: 4, sternwarte: 5, 'pack-sternbilder': 6, 'pack-planet': 7, 'sofort-sternbilder': 8, 'sofort-planet': 9 };
 
 /** Ziehklasse der Zahlenkarten-Sorten (Katalog-Größe 0) für die Größenverteilung. */
 const RL_ZAHL_ZIEHKLASSE = { zahl: 4, spiegel: 3, leucht: 3, sternschnuppe: 3, anker: 2 };
@@ -16304,7 +16568,8 @@ function rlUmlaufbahnFuellen(lauf, shop, rng) {
     letztes = rlZieheAusPool(rng, lauf, module, rlNeueId(shop), ausser, 3);
     shop.modulGarantieErfuellt = !!letztes;
   }
-  angebote.push(letztes ?? rlZieheAusPool(rng, lauf, rlPoolDrittes(lauf), rlNeueId(shop), ausser));
+  // Mit der Werkstatt (Spieltest-Runde 5) liegt hier kein Aufwertungs-Angebot mehr — aufwerten geht in jedem Shop.
+  angebote.push(letztes ?? rlZieheAusPool(rng, lauf, rlPoolDrittes(lauf, { mitAufwertung: !RL_KONFIG.shop.werkstatt }), rlNeueId(shop), ausser));
   shop.garantieErfuellt = false;
   if (shop.garantie && !angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2)) {
     const pool = rlPoolKosmisch(lauf).filter((p) => p.klasse <= 2);
@@ -16313,6 +16578,41 @@ function rlUmlaufbahnFuellen(lauf, shop, rng) {
   }
   if (shop.garantie) shop.garantieErfuellt = angebote.some((a) => a && a.groesse > 0 && a.groesse <= 2);
   shop.angebote = angebote.filter(Boolean);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Werkstatt (Spieltest-Runde 5)                                       */
+/* ------------------------------------------------------------------ */
+
+/** Die Werkstatt eines neuen Shops: `{frei}` — Zahl der Aufwertungen je Besuch, null = beliebig oft. Ohne Konfiguration: null. */
+function rlWerkstattNeu(art) {
+  const W = RL_KONFIG.shop.werkstatt;
+  if (!W) return null;
+  const frei = art === 'IMFLUG' ? W.imFlug : W.umlaufbahn;
+  return { frei: frei == null ? null : Math.max(0, frei), genutzt: 0 };
+}
+
+/** Die Werkstatt eines Shops (ältere Speicherstände bekommen sie nachgezogen); null, wenn es keine gibt. */
+function rlShopWerkstatt(shop) {
+  if (!shop) throw new Error('Kein Shop');
+  if (shop.werkstatt === undefined) shop.werkstatt = rlWerkstattNeu(shop.art);
+  return shop.werkstatt;
+}
+
+/**
+ * In der Werkstatt aufwerten: Zahlenkarte `uid` zum Riesen (Stufe 1) oder Überriesen (Stufe 2) — bezahlt wird der
+ * Aufwertungspreis des Laufs (Werkbank: −2). In der Umlaufbahn höchstens `frei`-mal je Besuch.
+ */
+function rlWerkstatt(lauf, shop, uid, stufe) {
+  if (!shop || lauf.daten.shop !== shop) throw new Error('Kein offener Shop');
+  const w = rlShopWerkstatt(shop);
+  if (!w) throw new Error('Hier gibt es keine Werkstatt');
+  if (w.frei != null && w.frei <= 0) throw new Error('Die Werkstatt ist für diesen Besuch erschöpft');
+  const k = lauf.aufwerten(uid, stufe);
+  if (w.frei != null) w.frei--;
+  w.genutzt = (w.genutzt ?? 0) + 1;
+  lauf.daten.statistik.gekauft++;
+  return k;
 }
 
 /* ------------------------------------------------------------------ */
@@ -16388,6 +16688,38 @@ function rlPackWaehlen(lauf, shop, art, id) {
 }
 
 /**
+ * Sofort-Pack (Spieltest-Runde 5): das Pack einer Überspring-Prämie aufdecken — wie `rlPackOeffnen`, aber ohne Shop
+ * und ohne Preis. `lauf.daten.sofortPack = {art}` (von `ueberspringen`) wird zum offenen Pack mit `wahl` Karten.
+ * Mehrfach aufgerufen ändert sich nichts (Reload-fest). Kann nichts aufgedeckt werden, verfällt es (null).
+ */
+function rlSofortPack(lauf, rng = null) {
+  const d = lauf.daten;
+  const sp = d.sofortPack;
+  if (!sp) return null;
+  if (sp.zustand === 'offen') return sp;
+  const K = (RL_KONFIG.shop.packs ?? {})[sp.art] ?? { wahl: 3 };
+  const pack = { art: sp.art, planet: sp.art === 'planet' ? lauf.planetAktuell() : undefined, preis: 0, gratis: true, sofort: true, wahl: K.wahl, zustand: 'offen', karten: [], gewaehlt: null };
+  const kandidaten = rlPackKandidaten(lauf, pack);
+  if (!kandidaten.length || (sp.art === 'planet' && d.deck.length >= RL_KONFIG.deck.maxGroesse)) { d.sofortPack = null; return null; }
+  const r = rng ?? rlShopRng(lauf, 'sofort-' + sp.art, 0);
+  pack.karten = r.shuffle([...kandidaten]).slice(0, pack.wahl).map((k, i) => ({ ...k, id: 'p' + (i + 1) }));
+  d.sofortPack = pack;
+  return pack;
+}
+
+/** Aus dem offenen Sofort-Pack eine Karte nehmen: Sternbildstufe +1 bzw. Karte ins Deck; danach ist es weg. */
+function rlSofortPackWaehlen(lauf, id) {
+  const d = lauf.daten;
+  const pack = d.sofortPack;
+  if (!pack || pack.zustand !== 'offen') throw new Error('Kein offenes Pack');
+  const k = pack.karten.find((x) => x.id === id);
+  if (!k) throw new Error('Karte nicht im Pack: ' + id);
+  const ergebnis = pack.art === 'sternbilder' ? lauf.stufeGeben(k.typ) : lauf.deckHinzu(k.spec, k.katalogKey);
+  d.sofortPack = null;
+  return ergebnis;
+}
+
+/**
  * Umlaufbahn-Shop nach einem Lakaien-Sieg. Verbraucht `lauf.daten.garantie` (sie gilt für
  * diesen Shop samt Rerolls) und legt den Zustand in `lauf.daten.shop`.
  */
@@ -16397,6 +16729,7 @@ function rlUmlaufbahn(lauf, rng = null, opt = {}) {
     art: 'UMLAUFBAHN', angebote: [], rerolls: 0, rerollPreis: RL_KONFIG.shop.reroll.start,
     garantie: !!d.garantie, garantieErfuellt: false, naechsteId: 1, packs: rlPacksNeu(lauf),
     modulGarantie: !!d.modulGarantie, modulGarantieErfuellt: false,
+    werkstatt: rlWerkstattNeu('UMLAUFBAHN'),
   };
   d.garantie = false;
   d.modulGarantie = false;
@@ -16425,7 +16758,7 @@ function rlImFlug(lauf, rng = null) {
     luftschleuse: { frei: K.luftschleuse, entfernt: [] },
     rerolls: { kartenmarkt: 0, kabinett: 0 },
     rerollPreis: { kartenmarkt: RL_KONFIG.shop.reroll.start, kabinett: RL_KONFIG.shop.reroll.start },
-    naechsteId: 1, packs: rlPacksNeu(lauf),
+    naechsteId: 1, packs: rlPacksNeu(lauf), werkstatt: rlWerkstattNeu('IMFLUG'),
   };
   const rngMarkt = rng ?? rlShopRng(lauf, 'kartenmarkt', 0);
   const rngKab = rng ?? rlShopRng(lauf, 'kabinett', 0);
@@ -16998,7 +17331,8 @@ function rlDetailsZeigen(wurzel, schluessel, opt = {}) {
  *   rlShopKachelEl, rlShopAngebotEl, rlShopGroessenEl, rlShopDeckReiheEl, rlShopEbene, rlShopAufwertungWahlEl,
  *   rlShopTypSymbolSvg, rlShopDeckKnopf, rlShopGroesseChipEl, rlShopAlleAngebote, rlShopDetailsKnopf, rlShopDetailsOeffnen,
  *   rlShopPackKarteEl, rlShopPackEl, rlShopPacksEl,
- *   rlShopWertetafelEl, rlShopDeckStufenEl, rlUmlaufbahnZeigen, rlImFlugZeigen, rlSternwarteModal, rlDeckAnsicht.
+ *   rlShopWertetafelEl, rlShopDeckStufenEl, rlShopFormTipEl, rlShopFormTipAn, rlShopWerkstattEl, rlUmlaufbahnZeigen, rlImFlugZeigen,
+ *   rlSofortPackZeigen, rlGegnerInfoAnsicht, rlSternwarteModal, rlDeckAnsicht.
  */
 
 /** Welche Sorten ein Kartenbild tragen (Rest: Modul-Icon oder Rückenfächer). */
@@ -17220,6 +17554,29 @@ function rlShopTypSymbolSvg(typ, g) {
     + `<path d="${f.l}" style="fill:none;stroke:var(--tinte);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"/>${punkte}</svg>`;
 }
 
+/**
+ * Schwebekarte zu einem Sternbildtyp (Spieltest-Runde 5): so wird die Form gebaut (Beispielkarten aus der Formentafel),
+ * so viele Punkte bringt sie, dazu die eigene Stufe. Erscheint beim Überfahren, beim Fokus und beim Antippen des Trägers
+ * (der Träger bekommt `tabindex`, das Stylesheet zeigt `.rl-form-tip` bei :hover / :focus-within).
+ */
+function rlShopFormTipEl(typ, stufe) {
+  const K = RL_KONFIG.stufen;
+  const tip = rlSchirmEl('span', 'rl-form-tip');
+  tip.setAttribute('role', 'tooltip');
+  const zeile = formenTafel().querySelector('.form-zeile[data-typ="' + typ + '"]');
+  if (zeile) tip.appendChild(zeile);
+  tip.appendChild(rlSchirmEl('span', 'rl-form-tip-stufe', RL_TXT_STUFE.formen(stufe ?? 0, K.bonusProStufe, K.max ?? K.schwellen.length)));
+  return tip;
+}
+
+/** Einen Träger (Chip, Pack-Karte) mit der Schwebekarte seiner Form ausstatten. */
+function rlShopFormTipAn(traeger, typ, stufe) {
+  traeger.classList.add('rl-form-tip-traeger');
+  traeger.tabIndex = 0;
+  traeger.removeAttribute('title');
+  traeger.appendChild(rlShopFormTipEl(typ, stufe));
+}
+
 /** Der Deck-Knopf der Kopfzeile: „Deck ansehen · n" → rueckrufe.deckAnsehen(). */
 function rlShopDeckKnopf(deck) {
   return rlSchirmKnopf(RL_TXT_UI.deckAnsehen + ' · ' + (deck ? deck.length : 0), '', { rl: 'deck' });
@@ -17289,6 +17646,7 @@ function rlShopPackKarteEl(lauf, pack, k, nr) {
     e.dataset.typ = k.typ;
     const bild = rlSchirmEl('span', 'rl-pack-karte-bild rl-pack-typkarte');
     bild.innerHTML = rlShopTypSymbolSvg(k.typ, 64);
+    rlShopFormTipAn(bild, k.typ, k.stufe ?? 0);      // überfahren / antippen: so baut man diese Form
     e.appendChild(bild);
     e.appendChild(rlSchirmEl('span', 'rl-pack-karte-name', name));
     const von = k.stufe ?? 0;
@@ -17461,9 +17819,60 @@ function rlShopDeckStufenEl(stufen, bonus, max) {
     chip.title = RL_TXT_STUFE.formen(stufe, bonus, max);
     chip.innerHTML = rlShopTypSymbolSvg(typ, 20);
     chip.appendChild(document.createTextNode(RL_TXT_SCHIRM.deckStufe(typText(typ), stufe, bonus)));
+    rlShopFormTipAn(chip, typ, stufe);                // überfahren / antippen: so baut man diese Form, so viel bringt sie
     zeile.appendChild(chip);
   }
   return zeile;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Werkstatt (Spieltest-Runde 5)                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Die Werkstatt beider Shops: Zahlenkarte antippen, dann zum Riesen oder Überriesen aufwerten. In der Umlaufbahn
+ * einmal je Besuch, im Flug beliebig oft (`shop.werkstatt`). Liefert `{el, klick}` — `klick` gehört in die
+ * Klick-Tabelle des Schirms (`auf-wahl`, `aufwerten` → rueckrufe.aufwerten(uid, stufe)).
+ */
+function rlShopWerkstattEl(lauf, shop, rueckrufe) {
+  const d = lauf.daten;
+  const w = rlShopWerkstatt(shop);
+  const auf = rlSchirmEl('section', 'rl-bereich rl-aufwertung');
+  auf.appendChild(rlSchirmEl('h4', '', RL_TXT_SCHIRM.aufwertung));
+  if (!w) return { el: auf, klick: {} };
+  const erschoepft = w.frei != null && w.frei <= 0;
+  auf.dataset.erschoepft = erschoepft ? '1' : '0';
+  auf.appendChild(rlSchirmEl('span', 'rl-stempel', RL_TXT_SCHIRM.werkstattStempel(w.frei == null ? null : w.frei + (w.genutzt ?? 0))));
+  const pR = lauf.aufwertungsPreis(1), pU = lauf.aufwertungsPreis(2);
+  auf.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.aufwertungText(pR, pU) + ' ' + RL_TXT_SCHIRM.aufwertungHinweis));
+  if (erschoepft) auf.appendChild(rlSchirmEl('p', 'rl-hinweis rl-werkstatt-zu', RL_TXT_SCHIRM.werkstattErschoepft));
+  auf.appendChild(rlShopDeckReiheEl(d.deck.filter((s) => s.art === 'ZAHL'), { filter: (s) => (s.stufe ?? 0) < 2, aktion: erschoepft ? null : 'auf-wahl' }));
+  const aufKnoepfe = rlSchirmEl('div', 'rl-planet-knoepfe rl-auf-knoepfe');
+  const aufStand = rlSchirmEl('span', 'rl-hinweis', RL_TXT_SCHIRM.aufwertungZiel);
+  aufKnoepfe.appendChild(aufStand);
+  const riese = rlSchirmKnopf(RL_TXT_SCHIRM.zumRiesen + ' · ' + pR, 'klein haupt', { rl: 'aufwerten', stufe: 1 }, { aus: true });
+  const ueber = rlSchirmKnopf(RL_TXT_SCHIRM.zumUeberriesen + ' · ' + pU, 'klein haupt', { rl: 'aufwerten', stufe: 2 }, { aus: true });
+  aufKnoepfe.appendChild(riese);
+  aufKnoepfe.appendChild(ueber);
+  auf.appendChild(aufKnoepfe);
+  let aufUid = null;
+  const klick = {
+    'auf-wahl': (dat, el) => {
+      const spec = d.deck.find((k) => k.uid === dat.uid);
+      if (!spec) return;
+      aufUid = dat.uid;
+      for (const k of auf.querySelectorAll('.karte.gewaehlt')) k.classList.remove('gewaehlt');
+      el.classList.add('gewaehlt');
+      const stufe = spec.stufe ?? 0;
+      riese.disabled = !(stufe === 0 && d.geld >= pR);
+      ueber.disabled = !(stufe === 1 && d.geld >= pU);
+      riese.title = stufe === 0 && d.geld < pR ? RL_TXT_SCHIRM.nichtGenugGeld : '';
+      ueber.title = stufe === 1 && d.geld < pU ? RL_TXT_SCHIRM.nichtGenugGeld : '';
+      aufStand.textContent = RL_TXT_SCHIRM.aufwertungStufe;
+    },
+    aufwerten: (dat) => { if (aufUid && rueckrufe.aufwerten) rueckrufe.aufwerten(aufUid, Number(dat.stufe)); },
+  };
+  return { el: auf, klick };
 }
 
 /* ------------------------------------------------------------------ */
@@ -17535,6 +17944,10 @@ function rlUmlaufbahnZeigen(wurzel, lauf, shop, rueckrufe = {}) {
   // Sternbilderpack (Spieltest-Runde 1): Stufen kaufen, nicht rerollbar
   shopEl.appendChild(rlShopPacksEl(lauf, shop));
 
+  // Werkstatt (Spieltest-Runde 5): aufwerten geht in jedem Shop — hier einmal je Besuch.
+  const werk = rlShopWerkstattEl(lauf, shop, rueckrufe);
+  shopEl.appendChild(werk.el);
+
   innen.appendChild(shopEl);
 
   // Vorrat und Module an Bord — wie im Flug (AP9 Feinschliff): Sprungantrieb = Gratis-Reroll,
@@ -17570,6 +17983,7 @@ function rlUmlaufbahnZeigen(wurzel, lauf, shop, rueckrufe = {}) {
     },
     'aufwertung-ziel': (dat) => { if (rueckrufe.kaufen) rueckrufe.kaufen(dat.id, dat.uid); },
     'wahl-zu': () => { wahlHalter.hidden = true; rlSchirmLeeren(wahlHalter); },
+    ...werk.klick,
     reroll: () => { if (rueckrufe.reroll) rueckrufe.reroll(); },
     sternwarte: () => { if (rueckrufe.sternwarte) rueckrufe.sternwarte(); else if (rueckrufe.vorrat) rueckrufe.vorrat('beobachtung'); },
     vorrat: (dat) => { if (rueckrufe.vorrat) rueckrufe.vorrat(dat.key); },
@@ -17678,20 +18092,9 @@ function rlImFlugZeigen(wurzel, lauf, shop, rueckrufe = {}) {
   luft.appendChild(luftKnoepfe);
   raster.appendChild(luft);
 
-  // Aufwertung
-  const auf = bereich(RL_TXT_SCHIRM.aufwertung, 'rl-aufwertung');
-  const pR = lauf.aufwertungsPreis(1), pU = lauf.aufwertungsPreis(2);
-  auf.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.aufwertungText(pR, pU) + ' ' + RL_TXT_SCHIRM.aufwertungHinweis));
-  auf.appendChild(rlShopDeckReiheEl(d.deck.filter((s) => s.art === 'ZAHL'), { filter: (s) => (s.stufe ?? 0) < 2, aktion: 'auf-wahl' }));
-  const aufKnoepfe = rlSchirmEl('div', 'rl-planet-knoepfe rl-auf-knoepfe');
-  const aufStand = rlSchirmEl('span', 'rl-hinweis', RL_TXT_SCHIRM.aufwertungZiel);
-  aufKnoepfe.appendChild(aufStand);
-  const riese = rlSchirmKnopf(RL_TXT_SCHIRM.zumRiesen + ' · ' + pR, 'klein haupt', { rl: 'aufwerten', stufe: 1 }, { aus: true });
-  const ueber = rlSchirmKnopf(RL_TXT_SCHIRM.zumUeberriesen + ' · ' + pU, 'klein haupt', { rl: 'aufwerten', stufe: 2 }, { aus: true });
-  aufKnoepfe.appendChild(riese);
-  aufKnoepfe.appendChild(ueber);
-  auf.appendChild(aufKnoepfe);
-  raster.appendChild(auf);
+  // Werkstatt (Aufwertung) — derselbe Baustein wie in der Umlaufbahn, hier ohne Grenze
+  const werk = rlShopWerkstattEl(lauf, shop, rueckrufe);
+  raster.appendChild(werk.el);
 
   // Sternbilderpack (Spieltest-Runde 1): eigener Bereich über die volle Breite des Rasters
   raster.appendChild(rlShopPacksEl(lauf, shop));
@@ -17713,8 +18116,8 @@ function rlImFlugZeigen(wurzel, lauf, shop, rueckrufe = {}) {
   fuss.appendChild(rlSchirmModulLeiste(d.module));
   innen.appendChild(fuss);
 
-  let aufUid = null;
   rlSchirmKlick(wurzel, {
+    ...werk.klick,
     kaufen: (dat) => { if (rueckrufe.kaufen) rueckrufe.kaufen(dat.id, dat.bereich); },
     reroll: (dat) => { if (rueckrufe.reroll) rueckrufe.reroll(dat.bereich); },
     weiter: () => { if (rueckrufe.weiter) rueckrufe.weiter(); },
@@ -17736,25 +18139,68 @@ function rlImFlugZeigen(wurzel, lauf, shop, rueckrufe = {}) {
       luftGewaehlt.clear();
       if (rueckrufe.luftschleuse) for (const uid of uids) rueckrufe.luftschleuse(uid);
     },
-    'auf-wahl': (dat, el) => {
-      const spec = d.deck.find((k) => k.uid === dat.uid);
-      if (!spec) return;
-      aufUid = dat.uid;
-      for (const k of auf.querySelectorAll('.karte.gewaehlt')) k.classList.remove('gewaehlt');
-      el.classList.add('gewaehlt');
-      const stufe = spec.stufe ?? 0;
-      riese.disabled = !(stufe === 0 && d.geld >= pR);
-      ueber.disabled = !(stufe === 1 && d.geld >= pU);
-      riese.title = stufe === 0 && d.geld < pR ? RL_TXT_SCHIRM.nichtGenugGeld : '';
-      ueber.title = stufe === 1 && d.geld < pU ? RL_TXT_SCHIRM.nichtGenugGeld : '';
-      aufStand.textContent = RL_TXT_SCHIRM.aufwertungStufe;
-    },
-    aufwerten: (dat) => { if (aufUid && rueckrufe.aufwerten) rueckrufe.aufwerten(aufUid, Number(dat.stufe)); },
     'pack-oeffnen': (dat) => { rlShopPackFrisch = dat.pack; if (rueckrufe.packOeffnen) rueckrufe.packOeffnen(dat.pack); },
     'pack-nehmen': (dat) => { if (rueckrufe.packWaehlen) rueckrufe.packWaehlen(dat.pack, dat.id); },
     details: (dat) => { rlShopDetailsOeffnen(wurzel, lauf, shop, dat); },
     deck: () => { if (rueckrufe.deckAnsehen) rueckrufe.deckAnsehen(); },
   });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sofort-Pack und Gegner-Fenster (Spieltest-Runde 5)                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Das Pack einer Überspring-Prämie geht SOFORT auf: eine Ebene über dem Planetenschirm mit dem offenen Pack
+ * (`rlSofortPack(lauf)`). Sie lässt sich nicht wegklicken — erst die Wahl (`rueckrufe.nehmen(id)`) schließt sie.
+ */
+function rlSofortPackZeigen(wurzel, lauf, pack, rueckrufe = {}) {
+  const { ebene, kasten } = rlShopEbene(wurzel, RL_TXT_SCHIRM.skip.sofortTitel);
+  ebene.dataset.ebene = 'sofortpack';
+  kasten.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.skip.sofortText));
+  rlShopPackFrisch = pack.art;
+  kasten.appendChild(rlShopPackEl(lauf, pack));
+  rlShopPackFrisch = null;
+  ebene.addEventListener('click', (ev) => {
+    const ziel = ev.target.closest('[data-rl]');
+    if (!ziel || ziel.disabled) return;
+    ev.stopPropagation();
+    const dat = ziel.dataset;
+    if (dat.rl === 'pack-nehmen') {
+      ebene.remove();
+      if (rueckrufe.nehmen) rueckrufe.nehmen(dat.id);
+    } else if (dat.rl === 'details') {
+      const k = pack.karten.find((x) => x.id === dat.id);
+      const opt = {};
+      if (dat.planet) opt.planet = dat.planet;
+      if (k && k.spec) opt.spec = k.spec;
+      if (k && k.typ) opt.stufe = (lauf.daten.stufen[k.typ] || {}).stufe ?? 0;
+      rlDetailsZeigen(wurzel, dat.key, opt);
+    }
+  });
+  return ebene;
+}
+
+/**
+ * Das Gegner-Fenster im Kampf: dieselbe Vorschau wie auf dem Planetenschirm (Figur, Verhalten, Privilegien, Fähigkeit,
+ * Boss-Stärke, Heilung), beim Boss mit dem aktuellen Lebensstand, dazu der Himmelseffekt des Planeten.
+ * @param {{leben?:{jetzt:number,max:number}|null, himmel?:string}} [opt]
+ */
+function rlGegnerInfoAnsicht(wurzel, lauf, gegner, opt = {}) {
+  const { ebene, kasten } = rlShopEbene(wurzel, RL_TXT_KAMPF.gegnerInfoTitel);
+  ebene.dataset.ebene = 'gegner';
+  kasten.appendChild(rlPlanetGegnerEl(lauf, gegner, { leben: opt.leben || null }));
+  if (opt.himmel) kasten.appendChild(rlSchirmEl('p', 'rl-hinweis rl-gegner-himmel', RL_TXT_UI.himmel + ': ' + opt.himmel));
+  const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
+  knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.schliessen, 'haupt', { rl: 'ebene-zu' }));
+  kasten.appendChild(knoepfe);
+  ebene.addEventListener('click', (ev) => {
+    const ziel = ev.target.closest('[data-rl="ebene-zu"]');
+    if (!ziel && ev.target !== ebene) return;
+    ev.stopPropagation();
+    ebene.remove();
+  });
+  return ebene;
 }
 
 /* ------------------------------------------------------------------ */
@@ -17956,11 +18402,15 @@ function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
  *   gegnerPlan[planet].partner: GegnerSpec[3] — die Duo-Partner je Kampfplatz.
  *
  * Exporte: RlLauf, rlProfilNeu, rlProfilNachSieg, rlProfilNachNiederlage, rlGegnerPlanErzeugen,
- *   RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG, rlRegelnVereinen.
+ *   RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG, rlRegelnVereinen, rlRouteErzeugen.
+ *
+ * Spieltest-Runde 5: `daten.route` (Reiseroute: Startplanet vorn, danach je Etappe die Planeten zur Wahl — ersetzt die
+ * Nachbarschaft der alten Sternkarte), `zurKarte()` (vom Planetenschirm zurück, solange dort nichts passiert ist),
+ * `daten.sofortPack` (Überspring-Prämie „Pack“: geht sofort auf, rl-shop.js öffnet und wählt).
  *
  * Top-Level-Namen dieser Datei: RL_LAUF_VERSION, RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG,
  *   RL_STUFEN_TYPEN, RL_REGEL_MINIMUM, rlLakaiName, rlLakaiFuerPlatz, rlLakaiSpec, rlEliteSpec, rlBossSpec,
- *   rlGegnerPlanErzeugen, rlRegelnVereinen, rlStufeAus, rlStufeGesamt, rlDeckKopie, RlLauf, rlProfilNeu,
+ *   rlGegnerPlanErzeugen, rlRouteErzeugen, rlRegelnVereinen, rlStufeAus, rlStufeGesamt, rlDeckKopie, RlLauf, rlProfilNeu,
  *   rlProfilNachBossen, rlProfilNachSieg, rlProfilNachNiederlage.
  */
 
@@ -18122,6 +18572,37 @@ function rlGegnerPlanErzeugen(rng, profil, schwierigkeit) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Reiseroute                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Die Reiseroute eines Laufs (Spieltest-Runde 5): `route[etappe] = Planetenschlüssel[]`. Etappe 1 ist der Startplanet,
+ * danach stehen je Etappe `RL_KONFIG.lauf.routeWahl[etappe]` Planeten zur Wahl — deterministisch aus dem Seed gemischt,
+ * freigeschaltete (Profil) zuerst, damit früh wirklich gewählt werden kann; gesperrte füllen die späten Etappen auf.
+ * Jeder Planet steht genau einmal auf der Route. `besucht` (alte Speicherstände): schon geflogene Planeten behalten
+ * ihre Etappe.
+ */
+function rlRouteErzeugen(seed, startort, profil = null, besucht = []) {
+  const wahl = RL_KONFIG.lauf.routeWahl ?? [1, 2, 3];
+  const frei = profil && Array.isArray(profil.planeten) ? new Set(profil.planeten) : null;
+  const gesperrt = (k) => (frei && !frei.has(k) ? 1 : 0);
+  const rng = rngVon(((seed >>> 0) ^ 0x2f6b1d35) >>> 0);
+  const start = besucht[0] ?? startort;
+  const rest = rng.shuffle(Object.keys(RL_PLANETEN).filter((k) => k !== start && !besucht.includes(k)));
+  rest.sort((a, b) => gesperrt(a) - gesperrt(b));   // stabil: die gemischte Reihenfolge bleibt innerhalb der Gruppen
+  const route = [[start]];
+  const etappen = Math.max(RL_KONFIG.lauf.planetenProLauf, wahl.length);
+  for (let e = 1; e < etappen; e++) {
+    const n = Math.max(1, wahl[e] ?? 2);
+    const etappe = besucht[e] ? [besucht[e]] : [];
+    while (etappe.length < n && rest.length) etappe.push(rest.shift());
+    route.push(etappe);
+  }
+  if (rest.length) route[route.length - 1].push(...rest);   // nichts geht verloren
+  return route;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Hilfen                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -18183,6 +18664,8 @@ class RlLauf {
     if (!d.gratisPacks || typeof d.gratisPacks !== 'object') d.gratisPacks = {};
     if (d.modulGarantie === undefined) d.modulGarantie = false;
     if (d.letztePraemie === undefined) d.letztePraemie = null;
+    // Spieltest-Runde 5: Pack als Überspring-Prämie geht sofort auf; die Route entsteht bei alten Ständen beim ersten Lesen.
+    if (d.sofortPack === undefined) d.sofortPack = null;
     // Spieltest-Runde 1: gekaufte Stufen (Sternbilderpack) je Typ.
     for (const t of RL_STUFEN_TYPEN) {
       if (!d.stufen[t]) d.stufen[t] = { gespielt: 0, stufe: 0, gekauft: 0 };
@@ -18216,6 +18699,8 @@ class RlLauf {
       reiseBereit: false, skizze: false, gratisRerolls: 0, ersteGroesseAngeboten: 0,
       sternwarten: 0, sternwarte: null,
       bosseBekannt: [...((profil && profil.bestwerte && profil.bestwerte.bosse) || [])],
+      // Spieltest-Runde 5: Reiseroute (Startplanet vorn, je Etappe Planeten zur Wahl)
+      route: rlRouteErzeugen(wurzel, startort, profil),
     };
     return new RlLauf(daten);
   }
@@ -18253,16 +18738,25 @@ class RlLauf {
     return R.lakai[Math.min(kampfIndex, R.lakai.length - 1)];
   }
 
+  /** Die Reiseroute (`route[etappe] = Planeten`); ältere Speicherstände bekommen sie beim ersten Lesen. */
+  route(profil = null) {
+    const d = this.d;
+    if (!Array.isArray(d.route) || !d.route.length) d.route = rlRouteErzeugen(d.seed, d.planetenReihe[0], profil, d.planetenReihe);
+    return d.route;
+  }
+
   /**
-   * Erreichbare Planeten. Vor dem ersten Landen (Platz 1) nur der Startort selbst; danach die
-   * Nachbarn des aktuellen Planeten, die freigeschaltet (Profil) und noch nicht besucht sind.
-   * Ohne Profil gelten alle Planeten als freigeschaltet.
+   * Erreichbare Planeten. Vor dem ersten Landen (Platz 1) nur der Startort selbst; danach die Planeten der
+   * nächsten Etappe der Reiseroute, die freigeschaltet (Profil) und noch nicht besucht sind. Ist dort keiner
+   * frei, gilt jeder freigeschaltete, unbesuchte Planet (niemand strandet). Ohne Profil sind alle frei.
    */
   erreichbar(profil = null) {
     const d = this.d;
     if (!d.reiseBereit) return d.phase === 'KARTE' ? [this.planetAktuell()] : [];
     const frei = profil && profil.planeten ? new Set(profil.planeten) : null;
-    return rlNachbarn(this.planetAktuell()).filter((k) => !d.planetenReihe.includes(k) && (!frei || frei.has(k)));
+    const offen = (k) => !d.planetenReihe.includes(k) && (!frei || frei.has(k));
+    const etappe = (this.route(profil)[d.platz] ?? []).filter(offen);
+    return etappe.length ? etappe : Object.keys(RL_PLANETEN).filter(offen);
   }
 
   /**
@@ -18365,8 +18859,31 @@ class RlLauf {
       d.planetenReihe.push(key);
       d.reiseBereit = false;
     }
+    d.skizzeVorLandung = !!d.skizze;
     d.skizze = false;
     d.phase = 'PLANET';
+  }
+
+  /** Geht es vom Planetenschirm zurück zur Sternkarte? Nur solange hier noch nicht gekämpft oder übersprungen wurde (und nie im geführten Tutorial). */
+  kannZurKarte() {
+    const d = this.d;
+    return d.phase === 'PLANET' && d.kampfIndex === 0 && d.uebersprungen === 0 && !d.sofortPack && !this.istGefuehrt();
+  }
+
+  /**
+   * Zurück zur Sternkarte (PLANET → KARTE, Spieltest-Runde 5): die Landung wird zurückgenommen — ab Platz 2 steht
+   * wieder die Wahl der Etappe offen, auf Platz 1 nur „Landen“. Die Kartenskizze lebt wieder auf.
+   */
+  zurKarte() {
+    const d = this.d;
+    if (!this.kannZurKarte()) throw new Error('Zurück zur Sternkarte geht nur vor dem ersten Kampf auf diesem Planeten');
+    if (d.platz > 1) {
+      d.planetenReihe.pop();
+      d.platz--;
+      d.reiseBereit = true;
+    }
+    d.skizze = !!d.skizzeVorLandung;
+    d.phase = 'KARTE';
   }
 
   /**
@@ -18387,22 +18904,29 @@ class RlLauf {
     for (const p of liste) { z -= (p.gewicht ?? 1); if (z < 0) { wahl = p; break; } }
     let key = wahl.key;
     if (key === 'modul' && !Object.values(RL_KATALOG).some((e) => e.sorte === 'modul' && e.groesse <= 3 && !this.hatModul(e.key))) key = 'garantie';
+    // Ein Pack, das nichts aufdecken könnte (alle Sternbilder auf Höchststufe, Deck voll), wird zur Garantie.
+    const stufenMax = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
+    if (key === 'sternbilderpack' && RL_STUFEN_TYPEN.every((t) => (d.stufen[t].stufe ?? 0) >= stufenMax)) key = 'garantie';
+    if (key === 'planetenpack' && d.deck.length >= RL_KONFIG.deck.maxGroesse) key = 'garantie';
     return { key, betrag: key === 'geld' ? (wahl.betrag ?? 0) : 0 };
   }
 
   /**
    * Lakai überspringen: die Prämie des Kampfplatzes (`skipPraemie`, oder `praemieKey` ausdrücklich) für den
-   * nächsten Shop bzw. sofort, dazu die Bossschuld (außer per Notruf).
+   * nächsten Shop bzw. sofort, dazu die Bossschuld (außer per Notruf). Ein Pack als Prämie geht sofort auf
+   * (Spieltest-Runde 5): `daten.sofortPack = {art}` — rl-shop.js (`rlSofortPack`, `rlSofortPackWaehlen`) deckt auf
+   * und nimmt; bis dahin geht es auf dem Planeten nicht weiter.
    */
   ueberspringen(ohneSchuld = false, praemieKey = null) {
     const d = this.d;
     if (d.phase !== 'PLANET') throw new Error('Überspringen nur auf dem Planetenschirm');
     if (this.istBossKampf()) throw new Error('Der Boss lässt sich nicht überspringen');
     if (this.istGefuehrt()) throw new Error('Der Übungskampf lässt sich nicht überspringen');
+    if (d.sofortPack) throw new Error('Erst das offene Pack nehmen');
     const praemie = praemieKey ? { key: praemieKey, betrag: praemieKey === 'geld' ? ((RL_KONFIG.ueberspringen.praemien.find((p) => p.key === 'geld') || {}).betrag ?? 0) : 0 } : this.skipPraemie();
     switch (praemie.key) {
-      case 'sternbilderpack': d.gratisPacks.sternbilder = true; break;
-      case 'planetenpack': d.gratisPacks.planet = true; break;
+      case 'sternbilderpack': d.sofortPack = { art: 'sternbilder' }; break;
+      case 'planetenpack': d.sofortPack = { art: 'planet' }; break;
       case 'modul': d.modulGarantie = true; break;
       case 'geld': this.geldPlus(praemie.betrag); break;
       default: d.garantie = true;
@@ -18417,6 +18941,7 @@ class RlLauf {
   kampfBeginnt(seed) {
     const d = this.d;
     if (d.phase !== 'PLANET') throw new Error('Kampf nur vom Planetenschirm aus');
+    if (d.sofortPack) throw new Error('Erst das offene Pack nehmen');
     d.kampfSeed = (seed ?? (d.seed ^ (d.platz * 1000 + d.kampfIndex * 7 + 1))) >>> 0;
     d.phase = 'KAMPF';
   }
@@ -19035,6 +19560,18 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       });
     },
 
+    /**
+     * Das Gegner-Fenster im Kampf (Spieltest-Runde 5): dieselbe Vorschau wie auf dem Planetenschirm — Verhalten,
+     * Privilegien, Fähigkeit, Boss-Stärke, Heilung — dazu beim Boss der aktuelle Lebensstand.
+     */
+    gegnerInfoZeigen(idx) {
+      const spec = kampf.gegnerVonSitz[idx];
+      if (!spec) return;
+      const gruppe = kampf.gegner.length > 1 ? kampf.gegner : spec;
+      const bz = kampf.boss;
+      rlGegnerInfoAnsicht(document.body, lauf, gruppe, { leben: bz ? { jetzt: bz.leben, max: bz.lebenMax } : null, himmel: kampf.effekt ? kampf.effekt.text : '' });
+    },
+
     /** Sternbildstufen für die Formentafel (Knopf „Formen" des Tisches). */
     formenStufen() {
       const out = {};
@@ -19060,6 +19597,8 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       };
       // Antippen des Nachziehstapels öffnet die Deckansicht (ansicht.js liest das Feld).
       rl.deckAnsehen = () => modus.deckAnsehen();
+      // Antippen der Gegnerfigur oder ihres Schilds: was kann dieser Gegner? (Spieltest-Runde 5)
+      rl.gegnerInfoZeigen = (idx) => modus.gegnerInfoZeigen(idx);
       s.rl = rl;
       s.rundenGesamt = kampf.runden;
       if (f) f.sichtErweitern(s);
@@ -19100,6 +19639,7 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       const runde = a.runde;
       const bz = kampf.boss;
       let geld = 0;
+      let praemie = null;
       let schadenGezeigt = false;
       for (const e of kampf.ereignisse) {
         if (e.runde !== runde) continue;
@@ -19109,12 +19649,21 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
           schadenGezeigt = true;
         } else if (e.art === 'HEILUNG') {
           zeilen.push(RL_TXT_KAMPF.rundeHeilung(bossName(), e.betrag, e.leben, e.lebenMax));
+        } else if (e.art === 'GELD' && e.durch === 'RUNDE') {
+          praemie = e;
         } else if (e.art === 'GELD') {
           geld += e.betrag;
         } else if (e.art === 'FAEHIGKEIT') {
           const t = rlKampfUiFaehigkeitText(e, name);
           if (t) zeilen.push(t);
         }
+      }
+      // Rundenprämie (Spieltest-Runde 5): Geld für die eigenen Punkte der Runde — oder der Hinweis, ab wann es sie gibt.
+      if (praemie) zeilen.push(RL_TXT_KAMPF.rundePraemie(praemie.betrag, praemie.punkte));
+      else if (!kampf.uebung) {
+        const stufen = RL_KONFIG.geld.rundenPraemie || [];
+        const zuwachs = a.spiel.rundenPunkte && a.spiel.rundenPunkte.length ? a.spiel.rundenPunkte[a.spiel.rundenPunkte.length - 1][m] : 0;
+        if (stufen.length) zeilen.push(RL_TXT_KAMPF.rundePraemieKeine(zuwachs, Math.min(...stufen.map((s) => s.ab))));
       }
       if (geld > 0) zeilen.push(RL_TXT_KAMPF.rundeGeld(geld, lauf.daten.geld + kampf.geldZuwachs));
       if (bz) {
@@ -19152,7 +19701,7 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       let geld = 0;
       for (const e of neu) {
         if (e.art === 'GELD' && e.idx === m) {
-          if (geld === 0 && kontext.hinweis) kontext.hinweis('klau');
+          if (e.durch !== 'RUNDE' && geld === 0 && kontext.hinweis) kontext.hinweis('klau');
           geld += e.betrag;
         } else if (e.art === 'SCHADEN' && e.betrag > 0) {
           opt.schaden = { idx: e.idx, betrag: e.betrag };
@@ -19522,7 +20071,7 @@ function rlBotFuer(gegnerSpec, zusatz = {}) {
  * `RlKampf` baut aus dem Lauf und der Gegner-Spezifikation (eine oder mehrere) eine Partie
  * mit eigenen Decks, Regeln je Sitz und Bots je Sitz, patcht den Himmelseffekt des Planeten
  * und stellt die Spielart 'kurz' ein. Über einen Ereignis-Hörer am Spiel führt er
- *   - das Geld (je geklauter Karte des Menschen),
+ *   - das Geld (je geklauter Karte des Menschen, dazu die Rundenprämie für die eigenen Rundenpunkte),
  *   - die Sternbildstufen-Zähler (GEBAUT/KLAU/RAUB des Menschen je Typ),
  *   - das Bossleben (Schaden = Rundenwertung des Menschen, danach gedeckelte Heilung),
  *   - die Elite-Fähigkeiten (Sonde, Echo, Magnet, Sturm, Zöllner, Herold).
@@ -19539,14 +20088,28 @@ function rlBotFuer(gegnerSpec, zusatz = {}) {
  * im ersten Zug einer Runde gibt es weder Sternbilder noch bleibende Hände (die Engine sammelt alles ein),
  * und mit ein bis zwei Runden je Kampf wäre „ab Runde 2" fast nie.
  *
- * Exporte: RlKampf.
- * Top-Level-Namen dieser Datei: RL_KAMPF_ID_JE_SITZ, RL_KAMPF_ID_HIMMEL, rlKampfHoechsteZahl, RlKampf.
+ * Exporte: RlKampf, rlRundenPraemie.
+ * Top-Level-Namen dieser Datei: RL_KAMPF_ID_JE_SITZ, RL_KAMPF_ID_HIMMEL, rlRundenPraemie, rlKampfHoechsteZahl, RlKampf.
  */
 
 /** Karten-IDs: Sitz i beginnt bei i · RL_KAMPF_ID_JE_SITZ (Sitz 0 also bei 0). */
 const RL_KAMPF_ID_JE_SITZ = 1000;
 /** Karten-IDs des Himmels beginnen hier. */
 const RL_KAMPF_ID_HIMMEL = 9000;
+
+/**
+ * Rundenprämie (Spieltest-Runde 5): Geld für die eigenen Punkte einer Runde. Es zählt die höchste erreichte Schwelle aus
+ * `RL_KONFIG.geld.rundenPraemie`. Liefert `{geld, ab, naechste}` — `naechste` ist die nächste Schwelle `{ab, geld}` oder null.
+ */
+function rlRundenPraemie(punkte) {
+  const stufen = [...(RL_KONFIG.geld.rundenPraemie ?? [])].sort((a, b) => a.ab - b.ab);
+  let erreicht = null, naechste = null;
+  for (const s of stufen) {
+    if (punkte >= s.ab) erreicht = s;
+    else if (!naechste) naechste = s;
+  }
+  return { geld: erreicht ? erreicht.geld : 0, ab: erreicht ? erreicht.ab : 0, naechste: naechste ? { ab: naechste.ab, geld: naechste.geld } : null };
+}
 
 /** Die Zahlenkarte mit dem höchsten Wert (Gleichstand: kleinste id), oder null. */
 function rlKampfHoechsteZahl(karten) {
@@ -19628,6 +20191,8 @@ class RlKampf {
 
     // Zähler dieses Kampfes
     this.geld = 0;
+    this.klauGeld = 0;                  // davon fürs Klauen
+    this.rundenGeld = 0;                // davon Rundenprämien (Spieltest-Runde 5)
     this.stufenZaehler = {};
     this.klaus = 0;
     this.geklaut = 0;
@@ -19785,7 +20350,7 @@ class RlKampf {
     }
     return {
       sieg, grund, fertig: this.istFertig(), uebung: !!this.uebung,
-      geld: this.geld, stufenZaehler: { ...this.stufenZaehler },
+      geld: this.geld, geldKlau: this.klauGeld, geldRunden: this.rundenGeld, stufenZaehler: { ...this.stufenZaehler },
       klaus: this.klaus, geklaut: this.geklaut, verloren: this.verloren,
       punkte, punkteMensch: punkte[m], punkteBesterGegner: bester,
       runden: s.rundenPunkte.length,
@@ -19826,6 +20391,9 @@ class RlKampf {
       platz: d.platz, kampfIndex: d.kampfIndex, istBoss: this.istBoss, runden: this.runden, zuegeJeRunde: this.zuegeJeRunde,
       menschIdx: this.menschIdx, uebung: !!this.uebung,
     };
+    // Rundenprämie: was die eigene Auslage gerade wert ist, was das an Geld bringt und wo die nächste Schwelle liegt.
+    const auslage = this.spiel.spieler[this.menschIdx].sternbilder.reduce((n, sb) => n + this.spiel.punkteVon(sb, this.menschIdx), 0);
+    out.rundenPraemie = { punkte: auslage, ...rlRundenPraemie(auslage) };
     if (this.lauf.hatModul('sichtluke')) {
       const deck = this.spiel.spieler[this.menschIdx].deck;
       out.deck = { anzahl: deck.length, oberste: deck.length ? deck[deck.length - 1] : null };
@@ -19892,6 +20460,7 @@ class RlKampf {
           const betrag = (e.karten ?? 0) * RL_KONFIG.geld.proGeklauterKarte;
           if (betrag > 0) {
             this.geld += betrag;
+            this.klauGeld += betrag;
             this.merke({ art: 'GELD', idx: m, betrag, karten: e.karten, durch: e.art }, e);
             this.spiel.log(`${this.spiel.spieler[m].name} verdient ${betrag} Geld (${e.karten} geklaute Karten)`);
           }
@@ -19912,6 +20481,16 @@ class RlKampf {
 
   /** Rundenende: Schaden, Heilung, Fähigkeiten am Rundenende (Magnet, Herold). */
   beiRundeGewertet(e) {
+    // Rundenprämie: Geld für die eigenen Punkte dieser Runde (höchste erreichte Schwelle).
+    const m = this.menschIdx;
+    const rundenPunkte = Math.max(0, e.zuwachs[m] ?? 0);
+    const praemie = rlRundenPraemie(rundenPunkte);
+    if (praemie.geld > 0) {
+      this.geld += praemie.geld;
+      this.rundenGeld += praemie.geld;
+      this.merke({ art: 'GELD', idx: m, betrag: praemie.geld, durch: 'RUNDE', punkte: rundenPunkte, ab: praemie.ab }, e);
+      this.spiel.log(`${this.spiel.spieler[m].name} verdient ${praemie.geld} Geld (Rundenprämie für ${rundenPunkte} Punkte)`);
+    }
     const bz = this.bossZustand;
     if (bz && !bz.tot) {
       const schaden = Math.max(0, e.zuwachs[this.menschIdx] ?? 0);
@@ -20587,10 +21166,12 @@ function rlStartZeigePlanet() {
           lauf.ueberspringen();
           rlStartStationSetzen(lauf.planetAktuell(), i, 'uebersprungen');
         });
-        // V2-A2 bestätigt kurz, was es gebracht hat (Spieltest-Runde 3).
-        if (praemie && lauf.daten.letztePraemie === praemie.key) rlStartHaken().satz(RL_TXT_SCHIRM.skip.bekommen(rlStartPraemieName(praemie)), { pose: 'freut' });
+        // V2-A2 bestätigt kurz, was es gebracht hat (Spieltest-Runde 3). Ein Pack geht sofort auf (Runde 5) — dann spricht das Pack.
+        if (praemie && lauf.daten.letztePraemie === praemie.key && !lauf.daten.sofortPack) rlStartHaken().satz(RL_TXT_SCHIRM.skip.bekommen(rlStartPraemieName(praemie)), { pose: 'freut' });
       }),
     deckAnsehen: () => rlDeckAnsicht(rlS.schirm, lauf.daten.deck, {}, rlStartDeckOpt(lauf)),
+    // Zurück zur Sternkarte, solange hier noch nichts passiert ist (Spieltest-Runde 5).
+    zurKarte: () => rlStartTu(() => lauf.zurKarte()),
   };
   if (lauf.hatVorrat('notruf')) {
     rueckrufe.notruf = () => rlStartTu(() => {
@@ -20601,6 +21182,12 @@ function rlStartZeigePlanet() {
   }
   rlPlanetZeigen(rlS.schirm, lauf, rueckrufe, { stationen: rlStartStationen() });
   rlStartFuehrung().schirm('planet', { schuld: RL_KONFIG.boss.schuldProUebersprungenem });
+  // Überspring-Prämie „Pack" (Spieltest-Runde 5): das Pack geht sofort auf — über dem Planetenschirm, auch nach einem Reload.
+  if (lauf.daten.sofortPack) {
+    const pack = rlSofortPack(lauf);
+    rlStartSpeichern();
+    if (pack) rlSofortPackZeigen(rlS.schirm, lauf, pack, { nehmen: (id) => rlStartTu(() => rlSofortPackWaehlen(lauf, id)) });
+  }
   if (lauf.istBossKampf()) {
     const boss = lauf.planAktuell().boss;
     rlStartHaken().sag('vorBoss', { bossName: boss ? boss.name : '', runden: lauf.rundenFuer() });
@@ -20637,6 +21224,7 @@ function rlStartZeigeUmlaufbahn() {
     }),
     packOeffnen: (art) => rlStartTu(() => rlPackOeffnen(lauf, d.shop, art)),         // Packs (Spieltest-Runde 2)
     packWaehlen: (art, id) => rlStartTu(() => rlPackWaehlen(lauf, d.shop, art, id)),
+    aufwerten: (uid, stufe) => rlStartTu(() => rlWerkstatt(lauf, d.shop, uid, stufe)),   // Werkstatt (Spieltest-Runde 5)
     deckAnsehen: () => rlDeckAnsicht(rlS.schirm, lauf.daten.deck, {}, rlStartDeckOpt(lauf)),
     weiter: () => rlStartTu(() => {
       // Wer den ersten Shop des Tutorial-Laufs verlässt, hat das Pflicht-Tutorial hinter sich.
@@ -20658,7 +21246,7 @@ function rlStartZeigeImFlug() {
     kaufen: (id) => rlStartTu(() => { rlKaufen(lauf, d.shop, id); }),
     reroll: (bereich) => rlStartTu(() => rlReroll(lauf, d.shop, bereich)),
     luftschleuse: (uid) => rlStartTu(() => rlLuftschleuse(lauf, d.shop, uid)),
-    aufwerten: (uid, stufe) => rlStartTu(() => lauf.aufwerten(uid, stufe)),
+    aufwerten: (uid, stufe) => rlStartTu(() => rlWerkstatt(lauf, d.shop, uid, stufe)),
     vorrat: (key) => rlStartTu(() => {
       lauf.vorratNutzen(key);
       if (key === 'beobachtung') rlSternwarte(lauf);
@@ -20780,7 +21368,10 @@ function rlStartKampfBeendet(kampf) {
     zeilen.push(T.punkteVerloren);
   }
   zeilen.push(T.punkteZeile(erg.punkteMensch, erg.punkteBesterGegner));
-  if (erg.geld > 0) zeilen.push(T.geldZeile(erg.geld));
+  // Geld aus dem Kampf: Rundenprämien (Spieltest-Runde 5) und Klau-Geld getrennt, damit man sieht, woher es kommt.
+  if (erg.geldRunden > 0) zeilen.push(T.geldZeileRunden(erg.geldRunden));
+  if (erg.geldKlau > 0) zeilen.push(T.geldZeileKlau(erg.geldKlau));
+  if (erg.geld > 0 && !(erg.geldRunden > 0) && !(erg.geldKlau > 0)) zeilen.push(T.geldZeile(erg.geld));
   const praemie = d.geld - geldVorher - (erg.geld || 0);
   if (praemie > 0) zeilen.push(T.bossBonusZeile(praemie, lauf.hatModul('zinsmodul')));
   zeilen.push(T.geldStand(d.geld));
@@ -20844,6 +21435,7 @@ function rlStartRegelnHtml(mitTrenner = false) {
     bonusProStufe: K.stufen.bonusProStufe,
     sternbildStufenMax: K.stufen.max,
     stufenPreise: (K.stufen.preise || []).join(' / '),
+    rundenPraemie: (K.geld.rundenPraemie || []).map((s) => 'ab ' + s.ab + ' Punkten +' + s.geld).join(', '),
     lakaiPraemie: Object.entries(K.geld.lakaiSiegBonus || {}).map(([stufe, geld]) => 'Stufe ' + stufe + ': ' + geld).join(', '),
     drache: CONFIG.punkte.DRACHE,
     riese: K.karten.riese,
@@ -21084,7 +21676,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '19.09.2026 01:25';
+const BAU_STAND = '19.09.2026 11:51';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -21706,13 +22298,19 @@ function pruefeAuswahl() {
   if (drachenklau) {
     const minHand = z.spieler[S.menschIdx].regeln && z.spieler[S.menschIdx].regeln.klauenMinHandkarten != null
       ? z.spieler[S.menschIdx].regeln.klauenMinHandkarten : CONFIG.zug.klauenMinHandkarten;
-    const kopf = `${opfer}s ${typText(ziel.typ)} (${ziel.punkte} P.) zum Drachen klauen: `;
+    const kopf = `Drachenklau — den ${typText(ziel.typ)} (${ziel.punkte} P.) von ${opfer} holen: `;
     if (mitte > 0) return { grund: kopf + 'Beim Drachenklau wandert nichts aus der Mitte — nur Handkarten werden abgeworfen.' };
     if (hand < minHand) {
-      return { grund: kopf + `Wirf mindestens ${minHand} Handkarte${minHand === 1 ? '' : 'n'} ab — gewählt hast du ${hand}.` };
+      // Keine Fehlermeldung, sondern die Anleitung (Spieltest-Runde 5): der Preis des Drachenklaus sind Handkarten.
+      const fehlen = minHand - hand;
+      return { anleitung: true, grund: kopf + (hand === 0
+        ? `Tippe jetzt ${minHand} Handkarte${minHand === 1 ? '' : 'n'} an, die du dafür abwirfst — dein Pfeil und seiner werden sofort zum Drachen.`
+        : `Noch ${fehlen} Handkarte${fehlen === 1 ? '' : 'n'} zum Abwerfen antippen.`) };
     }
     return { aktion: { ...drachenklau, handIds: [...S.auswahlHand], mitteIds: [] } };
   }
+  // Roguelike: ein fertiges fremdes Sternbild, das gerade NICHT zu holen ist — sagen, warum (Spieltest-Runde 5).
+  if (S.modus && klauen && ziel.sicher) return { grund: drachenklauGrund(z, ziel, zielBesitzer) };
   // Vorspann für jede Meldung mit Ziel, damit immer klar ist, worum es geht —
   // beim Klauen wie beim Erweitern des eigenen Sternbilds.
   const klauKopf = klauen
@@ -21914,6 +22512,14 @@ function baueSicht() {
 
   // eigene Sternbilder, die ein Gegner noch übernehmen könnte
   const ich = z.spieler[S.menschIdx];
+  // Roguelike: ein eigener unversiegelter Sechser-Pfeil, dessen Gegenstück ein Gegner liegen hat — Drachenklau droht.
+  if (S.modus) {
+    s.drachenGefahrSb = new Set();
+    for (const sb of ich.sternbilder) {
+      if (sb.versiegelt || sb.karten.some((k) => k.anker)) continue;
+      if (z.spieler.some((g) => g.idx !== S.menschIdx && g.sternbilder.some((x) => ergaenztZumDrachen(sb, x)))) s.drachenGefahrSb.add(sb.id);
+    }
+  }
   for (const sb of ich.sternbilder) {
     if (sb.sicher) continue;
     if (CONFIG.sternbild.maxKarten - sb.karten.length >= CONFIG.zug.klauenMinHandkarten) {
@@ -21969,8 +22575,12 @@ function baueSicht() {
   // Ein verdunkeltes Sternbild (Eklipse, Roguelike) ist raubbar — markieren.
   for (const akt of S.optionen.aktionen) {
     if (akt.art === 'RAUB') s.zieleSb.set(akt.sbId, { art: 'RAUB', ...akt });
-    // Drachenklau (Roguelike): der fremde fertige Pfeil, der deinen zum Drachen ergänzt — antippbar.
-    else if (akt.art === 'DRACHENKLAU' && !s.zieleSb.has(akt.sbId)) s.zieleSb.set(akt.sbId, { art: 'DRACHENKLAU', ...akt });
+    // Drachenklau (Roguelike): der fremde fertige Pfeil, der deinen zum Drachen ergänzt — antippbar; dein eigener
+    // Pfeil leuchtet als Partner mit (Spieltest-Runde 5: man tippt intuitiv beide an).
+    else if (akt.art === 'DRACHENKLAU') {
+      if (!s.zieleSb.has(akt.sbId)) s.zieleSb.set(akt.sbId, { art: 'DRACHENKLAU', ...akt });
+      if (!s.zieleSb.has(akt.sbIdEigen)) s.zieleSb.set(akt.sbIdEigen, { ...akt, art: 'DRACHENPARTNER' });
+    }
   }
   // Das gewählte Zielsternbild bekommt die Marke .ziel — eigenes wie fremdes.
   if (S.zielSb) s.zieleSb.set(S.zielSb, { art: 'ZIEL' });
@@ -22046,6 +22656,44 @@ function baueTipps(s) {
     s.tipps.push(a);
     if (s.tipps.length >= MAX_TIPPS) break;
   }
+}
+
+/** Roguelike: ergänzen sich zwei Sternbilder der Sicht zum Drachen (zwei Sechser-Pfeile aus echten Zahlen, zusammen 1–12)? */
+function ergaenztZumDrachen(a, b) {
+  const n = CONFIG.drache.teilLaenge;
+  const sechser = (sb) => sb && sb.typ === 'PFEIL' && sb.karten.length === n && sb.karten.every((k) => k.art === 'ZAHL');
+  if (!sechser(a) || !sechser(b)) return false;
+  return new Set([...a.karten, ...b.karten].map((k) => k.wert)).size === CONFIG.drache.karten;
+}
+
+/**
+ * Roguelike (Spieltest-Runde 5): warum ein FERTIGES fremdes Sternbild gerade nicht zu holen ist. Klauen geht dort nicht
+ * mehr — nur ein Sechser-Pfeil, der den eigenen zum Drachen ergänzt, ist per Drachenklau zu haben.
+ */
+function drachenklauGrund(z, ziel, zielBesitzer) {
+  const opfer = z.spieler[zielBesitzer].name;
+  const kopf = `${typText(ziel.typ)} (${ziel.punkte} P.) von ${opfer}: `;
+  if (ziel.versiegelt) return kopf + 'versiegelt — da kommt niemand mehr heran.';
+  const n = CONFIG.drache.teilLaenge;
+  if (!(ziel.typ === 'PFEIL' && ziel.karten.length === n)) {
+    return kopf + 'fertig — da passt nichts mehr dazu, klauen geht nicht. Ein Schwarzes oder Weißes Loch trifft es trotzdem, solange es nicht versiegelt ist.';
+  }
+  if (ziel.karten.some((k) => k.art !== 'ZAHL')) return kopf + 'Darin liegt eine Sternschnuppe — der Drache braucht zwölf echte Zahlen, dieser Pfeil ist nicht zu holen.';
+  if (ziel.karten.some((k) => k.anker)) return kopf + 'Eine Ankerkarte hält ihn fest — auch der Drachenklau kommt nicht heran.';
+  const werte = ziel.karten.map((k) => k.wert).sort((x, y) => x - y);
+  const lo = CONFIG.deck.zahlenMin;
+  if (werte[0] !== lo && werte[0] !== lo + n) return kopf + `Er liegt über der Blockgrenze — zum Drachen taugen nur ${lo}–${lo + n - 1} und ${lo + n}–${lo + 2 * n - 1}.`;
+  const gegen = werte[0] === lo ? `${lo + n}–${lo + 2 * n - 1}` : `${lo}–${lo + n - 1}`;
+  const ich = z.spieler[S.menschIdx];
+  const block = werte[0] === lo ? [lo + n, lo + 2 * n - 1] : [lo, lo + n - 1];
+  const meiner = ich.sternbilder.find((sb) => sb.typ === 'PFEIL' && sb.karten.length === n
+    && sb.karten.filter((k) => k.art === 'ZAHL').every((k) => k.wert >= block[0] && k.wert <= block[1]));
+  if (!meiner) return kopf + `Drachenklau geht, sobald bei dir der fertige Pfeil ${gegen} liegt — dann holst du diesen dazu und hast den Drachen.`;
+  if (meiner.karten.some((k) => k.art !== 'ZAHL')) return kopf + 'In deinem Pfeil liegt eine Sternschnuppe — der Drache braucht zwölf echte Zahlen.';
+  const regeln = ich.regeln || {};
+  const minHand = regeln.klauenMinHandkarten ?? CONFIG.zug.klauenMinHandkarten;
+  if ((ich.hand || []).length < minHand) return kopf + `Für den Drachenklau musst du ${minHand} Handkarten abwerfen — so viele hast du gerade nicht.`;
+  return kopf + 'Gerade nicht zu holen — Nebel schützt diesen Gegner in dieser Runde.';
 }
 
 /**
@@ -22197,6 +22845,13 @@ function baueKnoepfe(s) {
       knoepfe.push({ text: name, klasse: 'haupt', aus: true, titel: grund });
       tun.push(() => {});
     }
+    // Drachenklau (Spieltest-Runde 5): ist dieser Pfeil der eigene Teil eines möglichen Drachenklaus, führt ein Knopf hinüber.
+    const dk = opt.aktionen.find((x) => x.art === 'DRACHENKLAU' && x.sbIdEigen === eigenesZiel.id);
+    if (dk) {
+      const opfer = s.z.spieler[dk.opferIdx] ? s.z.spieler[dk.opferIdx].name : 'Der Gegner';
+      knoepfe.push({ text: `Zum Drachen klauen: den Pfeil von ${opfer} holen (${dk.punkteNachher} P.)`, klasse: 'haupt gefahr', titel: 'Drachenklau: du wirfst Handkarten ab, sein Sechser-Pfeil wandert zu dir, beide werden sofort zum Drachen.' });
+      tun.push(() => { S.zielSb = dk.sbId; zeichne(); });
+    }
   }
 
   // Der Hauptknopf: immer da, sobald Karten gewählt sind. Er prüft und führt
@@ -22237,7 +22892,9 @@ function baueKnoepfe(s) {
       }
       tun.push(() => fuehreAus(a));
     } else {
-      knoepfe.push({ text: 'Legen', klasse: 'haupt', aus: true, titel: p.grund });
+      // Drachenklau: der Knopf sagt, was noch fehlt (statt eines stummen „Legen").
+      const dkZiel = S.modus && S.zielSb ? opt.aktionen.find((x) => x.art === 'DRACHENKLAU' && x.sbId === S.zielSb) : null;
+      knoepfe.push({ text: dkZiel ? `Drachen klauen (${dkZiel.punkteNachher} P.) — erst Handkarten zum Abwerfen antippen` : 'Legen', klasse: dkZiel ? 'haupt gefahr' : 'haupt', aus: true, titel: p.grund });
       tun.push(() => {});
     }
   }
@@ -22368,8 +23025,8 @@ function baueKnoepfe(s) {
       const opfer = s.z.spieler[dk.opferIdx] ? s.z.spieler[dk.opferIdx].name : 'Der Gegner';
       const regeln = s.z.spieler[S.menschIdx].regeln || {};
       const n = regeln.klauenMinHandkarten ?? CONFIG.zug.klauenMinHandkarten;
-      s.hinweis = `Drachenklau möglich: ${opfer}s fertiger Sechser-Pfeil ergänzt deinen zum Drachen. Wähle mindestens ${n} `
-        + `Handkarte${n === 1 ? '' : 'n'} zum Abwerfen und tippe seinen Pfeil an.`;
+      s.hinweis = `Drachenklau möglich: der fertige Sechser-Pfeil von ${opfer} ergänzt deinen zum Drachen. Tippe seinen Pfeil an und dann `
+        + `${n} Handkarte${n === 1 ? '' : 'n'}, die du dafür abwirfst.`;
     } else {
       s.hinweis = 'Du bist dran. Wähle Karten aus deiner Hand und aus der Mitte. '
         + (S.modus
@@ -22385,12 +23042,15 @@ function baueKnoepfe(s) {
     // Roguelike: ein eigenes Sternbild ist angetippt, noch keine Karte dazu.
     s.hinweis = `${typText(eigenesZiel.typ)} ${werteText(eigenesZiel.karten.map((k) => k.wert).filter((w) => w != null).sort((x, y) => x - y))} — ${eigenesZiel.punkte} Punkte. `
       + (eigenesZiel.versiegelt ? 'Schon versiegelt: niemand kommt mehr heran.'
-        : 'Versiegeln macht es unantastbar. Oder tippe Handkarten an, um hier anzulegen.');
+        : s.drachenGefahrSb && s.drachenGefahrSb.has(eigenesZiel.id) ? 'Achtung: der Gegner hat das Gegenstück und kann diesen Pfeil zum Drachen klauen — nur das Siegel schützt.'
+          : eigenesZiel.sicher ? 'Fertig — klauen kann es niemand mehr, aber kosmische Karten (und beim Sechser-Pfeil der Drachenklau) treffen es, solange es nicht versiegelt ist.'
+            : 'Versiegeln macht es unantastbar. Oder tippe Handkarten an, um hier anzulegen.');
   } else {
     // Hier steht entweder, was herauskommt, oder woran es scheitert.
     const p = pruefeAuswahl();
     s.hinweis = p.aktion ? erfolgText(p.aktion, s.z) : p.grund;
-    s.hinweisIstFehler = !p.aktion;
+    s.hinweisIstFehler = !p.aktion && !p.anleitung;
+    s.handRuf = !!p.anleitung;       // Drachenklau: die Hand ruft — dort muss jetzt getippt werden
   }
 }
 
@@ -22441,12 +23101,14 @@ function zeichne() {
   // (Der Erzaehler zeichnet sich selbst - siehe erzaehler.js.)
   dom.ichName.textContent = s.z.spieler[S.menschIdx].name;
   const meine = s.z.spieler[S.menschIdx].sternbilder;
-  const offen = meine.filter((sb) => !sb.sicher).length;
+  // Roguelike (Spieltest-Runde 5): sicher ist dort nur, was versiegelt ist — fertig allein schützt weder vor dem
+  // Drachenklau noch vor kosmischen Karten.
+  const offen = meine.filter((sb) => (S.modus ? !sb.versiegelt : !sb.sicher)).length;
   dom.ichPunkte.textContent = meine.length === 0
     ? ''
     : `${meine.length} Sternbild${meine.length === 1 ? '' : 'er'} · ` +
       `${meine.reduce((n, sb) => n + sb.punkte, 0)} Punkte` +
-      (offen ? ` · ${offen} noch angreifbar` : ' · alle sicher');
+      (offen ? ` · ${offen} ${S.modus ? 'unversiegelt' : 'noch angreifbar'}` : (S.modus ? ' · alle versiegelt' : ' · alle sicher'));
 }
 
 /** Im Weißes-Loch-Modus werden einzelne Karten in fremden Sternbildern anklickbar. */
@@ -22706,6 +23368,13 @@ function sternbildGeklickt(sbId) {
   // Ein Klick wählt das Ziel aus, er führt nichts aus. Eigenes Sternbild
   // heißt erweitern, fremdes heißt klauen — beides dieselbe Geste.
   if (!a.istMensch()) return;
+  // Roguelike, Drachenklau (Spieltest-Runde 5): dazu gehören ZWEI Sternbilder — der fremde Sechser-Pfeil und der eigene,
+  // den er ergänzt. Wer nach dem fremden den eigenen antippt, bleibt beim Drachenklau (das Ziel ist der fremde Pfeil).
+  if (S.modus && S.optionen && S.zielSb && S.zielSb !== sbId
+      && S.optionen.aktionen.some((x) => x.art === 'DRACHENKLAU' && x.sbId === S.zielSb && x.sbIdEigen === sbId)) {
+    zeichne();
+    return;
+  }
   S.zielSb = (S.zielSb === sbId) ? null : sbId;
   if (S.zielSb) S.jokerZiel = null;
   zeichne();
@@ -23033,7 +23702,10 @@ function zeigeFormen() {
 function verdrahte() {
   dom.tisch.addEventListener('click', (e) => {
     const karte = e.target.closest('.karte');
-    if (karte && karte.dataset.ort) {
+    // Eine Karte IN einem Sternbild ist kein eigenes Ziel — der Tipp gilt dem Sternbild (Spieltest-Runde 5: vorher
+    // verpuffte er, man musste den schmalen Rand treffen). Ausnahme: im Weißes-Loch-/Komet-Modus wählt man die Karte.
+    const imSternbild = karte && karte.dataset.ort === 'sb' && !(S.zielModus && S.zielModus.zielart === 'fremdKarte');
+    if (karte && karte.dataset.ort && !imSternbild) {
       karteGeklickt(karte.dataset.ort, Number(karte.dataset.id), karte);
       return;
     }
