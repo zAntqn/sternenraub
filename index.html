@@ -4084,6 +4084,80 @@ body[data-modus="roguelike"] #mitte-karten .karte.gewaehlt::after { top: -7px; r
 body[data-modus="roguelike"] #mitte-karten .karte.rl-tut-ziel::before { bottom: auto; top: -9px; width: 20px; height: 24px; margin-left: -10px; animation-name: rl-tut-zeiger-mitte; }
 @keyframes rl-tut-zeiger-mitte { 0%, 100% { translate: 0 0; } 50% { translate: 0 6px; } }
 
+/* ---------- 29. Lehrlauf: Freischaltung, gesperrte Formen, „Neu in diesem Kampf" (Spieltest-Runde 6) ---------- */
+/* Die Freischalt-Ebene nach einem Sieg: jede Karte liegt erst grau unter einem Vorhängeschloss, dann springt der Bügel
+   auf (`.rl-frei.offen`), das Schloss fällt weg und die Karte wird farbig. */
+.rl-frei .rl-ebene-kasten { max-width: 760px; text-align: center; }
+.rl-frei-reihe { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--raum2); margin: var(--raum2) 0; }
+.rl-frei-karte {
+  position: relative; flex: 1 1 260px; max-width: 340px; padding: 14px 14px 12px;
+  background: var(--papier, #EDE6D6); color: var(--tinte, #141414);
+  border: var(--rl-rand, 3px) solid var(--tinte, #141414); border-radius: 14px; box-shadow: var(--rl-schatten);
+  filter: grayscale(1) brightness(.72); transition: filter 600ms ease-out, box-shadow 600ms ease-out;
+}
+.rl-frei.offen .rl-frei-karte { filter: none; box-shadow: var(--rl-schatten), 0 0 0 4px var(--rl-gold), 0 0 26px 6px rgba(242, 198, 64, .45); }
+.rl-frei-art { display: block; font-family: var(--display); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #5D5A4E; margin-bottom: 6px; }
+.rl-frei-karte .form-zeile { display: grid; gap: 6px; justify-items: center; border: 0; padding: 0; background: none; }
+.rl-frei-karte .form-kopf { display: grid; gap: 2px; }
+.rl-frei-karte .form-name { font-family: var(--display); font-size: 26px; letter-spacing: .03em; }
+.rl-frei-karte .form-regel { font-size: 14px; color: #4B4839; }
+.rl-frei-karte .form-beispiel { justify-content: center; --karte-b: 40px; --karte-h: 56px; }
+.rl-frei-karte .form-punkte { font-family: var(--display); font-size: 15px; letter-spacing: .04em; }
+.rl-frei-karte .form-punkte::before { content: "Punkte: "; font-family: var(--grotesk, sans-serif); font-size: 11px; letter-spacing: 0; opacity: .75; }
+.rl-frei-bild { display: flex; justify-content: center; --karte-b: 74px; --karte-h: 104px; margin-bottom: 6px; }
+.rl-frei-name { display: block; font-family: var(--display); font-size: 24px; letter-spacing: .03em; }
+.rl-frei-text { display: block; font-size: 14px; line-height: 1.35; color: #4B4839; }
+.rl-frei-schloss {
+  position: absolute; left: 50%; top: 50%; width: 74px; translate: -50% -50%; z-index: 2; pointer-events: none;
+  filter: drop-shadow(3px 3px 0 #000); transition: opacity 450ms ease-in 350ms, translate 450ms ease-in 350ms;
+}
+.rl-frei-schloss .rl-schloss { display: block; width: 100%; height: auto; }
+.rl-schloss-buegel { transform-origin: 34px 28px; transition: transform 320ms cubic-bezier(.3, 1.6, .5, 1); }
+.rl-frei.offen .rl-schloss-buegel { transform: translateY(-7px) rotate(32deg); }
+.rl-frei.offen .rl-frei-schloss { opacity: 0; translate: -50% 40%; }
+.rl-frei-hinweis { margin: 0 auto var(--raum2); max-width: 520px; }
+@media (prefers-reduced-motion: reduce) {
+  .rl-frei-karte, .rl-frei-schloss, .rl-schloss-buegel { transition: none; }
+}
+
+/* »Formen«-Tafel im Lehrlauf: gesperrte Sternbilder treten zurück und tragen ihren Hinweis. */
+.form-zeile.rl-form-zu { opacity: .5; filter: grayscale(.85); }
+.form-zeile.rl-form-zu .form-gesperrt {
+  grid-column: 1 / -1; margin-top: 4px; font-size: 13px; font-style: italic;
+}
+.form-zeile.rl-form-zu .form-gesperrt::before {
+  content: ""; display: inline-block; width: 12px; height: 14px; margin-right: 6px; vertical-align: -2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 58'%3E%3Cpath d='M14 28V17a10 10 0 0 1 20 0v11' fill='none' stroke='%23888' stroke-width='7' stroke-linecap='round'/%3E%3Crect x='7' y='26' width='34' height='27' rx='6' fill='%23888'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Planetenschirm im Lehrlauf: was dieser Kampf neu bringt. */
+.rl-lehr-neu {
+  margin: 8px 0 0; padding: 6px 12px; display: inline-block;
+  font-family: var(--display); letter-spacing: .04em; font-size: 15px; color: var(--tinte, #141414);
+  background: var(--rl-gold); border: 2px solid var(--tinte, #141414); border-radius: 10px; box-shadow: var(--rl-schatten-klein);
+}
+/* Die Zeile der Formentafel ist für dunklen Grund gebaut — auf der hellen Freischalt-Karte trägt sie Tusche und steht mittig. */
+.rl-frei-karte .form-zeile, .rl-frei-karte .form-kopf { grid-template-columns: 1fr; text-align: center; }
+.rl-frei-karte .form-name, .rl-frei-karte .form-punkte { color: var(--tinte, #141414); text-shadow: none; }
+.rl-frei-karte .form-punkte { position: static; margin: 0; justify-self: center; }
+.rl-frei-karte .form-zeile .form-punkte { grid-column: 1; grid-row: auto; }
+.rl-frei-karte .form-zeile .form-regel { color: #4B4839; }
+
+/* ---------- 30. Lehrlauf: Zeiger am »Formen«-Knopf, Abschluss-Schirm (Spieltest-Runde 6) ---------- */
+/* Der Knopf sitzt am oberen Rand — der Zeigerpfeil steht deshalb UNTER ihm und zeigt nach oben. */
+body[data-modus="roguelike"] #btn-formen.rl-tut-ziel { position: relative; outline: 3px dashed #fff; outline-offset: 3px; animation: rl-tut-puls 1000ms ease-in-out infinite; z-index: 5; }
+body[data-modus="roguelike"] #btn-formen.rl-tut-ziel::before {
+  content: ""; position: absolute; left: 50%; top: calc(100% + 7px); width: 24px; height: 28px; margin-left: -12px; rotate: 180deg;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 28'%3E%3Cpath d='M8 2h8v12h6L12 26 2 14h6z' fill='%23fff' stroke='%23141414' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(2px 2px 0 #000); animation: rl-tut-zeiger 800ms ease-in-out infinite; pointer-events: none;
+}
+.rl-ende-nachschlagen { max-width: 640px; margin: var(--raum2) auto; text-align: left; padding: 12px 18px; border: 2px solid var(--rl-gold); border-radius: 12px; background: rgba(0, 0, 0, .25); }
+.rl-nachschlagen { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 8px 0; }
+.rl-nachschlagen dt { font-family: var(--display); letter-spacing: .04em; color: var(--rl-gold); }
+.rl-nachschlagen dd { margin: 0; line-height: 1.35; }
+@media (max-width: 560px) { .rl-nachschlagen { grid-template-columns: 1fr; gap: 2px; } .rl-nachschlagen dd { margin-bottom: 8px; } }
+@media (prefers-reduced-motion: reduce) { body[data-modus="roguelike"] #btn-formen.rl-tut-ziel, body[data-modus="roguelike"] #btn-formen.rl-tut-ziel::before { animation: none; outline-color: #fff; } }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -5780,6 +5854,10 @@ function generiereAktionen(spiel, spielerIdx) {
   const klauenMaxAusMitte = spielRegel(spiel, spielerIdx, 'klauenMaxAusMitte');
   const klauenMinHandkarten = spielRegel(spiel, spielerIdx, 'klauenMinHandkarten');
   const mussMehrPunkte = spielRegel(spiel, spielerIdx, 'mussMehrPunkteBringen');
+  // Roguelike-Lehrlauf (Regel `erlaubteTypen`, Spieltest-Runde 6): nur diese Sternbildtypen dürfen entstehen — beim
+  // Bauen, Erweitern, Klauen und beim Jokerklau. Ohne die Regel (null, Grundspiel) ist alles erlaubt.
+  const erlaubteTypen = spielRegel(spiel, spielerIdx, 'erlaubteTypen');
+  const typErlaubt = (typ) => !Array.isArray(erlaubteTypen) || erlaubteTypen.includes(typ);
 
   const mitteBaubar = spiel.mitte.filter(istBaubar);
   const maxAusMitte = Math.max(bauenMaxAusMitte, klauenMaxAusMitte);
@@ -5819,6 +5897,7 @@ function generiereAktionen(spiel, spielerIdx) {
         if (gesamt < MIN) continue;
         const b = bewerteSchluessel(basisKey + m.key, gesamt);
         if (!b.gueltig) continue;
+        if (!typErlaubt(b.typ)) continue;
 
         if (ziel.eigen) {
           aktionen.push({
@@ -5886,6 +5965,7 @@ function generiereAktionen(spiel, spielerIdx) {
               if (gesamt < MIN || gesamt > MAX) continue;
               const b = bewerteSchluessel(POW7[0] + h.key + m.key, gesamt);
               if (!b.gueltig) continue;
+              if (!typErlaubt(b.typ)) continue;
               const merk = b.typ + ':' + b.werte.join(',');
               if (gesehen.has(merk)) continue;
               gesehen.add(merk);
@@ -6120,6 +6200,8 @@ function spielRegelStandard(name) {
     case 'kosmischeGeschenk': return 0;
     case 'sicherAb': return 0;
     case 'unklaubareTypen': return [];
+    // Roguelike-Lehrlauf: Liste der Sternbildtypen, die dieser Sitz bauen darf. null = alle (Grundspiel).
+    case 'erlaubteTypen': return null;
     default: return false;   // alle booleans
   }
 }
@@ -10190,7 +10272,7 @@ function rlGegnerFigurSvg(info, opt = {}) {
  * Top-Level-Namen: RL_TXT_PLANET, RL_TXT_VERHALTEN, RL_TXT_PRIVILEG,
  *   RL_TXT_ELITE, RL_TXT_BOSS, RL_TXT_DECK, RL_TXT_MODUL, RL_TXT_VORRAT,
  *   RL_TXT_KATALOG, RL_TXT_GROESSE, RL_TXT_MARKE, RL_TXT_STUFE,
- *   RL_TXT_SEXTANT, rlTxtWerteListe, rlTxtWerteReihe, RL_TXT_FUEHRUNG,
+ *   RL_TXT_SEXTANT, rlTxtWerteListe, rlTxtWerteReihe, RL_TXT_FUEHRUNG, RL_TXT_LEHRE,
  *   RL_TXT_UI, RL_TXT_SCHIRM, RL_TXT_ZIEL, RL_TXT_KAMPF, RL_TXT_REGELN, rlText
  */
 
@@ -10355,13 +10437,18 @@ const RL_TXT_STUFE = {
  * Den geführten Teil (Sternkarte bis erster Shop) spricht RL_TXT_FUEHRUNG.
  */
 const RL_TXT_SEXTANT = {
-  start: (k) => [
+  start: (k) => (k.lehrlauf ? [
+    'Willkommen an Bord. Ich bin V2-A2, dein Bordnavigator.',
+    k.wiederholung
+      ? 'Ich fliege noch einmal den ganzen Lehrlauf mit: drei Planeten, und ich erkläre alles, wenn es so weit ist.'
+      : 'Dein erster Raubzug ist ein Lehrlauf: drei Planeten, und ich erkläre alles, wenn es so weit ist. Drück auf »Raubzug beginnen«.',
+  ] : [
     'Willkommen an Bord. Ich bin V2-A2, dein Bordnavigator.',
     'Das hier ist der Raubzug: drei Planeten, ein eigenes Deck, ein Leben. Wer einen Kampf verliert, strandet.',
     k.wiederholung
       ? 'Ich fliege noch einmal mit: erst der Übungskampf, dann der erste Shop — danach bist du wieder allein am Steuer.'
       : 'Beim ersten Mal fliege ich mit: Ich zeige dir den ersten Kampf und den ersten Shop. Drück auf »Raubzug beginnen«.',
-  ],
+  ]),
   ernst: (k) => [
     `Ab jetzt ist es ernst: ${k.runden === 1 || !k.runden ? 'eine Runde' : k.runden + ' Runden'} mit ${k.zuege ?? 9} Zügen, und der Lakai spielt wirklich mit.`,
     'Wer am Ende mehr Punkte hat, gewinnt — Gleichstand reicht dir. Verlierst du, ist der Lauf vorbei.',
@@ -10412,6 +10499,8 @@ const RL_TXT_FUEHRUNG = {
     knopf: 'Raubzug beginnen',
     hinweis: 'Dein erster Raubzug ist geführt: V2-A2 zeigt dir den ersten Kampf und den ersten Shop. Deck und Schwierigkeit wählst du danach selbst.',
     wiederholen: 'Tutorial wiederholen',
+    hinweisLehrlauf: 'Dein erster Raubzug ist ein Lehrlauf: V2-A2 begleitet dich über alle drei Planeten und erklärt Sternbilder, Karten und Shops, wenn es so weit ist. Deck und Schwierigkeit wählst du danach selbst.',
+    lehrlaufSpielen: 'Lehrlauf spielen (Tutorial)',
   },
   gesperrt: 'Gleich — erst der Schritt, den V2-A2 gerade zeigt.',
   ueberspringenGesperrt: 'Der Übungskampf lässt sich nicht überspringen.',
@@ -10499,6 +10588,209 @@ const RL_TXT_FUEHRUNG = {
       'Das war die Führung. Ab jetzt entscheidest du selbst: kaufen, sparen, weiterfliegen. Mit »Weiter« geht es zum nächsten Lakaien — ich melde mich nur noch, wenn etwas Neues kommt.',
     ],
   },
+};
+
+/**
+ * Der LEHRLAUF (Spieltest-Runde 6): was V2-A2 im Kampf sagt. Je Lektion (Schlüssel wie in rl-lehrlauf.js RL_LEKTIONEN)
+ * `vor` (Ansage, Pflicht-Lesen), `aufgabe` (Fußleiste, solange der Pflichtzug läuft) und `danach` (nach dem Zug).
+ * Textregeln: höchstens zwei Sätze je Blase, ein neuer Begriff je Blase, höchstens zwei Blasen am Stück — und immer
+ * dazusagen, wo man es später nachschlägt. Zahlen kommen aus dem Kontext (Konfiguration, Spielstand), nie von hier.
+ */
+const RL_TXT_LEHRE = {
+  erstLesen: 'V2-A2 erklärt etwas Neues — lies mit, danach bist du dran.',
+  nochmal: 'Noch mal erklären',
+  abgelehnt: 'Gerade geht es um den Zug, den V2-A2 zeigt — die Karten mit dem weißen Pfeil.',
+  daneben: 'Das gehört nicht zur Aufgabe — tipp es noch einmal an, dann ist es wieder abgewählt.',
+  gesperrt: (k) => `Das wäre ${k.ein} — den Typ schaltest du erst noch frei. Bis dahin zählen: ${k.frei}.`,
+  formName: { PFEIL: 'Pfeil', WAGEN: 'Wagen', KREUZ: 'Kreuz', KRONE: 'Krone', ZWILLING: 'Zwilling', DOPPELSTIER: 'Doppelstier' },
+  formEin: { PFEIL: 'ein Pfeil', WAGEN: 'ein Wagen', KREUZ: 'ein Kreuz', KRONE: 'eine Krone', ZWILLING: 'ein Zwilling', DOPPELSTIER: 'ein Doppelstier' },
+  pfeil: {
+    vor: () => [
+      'Unten liegt deine Hand, in der Mitte Karten für alle. Bau einen Pfeil — drei Zahlen in Folge: Tipp die Karten mit dem weißen Pfeil an und bestätige unten.',
+    ],
+    aufgabe: (k) => `Pfeil bauen: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? `, dann ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}. Danach unten bestätigen.`,
+    danach: (k) => [`Dein erster Pfeil — ${k.punkte} Punkte. Gezählt wird am Rundenende: Du hast ${k.zuege} Züge (oben links steht der Stand), und wer dann mehr Punkte hat, gewinnt.`],
+  },
+  klauen: {
+    vor: (k) => [
+      'Der Lakai hat auch einen Pfeil gelegt. Den holen wir uns — deshalb heißt das Spiel Sternenraub.',
+      `Klauen: mindestens ${k.minHand} eigene Handkarten anlegen, und das Sternbild muss dadurch mehr wert werden. Tipp die gezeigten Karten an, dann sein Sternbild — und bestätige.`,
+    ],
+    aufgabe: (k) => `Klauen: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? ` und ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}, dann das Sternbild des Gegners. Danach unten bestätigen.`,
+    danach: (k) => [`ZACK! Das ganze Sternbild gehört dir — ${k.punkte} Punkte. Und Klauen bringt Geld: ${k.proKarte === 1 ? 'eine Münze' : k.proKarte + ' Münzen'} je geklauter Karte, es steht oben neben der Rundenanzeige.`],
+  },
+  erweitern: {
+    vor: () => ['Eine deiner Karten passt an ein Sternbild, das schon vor dir liegt. Größer heißt mehr Punkte: Tipp die gezeigten Karten an, dann dein Sternbild — und bestätige.'],
+    aufgabe: (k) => `Erweitern: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? ` und ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}, dann dein Sternbild. Danach unten bestätigen.`,
+    danach: (k) => [k.karten >= k.maxKarten
+      ? `${k.karten} Karten, ${k.punkte} Punkte — mehr passt an dieses Sternbild nicht.`
+      : `${k.karten} Karten, ${k.punkte} Punkte. Aber Vorsicht: Was offen vor dir liegt, kann der Gegner genauso klauen.`],
+  },
+  tauschen: {
+    vor: () => [
+      'Jetzt passt nichts: Mit deinen Karten geht kein Sternbild. Das kommt vor.',
+      'Dann tauschst du eine Karte: Tipp die gezeigte Handkarte an und drück unten auf »Karte tauschen«. Das kostet den Zug, aber du ziehst sofort eine neue.',
+    ],
+    aufgabe: () => 'Karte tauschen: Tipp die gezeigte Handkarte an, dann unten auf »Karte tauschen«.',
+    danach: () => ['Getauscht — schau, was du gezogen hast. Im nächsten Zug geht wieder etwas.'],
+  },
+  tauschenTipp: () => ['Übrigens: Wenn einmal gar nichts passt, tauschst du eine Karte. Eine Handkarte antippen, dann unten »Karte tauschen« — das kostet den Zug, aber du ziehst sofort nach.'],
+  versiegeln: {
+    vor: (k) => [
+      `Dein ${k.typName} ist ${k.punkte} Punkte wert, aber noch nicht versiegelt — so kann er dir wieder verloren gehen.`,
+      'Versiegeln schützt ihn vor allem, kostet aber den ganzen Zug. Tipp dein Sternbild an und drück unten auf »versiegeln«.',
+    ],
+    aufgabe: () => 'Versiegeln: Tipp dein Sternbild an, dann unten auf »… versiegeln«.',
+    danach: (k) => [`Versiegelt — der Goldrand heißt: unantastbar. Pro Runde gehen höchstens ${k.maxSiegel} Siegel.`],
+  },
+  wagen: {
+    vor: () => ['Der Wagen: Zahlen mit gleichem Abstand, in Zweier- oder Dreierschritten — 2·4·6 oder 3·6·9. Deine Karten passen: Tipp die gezeigten an und bestätige.'],
+    aufgabe: () => 'Wagen bauen: die gezeigten Karten antippen, dann unten bestätigen.',
+    danach: (k) => [`Ein Wagen — ${k.punkte} Punkte. Wie der Pfeil wächst er bis auf sechs Karten.`],
+  },
+  kreuz: {
+    vor: (k) => [`Das Kreuz: viermal dieselbe Zahl, ${k.kreuz} Punkte. Tipp die vier gezeigten Karten an und bestätige.`],
+    aufgabe: () => 'Kreuz bauen: die vier gezeigten Karten antippen, dann unten bestätigen.',
+    danach: () => ['Ein Kreuz! Es ist sofort fertig: Mehr passt nicht dazu, also kann es niemand klauen.'],
+  },
+  krone: {
+    vor: () => ['Die Krone: ein Drilling und ein Paar, fünf Karten auf einmal. Tipp die gezeigten Karten an und bestätige.'],
+    aufgabe: () => 'Krone bauen: die gezeigten Karten antippen, dann unten bestätigen.',
+    danach: (k) => [`Die Krone liegt — ${k.punkte} Punkte. Oben rechts unter »Formen« stehen alle Sternbilder mit ihren Punkten.`],
+  },
+  zwilling: {
+    vor: () => ['Der Zwilling: drei Paare, sechs Karten auf einmal. Hand und Mitte geben das her: Tipp die gezeigten Karten an und bestätige.'],
+    aufgabe: () => 'Zwilling bauen: die gezeigten Karten antippen, dann unten bestätigen.',
+    danach: (k) => [`Ein Zwilling — ${k.punkte} Punkte. Mit sechs Karten ist er sofort fertig: nicht mehr klaubar.`],
+  },
+  doppelstier: {
+    vor: () => ['Der Doppelstier: zwei Drillinge, sechs Karten. Tipp die gezeigten Karten an und bestätige.'],
+    aufgabe: () => 'Doppelstier bauen: die gezeigten Karten antippen, dann unten bestätigen.',
+    danach: (k) => [`Ein Doppelstier — ${k.punkte} Punkte. Damit kennst du alle sechs Sternbilder; unter »Formen« oben rechts stehen sie alle noch einmal.`],
+  },
+  milchstrasse: {
+    vor: () => [
+      'Neu in deinem Deck: die Milchstraße, eine kosmische Karte. Kosmische Karten kosten keinen Zug — eine je Zug, vor dem Bauen.',
+      'Tipp sie an: Du ziehst drei Karten — dein eigentlicher Zug kommt danach.',
+    ],
+    aufgabe: () => 'Tipp die Milchstraße in deiner Hand an.',
+  },
+  schwarzesLoch: {
+    vor: () => ['Das Schwarze Loch zerstört ein offenes Sternbild des Gegners — nur ein Siegel schützt davor. Tipp die Karte an, dann sein Sternbild.'],
+    aufgabe: () => 'Tipp das Schwarze Loch in deiner Hand an, dann ein Sternbild des Gegners.',
+    danach: () => ['Weg ist es. Genau das kann dir auch passieren — deshalb versiegelst du, was wertvoll ist.'],
+  },
+  weissesLoch: {
+    vor: () => ['Das Weiße Loch zieht eine Karte aus einem offenen Sternbild des Gegners auf deine Hand. Tipp die Karte an, dann eine Karte in seinem Sternbild.'],
+    aufgabe: () => 'Tipp das Weiße Loch in deiner Hand an, dann eine Karte in einem Sternbild des Gegners.',
+  },
+  urknall: {
+    vor: () => [
+      'Der Urknall: Alle OFFENEN Sternbilder zerfallen — bei allen am Tisch, auch bei dir. Fertige (sechs Karten, Kreuz, Drache) und versiegelte bleiben stehen.',
+      'Spiel ihn, wenn beim Gegner viel offen liegt und bei dir wenig. Du musst nicht — heb ihn auf, bis es sich lohnt.',
+    ],
+  },
+  joker: {
+    vor: () => ['Die Sternschnuppe ist ein Joker: Im Sternbild vertritt sie jede Zahl. Bau sie ein — tipp die gezeigten Karten an und bestätige.'],
+    aufgabe: () => 'Joker einbauen: die gezeigten Karten antippen, dann unten bestätigen.',
+    danach: () => ['Der Joker liegt. Achtung: Wer die echte Zahl auf der Hand hat, kann ihn dir herausklauen — nur das Siegel schützt.'],
+  },
+  jokerklau: {
+    vor: () => ['Beim Gegner liegt eine Sternschnuppe, und du hast die Zahl, die sie vertritt. Tippst du die Sternschnuppe an, tauschst du deine Karte dagegen und baust mit dem Joker sofort ein neues Sternbild.'],
+  },
+  drache: {
+    vor: (k) => [`Du hast zwei fertige Sechser-Pfeile: 1 bis 6 und 7 bis 12. Zusammen sind sie der Drache — ${k.drache} Punkte! Drück unten auf »Drachen zusammensetzen«.`],
+    aufgabe: () => 'Drück unten auf »Drachen zusammensetzen«.',
+    danach: () => ['Der Drache liegt. Mehr geht mit einem Sternbild nicht.'],
+  },
+  drachenklau: {
+    vor: (k) => [`Drachenklau! Der fertige Sechser-Pfeil des Gegners ergänzt deinen zum Drachen. Tipp seinen Pfeil an, dann ${k.minHand} Handkarten, die du dafür abwirfst — und bestätige.`],
+    aufgabe: (k) => `Drachenklau: Tipp den Sechser-Pfeil des Gegners an, dann ${k.minHand} Handkarten zum Abwerfen. Danach unten bestätigen.`,
+    danach: () => ['Beide Pfeile sind jetzt dein Drache. Merk dir: Vor dem Drachenklau schützt nur das Siegel — auch deinen Pfeil.'],
+  },
+  // Ereignisse
+  beklaut: (k) => [`Der Gegner hat dir ein Sternbild geklaut. Dafür bekommst du Trostpunkte — einen je Karte${k.karten ? `, hier ${k.karten}` : ''}. Was dir wichtig ist, versiegelst du.`],
+  gegnerKosmisch: {
+    MILCHSTRASSE: 'Der Gegner hat eine Milchstraße gespielt: Er zieht drei Karten.',
+    SCHWARZES_LOCH: 'Der Gegner hat ein Schwarzes Loch gespielt: Ein offenes Sternbild ist zerstört. Dagegen hilft nur das Siegel.',
+    WEISSES_LOCH: 'Der Gegner hat ein Weißes Loch gespielt: Er zieht eine Karte aus einem offenen Sternbild auf seine Hand.',
+    URKNALL: 'Der Gegner hat den Urknall gespielt: Alle offenen Sternbilder zerfallen — fertige und versiegelte bleiben stehen.',
+    sonst: (name) => `Der Gegner hat ${name} gespielt. Was eine Karte tut, steht unter »Regeln« — und im Shop bei jeder Karte unter »Details«.`,
+  },
+  fertig: () => ['Dieses Sternbild ist fertig: Mehr passt nicht dazu — und klauen kann es niemand mehr.'],
+  fertigSiegel: () => ['Fertig heißt nicht versiegelt: Ein Schwarzes Loch zerstört auch fertige Sternbilder. Davor schützt nur das Siegel — dein Sternbild antippen, dann »versiegeln«.'],
+  duo: () => ['Zwei Gegner am Tisch. Beide ziehen nach dir — und beide können dir klauen.'],
+  wertung: (k) => [
+    `Die Wertung: Jedes Sternbild, das jetzt vor dir liegt, bringt seine Punkte — du ${k.ich}, der Gegner ${k.gegner}.`,
+    'Und Punkte sind Geld: Über deinen Sternbildern steht, wie viele Münzen die Runde gerade bringt und ab wann es mehr wird.',
+  ],
+  niederlage: () => ['Das ging verloren — macht nichts, im Lehrlauf strandest du nicht. Noch einmal: früh bauen, erweitern, und versiegeln, was viel wert ist.'],
+  frei: {
+    titel: 'Freigeschaltet',
+    sternbild: 'Neues Sternbild',
+    kosmisch: 'Neu in deinem Deck',
+    weiter: 'Weiter',
+    hinweis: (k) => `${k.namen.join(' und ')}: ab dem nächsten Kampf dabei. V2-A2 zeigt dir dort, wie es geht.`,
+    neuImKampf: (namen) => `Neu in diesem Kampf: ${namen.join(' · ')}`,
+    formZu: 'noch gesperrt — V2-A2 schaltet es im Lehrlauf frei',
+  },
+  // Die Schirme des Lehrlaufs (Sternkarte, Planetenschirm, Umlaufbahn, Flug) — Schlüssel wie in RlFuehrung.lehrSchritte().
+  schirm: {
+    karteStart: () => ['Die Sternkarte: Dein Raubzug führt über drei Planeten, einen nach dem anderen. Wir starten auf dem Frostpfad — drück auf »Landen«.'],
+    karteRoute: () => ['Hyperraum! Ab jetzt wählst du selbst: Tipp einen Planeten der nächsten Etappe an und lies seinen Himmelseffekt — er ändert dort die Regeln. Dann »Kurs setzen«.'],
+    planetStart: () => ['Rechts steht dein erster Gegner. Keine Sorge: Im Lehrlauf spielst du einen verlorenen Kampf einfach noch einmal. Drück auf »Kampf beginnen«.'],
+    planetAufbau: () => ['Auf jedem Planeten warten drei Lakaien und am Ende der Boss — oben siehst du die vier Stationen. Rechts stehen Verhalten und Sonderregel des nächsten Gegners.'],
+    planetElite: () => ['Der dritte Gegner ist eine Elite: Sie hat zusätzlich eine eigene Fähigkeit — lies sie rechts. Im Kampf kannst du die Figur des Gegners jederzeit antippen und nachlesen.'],
+    planetBoss: (k) => [
+      `${k.bossName ? k.bossName + '. ' : ''}Der Boss hat eine Lebensleiste: Jede deiner Rundenwertungen ist Schaden.`,
+      `Er heilt sich auf seine Art — lies sie rechts. Du hast ${k.runden} Runden; steht sein Leben dann nicht auf null, spielst du den Kampf noch einmal.`,
+    ],
+    planetSkip: (k) => [
+      `Neu: Überspringen. Du lässt einen Lakaien aus und bekommst die Prämie auf der Tafel — dafür hat der Boss ${k.schuld} Leben mehr.`,
+      'Steht dort ein Pack, geht es sofort auf. Ob es sich lohnt, entscheidest du.',
+    ],
+    geld: (k) => [`Die Umlaufbahn: Nach jedem besiegten Lakaien kaufst du ein. Oben steht dein Geld — ${k.geld} Münzen.`],
+    angebote: () => ['Die Angebote: Karten für dein Deck, kosmische Karten, Module fürs Schiff. Der farbige Rand zeigt die Seltenheit — grau ist häufig, dann grün, blau, lila.'],
+    details: () => 'Was ein Angebot genau tut, steht hinter »Details«. Tipp bei einer Kachel darauf.',
+    kaufen: () => 'Jetzt kauf ein Angebot, das du bezahlen kannst: »Kaufen« drücken.',
+    kaufenZuTeuer: () => ['Für ein Angebot reicht das Geld gerade nicht. Auch Sparen ist ein Plan.'],
+    weiter: () => ['Karten liegen ab dem nächsten Kampf in deinem Deck, Module wirken den ganzen Lauf. Mit »Weiter« geht es zum nächsten Gegner — sieh dich vorher ruhig um.'],
+    pack: (k) => `Unten liegen zwei Packs. Öffne das Sternbilderpack — es kostet ${k.preis} Münzen.`,
+    packZuTeuer: () => ['Unten liegen zwei Packs — für das Sternbilderpack reicht das Geld gerade nicht. In jedem Shop liegt ein neues.'],
+    packwahl: (k) => `Drei Sternbilder liegen offen, eines davon steigt eine Stufe: Dieser Typ bringt dann bei jeder Wertung ${k.bonus} Punkte mehr. Nimm den, den du am ehesten baust.`,
+    planetenpack: () => ['Das zweite Pack ist das Planetenpack: Karten, die es nur auf diesem Planeten gibt. Jedes Pack geht je Shop einmal auf.'],
+    werkstatt: (k) => [`Die Werkstatt macht eine Zahlenkarte zum Riesen: Sie zählt dann in jedem Sternbild ${k.riese} Punkte mehr. Karte antippen, dann »Zum Riesen«.`],
+    rest: () => ['»Neu würfeln« tauscht die Angebote gegen Geld. »Deck ansehen« zeigt alle deine Karten, Module und Sternbildstufen — auch mitten im Kampf.'],
+    flugStart: () => ['Der Boss ist besiegt! Im Flug ist der Laden größer: Kartenmarkt, Kosmisches Kabinett und ein Schiffsmodul.'],
+    flugSchleuse: (k) => [`Neu ist die Luftschleuse: Dort wirfst du bis zu ${k.frei} Karten aus dem Deck — gratis. Ein kleines Deck zieht öfter das Gute.`],
+    flugWeiter: () => ['»Weiterfliegen« bringt dich zur Sternkarte. Dort wählst du den nächsten Planeten.'],
+  },
+  formenTafel: {
+    vor: () => ['Alle Sternbilder mit ihren Punkten findest du jederzeit oben rechts unter »Formen«. Tipp den Knopf jetzt einmal an.'],
+    danach: () => ['Genau dort. Was eine Karte kann, steht unter »Regeln« — und im Shop bei jedem Angebot unter »Details«.'],
+  },
+  angebot: () => ['Neu an Bord: der Lehrlauf. Wenn du magst, begleite ich dich einmal durch einen ganzen Raubzug und erkläre alle Sternbilder, Karten und Shops — der Knopf steht unten.'],
+  ende: {
+    titel: 'Lehrlauf geschafft',
+    unter: 'Jetzt beginnt der echte Raubzug.',
+    rede: () => [
+      'Geschafft — der ganze Lehrlauf liegt hinter dir: alle sechs Sternbilder, der Drache, die kosmischen Karten, Shops und Bosse.',
+      'Ab jetzt ist es ernst: Im echten Raubzug strandest du, wenn du einen Kampf verlierst. Dafür schaltest du Decks, Planeten und härtere Stufen frei. Guten Flug!',
+    ],
+    nachschlagenTitel: 'Zum Nachschlagen',
+    nachschlagen: [
+      ['»Formen«', 'am Kampftisch oben rechts: alle sechs Sternbilder mit Beispiel und Punkten.'],
+      ['»Regeln«', 'daneben: alle Regeln des Raubzugs, die Bosse und jede kosmische Karte.'],
+      ['»Details«', 'im Shop an jedem Angebot: was eine Karte oder ein Modul genau tut.'],
+      ['Gegner antippen', 'im Kampf: Verhalten, Sonderregel und Fähigkeit deines Gegners.'],
+      ['»Deck ansehen«', 'überall: deine Karten, Module, Vorräte und Sternbildstufen.'],
+    ],
+    gelernt: (n) => `Gelernt: ${n} Lektionen.`,
+    knopf: 'Ersten echten Raubzug beginnen',
+  },
+  nochmalTitel: 'Verloren — noch einmal',
+  nochmalZeile: 'Im Lehrlauf strandest du nicht: Der Kampf wird wiederholt, mit neuen Karten.',
+  nochmalKnopf: 'Noch einmal',
 };
 
 /** Feste Beschriftungen der Schirme und Knöpfe. */
@@ -14173,6 +14465,25 @@ const RL_KONFIG = {
   // versiegelnFertig (Spieltest-Runde 5): auch fertige Sternbilder lassen sich versiegeln — nur das Siegel schützt
   // vor dem Drachenklau und vor kosmischen Karten.
   regeln: { drachenKlau: true, versiegelnFertig: true },
+  // Der LEHRLAUF (Spieltest-Runde 6): der erste komplette Raubzug als Tutorial — Sternbilder und kosmische Karten kommen
+  // Station für Station (Tabelle RL_LEHRPLAN in rl-lehrlauf.js), V2-A2 erklärt jeden neuen Moment. `aktiv: false` stellt
+  // das alte Pflicht-Tutorial (Übungskampf + erster Shop) wieder her.
+  lehrlauf: {
+    aktiv: true,
+    zuegeJeRunde: { 1: 6, 2: 7, 3: 8 },              // Züge je Runde nach Platz (echter Lauf: 9) — kürzer, damit der Lehrlauf rund 40 Minuten dauert
+    // Aussetzer der Lakaien [Lakai 1, Lakai 2, Elite] je Platz — höher als im echten Lauf (dort Stufe 1: 0.45/0.35/0.25 …)
+    // Gemessen mit einem ANFÄNGER auf dem Menschensitz (einfacher Bot, kauft nichts): Ziel ≥ 90 % Siege im ersten Anlauf.
+    aussetzer: { 1: [0.5, 0.6, 0.4], 2: [0.45, 0.45, 0.4], 3: [0.5, 0.5, 0.4] },
+    einfacheGegnerBisPlatz: 2,                       // Lakaien spielen bis zu diesem Platz mit den einfachen Gewichten
+    bossLebenFaktor: { 1: 0.55, 2: 0.55, 3: 0.65 },  // Bossleben je Platz (kürzere Runden, weniger Formen → weniger Punkte)
+    // Nachhilfe: jeder verlorene Anlauf macht DIESEN Kampf leichter (mehr Aussetzer, weniger Bossleben) — niemand bleibt hängen.
+    nachhilfe: { aussetzer: 0.15, bossLeben: 0.12, max: 4 },
+    duoAbPlatz: 3,                                   // zwei Gegner am Tisch erst auf dem letzten Planeten
+    ueberspringenAbPlatz: 2,                         // auf Planet 1 wird jeder Kampf gespielt (dort kommen die Grundlagen)
+    minAbstandZuege: 1,                              // freie Züge zwischen zwei Pflichtzügen (dringende Lektionen ausgenommen)
+    versiegelnAbPunkte: 6,                           // ab so vielen Punkten eines offenen Sternbilds kommt die Lektion „versiegeln"
+    menschBeginnt: true,                             // der Mensch eröffnet jeden Kampf (der Lehr-Mischer stellt seinen ersten Zug)
+  },
 };
 
 /* ===== engine\src\roguelike\rl-karten.js ===== */
@@ -15198,6 +15509,7 @@ class RlFuehrung {
     this.beobachter = null;
     this.gescrollt = '';          // Schritt, zu dessen Ziel schon gescrollt wurde
     this.redeNr = 0;              // laufende Nummer der Erklärungen (die jüngste räumt `data-rl-redet` ab)
+    this.lehrBlase = false;       // Lehrlauf: steht gerade eine Aufgaben-Blase der Schirmführung?
     this.reihenfolge = [];        // gesprochene Schritte in ihrer Reihenfolge (für Tests)
   }
 
@@ -15221,7 +15533,7 @@ class RlFuehrung {
    * Ohne aktive Führung ist alles erlaubt.
    */
   waechter(aktion, daten, el) {
-    if (!this.aktiv() || !this.frei) return true;
+    if (!(this.aktiv() || this.lehrAktiv()) || !this.frei) return true;
     if (this.frei(aktion, daten || {}, el)) return true;
     if (this.sextant) this.sextant.ruckeln();
     return false;
@@ -15232,7 +15544,7 @@ class RlFuehrung {
     const w = this.wurzel;
     if (!w) return;
     for (const e of w.querySelectorAll('.rl-tut-frei, .rl-tut-ziel')) e.classList.remove('rl-tut-frei', 'rl-tut-ziel');
-    if (!this.aktiv() || !this.frei) { delete w.dataset.fuehrung; return; }
+    if (!(this.aktiv() || this.lehrAktiv()) || !this.frei) { delete w.dataset.fuehrung; return; }
     w.dataset.fuehrung = this.ansicht;
     for (const e of w.querySelectorAll('[data-rl]')) {
       if (this.frei(e.dataset.rl, { ...e.dataset }, e)) e.classList.add('rl-tut-frei');
@@ -15283,11 +15595,14 @@ class RlFuehrung {
   sprich(key, saetze, opt = {}) {
     if (!this.sextant || !this.sextant.bereit) return Promise.resolve(false);
     this.reihenfolge.push(key);
+    // Lehrlauf: jede Rede wird gemessen (Blasen, Zeichen, Dauer) — Grundlage für das Tempo (Prüfgriff lehrBericht()).
+    const mess = this.lehrAktiv() ? this.lehrMessen({ k: key, n: (Array.isArray(saetze) ? saetze : [saetze]).filter(Boolean).length, z: (Array.isArray(saetze) ? saetze : [saetze]).filter(Boolean).join('').length }) : null;
     const pflicht = opt.pflicht !== false;
     const nr = ++this.redeNr;
     if (pflicht && typeof document !== 'undefined') document.body.dataset.rlRedet = '1';
     return this.sextant.erzaehle(saetze, { ...opt, pflicht }).then((ok) => {
       if (nr === this.redeNr && typeof document !== 'undefined') delete document.body.dataset.rlRedet;
+      if (mess) mess.d = Date.now() - mess.t;
       return ok;
     });
   }
@@ -15298,6 +15613,8 @@ class RlFuehrung {
    */
   schirm(ansicht, kontext = {}) {
     this.ansicht = ansicht;
+    // Lehrlauf (Spieltest-Runde 6): jeder Schirm wird beim ersten Mal erklärt — siehe lehrWeiter().
+    if (this.lehrAktiv()) { this.lehrWeiter(); return; }
     if (!this.aktiv()) { this.freigeben(); return; }
     if (ansicht === 'karte') {
       this.redeAufSchirm('karte', RL_TXT_FUEHRUNG.karte(kontext), { frei: (a) => a === 'landen' || a === 'kurs', ziel: '[data-rl="landen"]' });
@@ -15423,7 +15740,8 @@ class RlFuehrung {
       } else if (!offen && this.detailsOffen) {
         this.detailsOffen = false;
         this.detailsGesehen = true;
-        if (this.aktiv() && this.ansicht === 'umlaufbahn') this.shopWeiter();
+        if (this.lehrAktiv()) this.lehrWeiter();
+        else if (this.aktiv() && this.ansicht === 'umlaufbahn') this.shopWeiter();
       }
     });
     this.beobachter.observe(w, { childList: true });
@@ -15478,6 +15796,175 @@ class RlFuehrung {
     this.sprich(key, s.saetze(), { pose: s.pose || 'neutral', seite: s.seite, schluss: key === 'ende' ? RL_TXT_UI.allesKlar : RL_TXT_UI.weiter }).then((ok) => {
       if (this.redet === key) this.redet = null;
       if (ok) this.shopNaechster(key);
+    });
+  }
+
+  /* ---------------- Lehrlauf: Schirme und Shops Schritt für Schritt (Spieltest-Runde 6) ---------------- */
+
+  /** Einen Messpunkt ins Protokoll des Lehrlaufs schreiben (`lauf.daten.lehre.protokoll`, höchstens 400 Einträge). */
+  lehrMessen(eintrag) {
+    const lehre = this.lauf && this.lauf.daten ? this.lauf.daten.lehre : null;
+    if (!lehre) return null;
+    if (!Array.isArray(lehre.protokoll)) lehre.protokoll = [];
+    const e = { t: Date.now(), s: typeof this.lauf.lehrStation === 'function' ? this.lauf.lehrStation() : null, ...eintrag };
+    if (lehre.protokoll.length < 400) lehre.protokoll.push(e);
+    return e;
+  }
+
+  /** Läuft ein Lehrlauf (rl-lehrlauf.js)? Dann erklärt V2-A2 jeden Schirm beim ersten Mal — je Besuch nur ein, zwei neue Dinge. */
+  lehrAktiv() {
+    return !!this.lauf && !!this.sextant && this.sextant.bereit && typeof this.lauf.istLehrlauf === 'function' && this.lauf.istLehrlauf();
+  }
+
+  lehrGelernt(key) { return !!(this.lauf.daten.lehre.gelernt || {})[key]; }
+
+  lehrMerke(key) {
+    const lehre = this.lauf.daten.lehre;
+    if (!lehre.gelernt) lehre.gelernt = {};
+    if (lehre.gelernt[key]) return;
+    lehre.gelernt[key] = { station: this.lauf.lehrStation(), zug: null };
+    this.speichern();
+  }
+
+  /**
+   * Die Schritte eines Schirms in ihrer Reihenfolge. `wenn`: ab wann der Schritt dran ist (Station, Zustand) — so
+   * verteilen sich die Erklärungen über die Besuche: Shop 1 Geld/Angebote/Details/Kaufen, Shop 2 die Packs, Shop 3
+   * Werkstatt und der Rest; im Flug die Luftschleuse; auf dem Planetenschirm Gegner, Elite, Boss, Überspringen.
+   */
+  lehrSchritte(ansicht) {
+    const lauf = this.lauf;
+    const d = lauf.daten;
+    const T = RL_TXT_LEHRE.schirm;
+    const station = lauf.lehrStation();
+    const shop = () => d.shop || {};
+    const pack = () => (shop().packs || {}).sternbilder || null;
+    const geld = () => d.geld;
+    const gekauft = () => (shop().angebote || []).some((a) => a.gekauft);
+    const kaufbar = () => (shop().angebote || []).some((a) => !a.gekauft && a.preis <= geld());
+    const nichts = () => false;
+    const nurLesen = (a) => a === 'deck' || a === 'details';
+    if (ansicht === 'karte') {
+      return [
+        { key: 'karte:start', art: 'reden', wenn: () => !d.reiseBereit && d.platz === 1, saetze: () => T.karteStart(), frei: nichts },
+        { key: 'karte:route', art: 'reden', wenn: () => !!d.reiseBereit, saetze: () => T.karteRoute(), frei: nichts },
+      ];
+    }
+    if (ansicht === 'planet') {
+      const boss = lauf.istBossKampf();
+      const plan = lauf.planAktuell();
+      return [
+        { key: 'planet:start', art: 'reden', wenn: () => station === 0, saetze: () => T.planetStart(), frei: nichts },
+        { key: 'planet:aufbau', art: 'reden', wenn: () => station === 1, saetze: () => T.planetAufbau(), frei: nichts, ziel: '.rl-stationen' },
+        { key: 'planet:elite', art: 'reden', wenn: () => !boss && d.kampfIndex === RL_KONFIG.lauf.lakaienProPlanet - 1, saetze: () => T.planetElite(), frei: nichts, ziel: '.rl-gegner-karte' },
+        { key: 'planet:boss', art: 'reden', wenn: () => boss, saetze: () => T.planetBoss({ bossName: plan.boss.name, runden: lauf.rundenFuer() }), frei: nichts, ziel: '.rl-gegner-karte', pose: 'warnt' },
+        { key: 'planet:skip', art: 'reden', wenn: () => !boss && lauf.kannUeberspringen(), saetze: () => T.planetSkip({ schuld: RL_KONFIG.boss.schuldProUebersprungenem }), frei: nichts, ziel: '.rl-skip' },
+      ];
+    }
+    if (ansicht === 'umlaufbahn') {
+      return [
+        { key: 'shop:geld', art: 'reden', saetze: () => T.geld({ geld: geld() }), frei: nichts, ziel: '.rl-geld', seite: 'rechts' },
+        { key: 'shop:angebote', art: 'reden', saetze: () => T.angebote(), frei: nichts, ziel: '.rl-shop-kacheln', seite: 'rechts' },
+        {
+          key: 'shop:details', art: 'aufgabe', satz: () => T.details(), seite: 'rechts',
+          frei: (a, dat, el) => a === 'details' && !!(el && el.closest && el.closest('.rl-angebot-kachel')),
+          ziel: '.rl-angebot-kachel [data-rl="details"]', fertig: () => this.detailsGesehen,
+        },
+        {
+          key: 'shop:kaufen', art: 'aufgabe', satz: () => T.kaufen(), seite: 'rechts',
+          frei: (a) => a === 'kaufen' || a === 'aufwertung-ziel' || a === 'wahl-zu' || a === 'details',
+          ziel: '.rl-angebot-kachel:not(.gekauft) [data-rl="kaufen"]:not(:disabled)',
+          fertig: () => gekauft(), ersatz: () => (!gekauft() && !kaufbar() ? T.kaufenZuTeuer() : null),
+        },
+        { key: 'shop:weiter', art: 'reden', saetze: () => T.weiter(), frei: nurLesen, ziel: '[data-rl="weiter"]', seite: 'rechts' },
+        {
+          key: 'shop:pack', art: 'aufgabe', wenn: () => station >= 1, satz: () => T.pack({ preis: pack() ? pack().preis : 0 }), seite: 'rechts',
+          frei: (a, dat) => (a === 'pack-oeffnen' && dat.pack === 'sternbilder') || a === 'details',
+          ziel: '.rl-pack[data-pack="sternbilder"] [data-rl="pack-oeffnen"]',
+          fertig: () => !pack() || pack().zustand !== 'zu',
+          ersatz: () => (pack() && pack().zustand === 'zu' && geld() < pack().preis ? T.packZuTeuer() : null),
+        },
+        {
+          key: 'shop:packwahl', art: 'aufgabe', wenn: () => station >= 1 && !!pack() && pack().zustand === 'offen', seite: 'rechts',
+          satz: () => T.packwahl({ bonus: RL_KONFIG.stufen.bonusProStufe }),
+          frei: (a, dat) => (a === 'pack-nehmen' && dat.pack === 'sternbilder') || a === 'details',
+          ziel: '.rl-pack[data-pack="sternbilder"] [data-rl="pack-nehmen"]',
+          fertig: () => !pack() || pack().zustand !== 'offen',
+        },
+        { key: 'shop:planetenpack', art: 'reden', wenn: () => station >= 1, saetze: () => T.planetenpack(), frei: nurLesen, ziel: '.rl-pack[data-pack="planet"]', seite: 'rechts' },
+        { key: 'shop:werkstatt', art: 'reden', wenn: () => station >= 2, saetze: () => T.werkstatt({ riese: RL_KONFIG.karten.riese }), frei: nurLesen, ziel: '.rl-aufwertung', seite: 'rechts' },
+        { key: 'shop:rest', art: 'reden', wenn: () => station >= 2, saetze: () => T.rest(), frei: nurLesen, ziel: '[data-rl="deck"], [data-rl="reroll"]', seite: 'rechts' },
+      ];
+    }
+    if (ansicht === 'imflug') {
+      const frei = ((shop().luftschleuse || {}).frei) ?? RL_KONFIG.shop.imFlug.luftschleuse;
+      return [
+        { key: 'flug:start', art: 'reden', saetze: () => T.flugStart(), frei: nichts, pose: 'freut', seite: 'rechts' },
+        { key: 'flug:schleuse', art: 'reden', saetze: () => T.flugSchleuse({ frei }), frei: nurLesen, ziel: '.rl-luftschleuse', seite: 'rechts' },
+        { key: 'flug:weiter', art: 'reden', saetze: () => T.flugWeiter(), frei: nurLesen, ziel: '[data-rl="weiter"]', seite: 'rechts' },
+      ];
+    }
+    if (ansicht === 'ende') {
+      return [{ key: 'ende:abschluss', art: 'reden', saetze: () => RL_TXT_LEHRE.ende.rede(), frei: nichts, pose: 'freut' }];
+    }
+    return [];
+  }
+
+  /** Den nächsten offenen Schritt des Schirms zeigen — nach jedem Zeichnen und nach jedem erledigten Schritt. */
+  lehrWeiter() {
+    if (!this.lehrAktiv()) { this.freigeben(); return; }
+    this.beobachteDetails();
+    const s = this.lehrSchritte(this.ansicht).find((x) => !this.lehrGelernt(x.key) && (!x.wenn || x.wenn())) || null;
+    if (!s) {
+      // Alles gesagt: der Schirm ist frei; auf dem ersten Planeten zeigt der Zeiger noch den Weg nach vorn.
+      const vorn = { karte: '[data-rl="landen"], [data-rl="kurs"]', planet: '[data-rl="kampf"]' }[this.ansicht] || null;
+      this.frei = vorn && this.lauf.daten.platz === 1 ? () => true : null;
+      this.ziel = this.frei ? vorn : null;
+      this.seite = '';
+      if (this.lehrBlase && this.sextant.sichtbar && !this.redet) this.sextant.weg();
+      this.lehrBlase = false;
+      this.markiere();
+      return;
+    }
+    if (s.art === 'aufgabe') {
+      if (s.fertig()) { this.lehrMerke(s.key); this.lehrWeiter(); return; }
+      const ersatz = s.ersatz ? s.ersatz() : null;
+      if (ersatz) {
+        this.frei = () => false;
+        this.ziel = null;
+        this.markiere();
+        if (this.redet === s.key) return;
+        this.redet = s.key;
+        this.sprich(s.key + ':ersatz', ersatz, { pose: 'neutral', seite: s.seite }).then((ok) => {
+          if (this.redet === s.key) this.redet = null;
+          if (ok) { this.lehrMerke(s.key); this.lehrWeiter(); }
+        });
+        return;
+      }
+      this.frei = s.frei;
+      this.ziel = s.ziel;
+      this.seite = s.seite || '';
+      this.markiere();
+      if (this.detailsOffen || this.redet) return;
+      const text = s.satz();
+      if (this.sextant.sichtbar && this.sextant.text === text) return;
+      this.reihenfolge.push(s.key);
+      this.lehrBlase = true;
+      this.sextant.sag(text, { bleibt: true, pose: 'neutral', seite: s.seite });
+      return;
+    }
+    // Reden-Schritt: erklären, dabei ist (fast) nichts bedienbar; nach „Weiter" der nächste Schritt.
+    this.frei = s.frei || (() => false);
+    this.ziel = s.ziel || null;
+    this.seite = s.seite || '';
+    this.markiere();
+    if (this.redet === s.key) return;
+    this.redet = s.key;
+    this.lehrBlase = false;
+    this.sprich(s.key, s.saetze(), { pose: s.pose || 'neutral', seite: s.seite, schluss: RL_TXT_UI.weiter }).then((ok) => {
+      if (this.redet === s.key) this.redet = null;
+      if (!ok) return;
+      this.lehrMerke(s.key);
+      this.lehrWeiter();
     });
   }
 
@@ -15707,8 +16194,9 @@ function rlTutorialHaken(lauf, profil, opt = {}) {
       if (profil && !profil.tutorialGeschafft) { profil.tutorialGeschafft = true; profil.tutorialGesehen = true; speichern(profil); }
     },
   });
-  // Geführt ist der Teil des Laufs, den die Führung spricht — dort schweigen die einmaligen Hinweise.
-  const aktiv = () => fuehrung.aktiv();
+  // Geführt ist der Teil des Laufs, den die Führung spricht — dort schweigen die einmaligen Hinweise. Im Lehrlauf
+  // erklärt V2-A2 alles selbst (Schirmführung und Lehrmeister); die einmaligen Hinweise kommen dann im ersten echten Raubzug.
+  const aktiv = () => fuehrung.aktiv() || fuehrung.lehrAktiv();
   const tutorial = new RlTutorial(rlTutorialSchritte(), {
     sextant,
     gesperrt: aktiv,
@@ -15752,6 +16240,679 @@ function rlTutorialHaken(lauf, profil, opt = {}) {
     satz: (text, o) => (sextant ? sextant.sag(text, o) : Promise.resolve(false)),
     weg: () => { if (sextant) sextant.weg(); },
   };
+}
+
+/* ===== engine\src\roguelike\rl-lehrlauf.js ===== */
+/**
+ * Roguelike-Modus — der LEHRLAUF (Spieltest-Runde 6, Spezifikation §15): der erste komplette Raubzug als Tutorial.
+ *
+ * Der Spieler spielt selbst. Neues kommt Stück für Stück: Jede STATION (ein Kampfplatz des Laufs, gezählt über alle
+ * Planeten) schaltet Sternbildtypen frei und legt kosmische Karten als Geschenk ins Deck (`RL_LEHRPLAN.stationen`).
+ * Gesperrte Typen baut NIEMAND am Tisch (Sitzregel `erlaubteTypen`, moves.js), noch nicht eingeführte kosmische Karten
+ * stecken in keinem Gegnerdeck. Dazu kommen LEKTIONEN (`RL_LEKTIONEN`): reine Prädikate über Spielzustand und Optionen,
+ * die sagen, wann V2-A2 etwas erklärt — und bei einem Pflichtzug, welche Aktionen solange übrig bleiben. Passt keine
+ * legale Aktion mehr zum Pflichtzug, gibt `rlLehrFilter` alles frei (keine Sackgasse).
+ *
+ * Der LEHR-MISCHER (`rlLehrStellen`) ordnet vor dem ersten Bild NUR Karten um, die es schon gibt (eigene Hand und Stapel,
+ * Mitte und Himmelsstapel): die neue Form der Station ist im ersten Zug baubar, das Geschenk kommt früh. Werte und Rest
+ * bleiben zufällig (eigener Zufallsstrom aus dem Kampf-Seed — ein Reload stellt denselben Tisch).
+ *
+ * Reines Datenmodell: kein DOM, keine Texte. Die Oberfläche (app/roguelike/rl-lehrmeister.js) spricht und zeigt.
+ *
+ * Exporte: RL_LEHR_FORMEN, RL_LEHRPLAN, RL_LEKTIONEN, rlLehreNeu, rlLehrStationNr, rlLehrFrei, rlLehrNeuAn, rlLehrRegeln,
+ *   rlLehrDeckOhneFremdes, rlLehrFaellig, rlLehrPasst, rlLehrPasstKosmisch, rlLehrFilter, rlLehrZiel, rlLehrGelernt,
+ *   rlLehrStellen, rlLehrGegnerSkript, rlLehrNachTausch, rlLehrKampfStart, RlLehrgang.
+ *
+ * Top-Level-Namen dieser Datei: RL_LEHR_FORMEN, RL_LEHR_KOSMISCH, RL_LEHRPLAN, RL_LEKTIONEN, RL_LEHR_ZUG_ARTEN,
+ *   rlLehreNeu, rlLehrStationNr, rlLehrFrei, rlLehrNeuAn, rlLehrRegeln, rlLehrDeckOhneFremdes, rlLehrHatJoker,
+ *   rlLehrPasst, rlLehrPasstKosmisch, rlLehrAusgeloest, rlLehrFaellig, rlLehrFilter, rlLehrZiel, rlLehrGelernt,
+ *   rlLehrIstSchlicht, rlLehrWunschWerte, rlLehrNimm, rlLehrKlauWerte, rlLehrStellen, rlLehrWerte, rlLehrGleicheWerte,
+ *   rlLehrGegnerSkript, rlLehrNachTausch, rlLehrKampfStart, RlLehrgang.
+ */
+
+/** Alle Sternbildtypen, die der Lehrlauf freischaltet (der Drache entsteht aus zwei Pfeilen und ist nie gesperrt). */
+const RL_LEHR_FORMEN = ['PFEIL', 'WAGEN', 'KREUZ', 'KRONE', 'ZWILLING', 'DOPPELSTIER'];
+
+/** Die kosmischen Karten des Grundspiels — nur sie führt der Lehrlauf ein; alles andere erklärt »Details«. */
+const RL_LEHR_KOSMISCH = ['MILCHSTRASSE', 'SCHWARZES_LOCH', 'STERNSCHNUPPE', 'WEISSES_LOCH', 'URKNALL'];
+
+/**
+ * Der Lehrplan. `stationen[nr]`: was MIT dieser Station neu dazukommt — `formen` (Sternbildtypen), `geschenk`
+ * (kosmische Karten, die ins Deck gelegt werden) und `wunsch` (die Form, die der Lehr-Mischer im ersten Zug baubar
+ * macht). Station = (Platz − 1) × (Lakaien + Boss) + Kampfplatz; nach der letzten Zeile ist alles frei.
+ */
+const RL_LEHRPLAN = {
+  stationen: [
+    { formen: ['PFEIL'], geschenk: [], wunsch: 'PFEIL', klauBuehne: true },        // Planet 1, Lakai 1 — dazu die Klau-Bühne (s. rlLehrStellen)
+    { formen: ['WAGEN'], geschenk: ['MILCHSTRASSE'], wunsch: 'WAGEN' },            // Planet 1, Lakai 2
+    { formen: ['KREUZ'], geschenk: ['SCHWARZES_LOCH'], wunsch: 'KREUZ' },          // Planet 1, Elite
+    { formen: ['KRONE'], geschenk: [], wunsch: 'KRONE' },                          // Planet 1, Boss
+    { formen: ['ZWILLING'], geschenk: ['STERNSCHNUPPE'], wunsch: 'ZWILLING' },     // Planet 2, Lakai 1
+    { formen: ['DOPPELSTIER'], geschenk: ['WEISSES_LOCH'], wunsch: 'DOPPELSTIER' }, // Planet 2, Lakai 2
+    { formen: [], geschenk: ['URKNALL'], wunsch: null },                           // Planet 2, Elite
+  ],
+};
+
+/**
+ * Die Lektionen in der Reihenfolge ihres Vorrangs. `art`:
+ *   'zug'      — ein Pflichtzug (Teil 2 des Zuges): nur passende Aktionen bleiben übrig, bis der Zug gemacht ist
+ *   'kosmisch' — eine kosmische Karte (Teil 1, freie Aktion): mit `pflicht` bleibt nur sie spielbar
+ *   'hinweis'  — V2-A2 erklärt nur (kein Zwang)
+ * `ab`: früheste Station · `dringend`: kommt ohne Rücksicht auf den Mindestabstand zwischen zwei Lehrmomenten ·
+ * `typ` / `kosmisch`: worum es geht. Ereignis-Lektionen (beklaut, Gegner spielt Kosmisches, fertig, Wertung, Boss)
+ * löst die Oberfläche aus Engine-Ereignissen aus — sie stehen hier, damit `gelernt` sie kennt.
+ */
+const RL_LEKTIONEN = [
+  { key: 'drache', art: 'zug', pflicht: true, dringend: true },
+  { key: 'drachenklau', art: 'zug', pflicht: true, dringend: true },
+  { key: 'milchstrasse', art: 'kosmisch', pflicht: true, kosmisch: 'MILCHSTRASSE' },
+  { key: 'schwarzesLoch', art: 'kosmisch', pflicht: true, kosmisch: 'SCHWARZES_LOCH' },
+  { key: 'weissesLoch', art: 'kosmisch', pflicht: true, kosmisch: 'WEISSES_LOCH' },
+  { key: 'urknall', art: 'kosmisch', pflicht: false, kosmisch: 'URKNALL' },
+  { key: 'tauschen', art: 'zug', pflicht: true, dringend: true },
+  { key: 'pfeil', art: 'zug', pflicht: true, dringend: true, typ: 'PFEIL' },
+  { key: 'wagen', art: 'zug', pflicht: true, dringend: true, typ: 'WAGEN' },
+  { key: 'kreuz', art: 'zug', pflicht: true, dringend: true, typ: 'KREUZ' },
+  { key: 'krone', art: 'zug', pflicht: true, dringend: true, typ: 'KRONE' },
+  { key: 'zwilling', art: 'zug', pflicht: true, dringend: true, typ: 'ZWILLING' },
+  { key: 'doppelstier', art: 'zug', pflicht: true, dringend: true, typ: 'DOPPELSTIER' },
+  { key: 'joker', art: 'zug', pflicht: true, kosmisch: 'STERNSCHNUPPE' },
+  { key: 'erweitern', art: 'zug', pflicht: true },
+  { key: 'klauen', art: 'zug', pflicht: true, dringend: true },
+  { key: 'versiegeln', art: 'zug', pflicht: true, ab: 1 },
+  { key: 'jokerklau', art: 'hinweis', pflicht: false },
+  // Ereignis-Lektionen der Oberfläche (kein Prädikat hier)
+  { key: 'tisch', art: 'ereignis' }, { key: 'wertung', art: 'ereignis' }, { key: 'beklaut', art: 'ereignis' },
+  { key: 'gegnerKosmisch', art: 'ereignis' }, { key: 'fertig', art: 'ereignis' }, { key: 'zerstoert', art: 'ereignis' },
+  { key: 'gegnerLesen', art: 'ereignis' }, { key: 'boss', art: 'ereignis' }, { key: 'duo', art: 'ereignis' },
+  { key: 'himmel', art: 'ereignis' }, { key: 'formenTafel', art: 'ereignis' },
+];
+
+/** Aktionsarten, die „etwas legen" heißen — gibt es keine davon (und keine kosmische Karte), geht nichts. */
+const RL_LEHR_ZUG_ARTEN = ['BAUEN', 'KLAUEN', 'JOKERKLAU', 'DRACHE', 'DRACHENKLAU', 'RAUB'];
+
+/* ------------------------------------------------------------------ */
+/*  Zustand und Freischaltungen                                         */
+/* ------------------------------------------------------------------ */
+
+/** Frischer Lehr-Zustand eines Laufs (`lauf.daten.lehre`, JSON-fähig). */
+function rlLehreNeu() {
+  return { version: 1, gelernt: {}, freiBis: -1, geschenkt: [], wiederholungen: 0, protokoll: [] };
+}
+
+/** Station eines Kampfplatzes: (Platz − 1) × (Lakaien + Boss) + Kampfplatz. */
+function rlLehrStationNr(platz, kampfIndex) {
+  return (Math.max(1, platz) - 1) * (RL_KONFIG.lauf.lakaienProPlanet + 1) + Math.max(0, kampfIndex);
+}
+
+/** Alles, was bis einschließlich Station `nr` frei ist: `{formen, kosmische}` (kosmische = die eingeführten Geschenke). */
+function rlLehrFrei(nr) {
+  const formen = [], kosmische = [];
+  const S = RL_LEHRPLAN.stationen;
+  for (let i = 0; i < S.length && i <= nr; i++) {
+    for (const f of S[i].formen) if (!formen.includes(f)) formen.push(f);
+    for (const k of S[i].geschenk) if (!kosmische.includes(k)) kosmische.push(k);
+  }
+  return { formen, kosmische, alles: nr >= S.length - 1 };
+}
+
+/** Was zwischen `freiBis` (ausschließlich) und `nr` (einschließlich) neu dazukommt: `{formen, kosmische}`. */
+function rlLehrNeuAn(freiBis, nr) {
+  const formen = [], kosmische = [];
+  const S = RL_LEHRPLAN.stationen;
+  for (let i = Math.max(0, freiBis + 1); i < S.length && i <= nr; i++) {
+    formen.push(...S[i].formen);
+    kosmische.push(...S[i].geschenk);
+  }
+  return { formen, kosmische };
+}
+
+/** Sitzregeln des Lehrlaufs an Station `nr` (für ALLE Sitze): `{erlaubteTypen}` — leer, sobald alles frei ist. */
+function rlLehrRegeln(nr) {
+  const frei = rlLehrFrei(nr);
+  if (RL_LEHR_FORMEN.every((f) => frei.formen.includes(f))) return {};
+  return { erlaubteTypen: [...frei.formen] };
+}
+
+/** Ein Gegnerdeck ohne die kosmischen Grundkarten, die der Spieler noch nicht kennt (andere Karten bleiben). */
+function rlLehrDeckOhneFremdes(deckSpec, nr) {
+  const frei = rlLehrFrei(nr).kosmische;
+  return (deckSpec ?? []).filter((k) => !RL_LEHR_KOSMISCH.includes(k.art) || frei.includes(k.art));
+}
+
+/* ------------------------------------------------------------------ */
+/*  Lektionen: wann, was passt, worauf zeigen                           */
+/* ------------------------------------------------------------------ */
+
+/** Verbaut diese Aktion eine Sternschnuppe aus der eigenen Hand? */
+function rlLehrHatJoker(spiel, idx, aktion) {
+  const hand = spiel.spieler[idx].hand;
+  return (aktion.handIds ?? []).some((id) => { const k = hand.find((x) => x.id === id); return !!k && k.art === 'STERNSCHNUPPE'; });
+}
+
+/** Passt eine Aktion (Teil 2) zum Pflichtzug der Lektion? */
+function rlLehrPasst(lektion, aktion, spiel, idx) {
+  if (!lektion || !aktion || lektion.art !== 'zug') return false;
+  switch (lektion.key) {
+    case 'drache': return aktion.art === 'DRACHE';
+    case 'drachenklau': return aktion.art === 'DRACHENKLAU';
+    case 'tauschen': return aktion.art === 'ABWERFEN';
+    case 'pfeil': return aktion.art === 'BAUEN' && !aktion.sbId && aktion.typ === 'PFEIL';
+    case 'erweitern': return aktion.art === 'BAUEN' && !!aktion.sbId;
+    case 'klauen': return aktion.art === 'KLAUEN';
+    case 'versiegeln': return aktion.art === 'VERSIEGELN' && (aktion.punkteNachher ?? 0) >= (RL_KONFIG.lehrlauf.versiegelnAbPunkte ?? 0);
+    case 'joker': return (aktion.art === 'BAUEN' || aktion.art === 'KLAUEN') && rlLehrHatJoker(spiel, idx, aktion);
+    default:
+      return !!lektion.typ && (aktion.art === 'BAUEN' || aktion.art === 'KLAUEN') && aktion.typ === lektion.typ;
+  }
+}
+
+/** Passt eine Wahl aus `optionen.kosmische` zur Lektion? */
+function rlLehrPasstKosmisch(lektion, wahl) {
+  return !!lektion && lektion.art === 'kosmisch' && !!wahl && wahl.art === lektion.kosmisch;
+}
+
+/** Ist der Moment der Lektion da? (Prädikat über die UNGEFILTERTEN Optionen des Menschen.) */
+function rlLehrAusgeloest(lektion, spiel, idx, optionen) {
+  const aktionen = optionen.aktionen ?? [];
+  const kosmische = optionen.kosmische ?? [];
+  if (lektion.art === 'kosmisch') return kosmische.some((w) => rlLehrPasstKosmisch(lektion, w));
+  if (lektion.key === 'jokerklau') return aktionen.some((a) => a.art === 'JOKERKLAU');
+  if (lektion.art !== 'zug') return false;
+  if (lektion.key === 'tauschen') {
+    // Nichts geht: kein Sternbild zu legen, keine kosmische Karte zu spielen — aber eine Handkarte zum Tauschen.
+    return !aktionen.some((a) => RL_LEHR_ZUG_ARTEN.includes(a.art)) && kosmische.length === 0
+      && aktionen.some((a) => a.art === 'ABWERFEN');
+  }
+  return aktionen.some((a) => rlLehrPasst(lektion, a, spiel, idx));
+}
+
+/**
+ * Die Lektion, die JETZT dran ist (oder null). Je eigenem Zug höchstens ein Pflichtzug; zwischen zwei Lehrmomenten
+ * liegen mindestens `RL_KONFIG.lehrlauf.minAbstandZuege` freie Züge — außer die Lektion ist `dringend` (nichts geht,
+ * Drache, die neue Form der Station). Kosmische Lektionen zählen nicht mit: die Karte ist Teil 1 des Zuges.
+ * @param {{lehre:object, stationNr:number, spiel:object, idx:number, optionen:object, zugNr:number,
+ *   letzterLehrZug?:number, zugLektion?:boolean, kosmischGespielt?:boolean}} k
+ *   zugNr: wievielter eigener Zug dieses Kampfes (1-basiert) · letzterLehrZug: Zug des letzten Pflichtzugs (0 = keiner) ·
+ *   zugLektion: in DIESEM Zug lief schon ein Pflichtzug · kosmischGespielt: Teil 1 ist in diesem Zug schon benutzt
+ */
+function rlLehrFaellig(k) {
+  if (!k || !k.lehre || !k.optionen) return null;
+  const gelernt = k.lehre.gelernt ?? {};
+  const abstand = RL_KONFIG.lehrlauf.minAbstandZuege ?? 0;
+  // Die neue Form der Station hat Vorrang vor älteren, noch offenen Zug-Lektionen (sie steht dafür gestellt auf der Hand).
+  const wunsch = (RL_LEHRPLAN.stationen[k.stationNr] ?? {}).wunsch ?? null;
+  const vorn = RL_LEKTIONEN.findIndex((l) => l.key === 'tauschen');
+  const rang = (l, i) => (wunsch && l.typ === wunsch ? vorn - 0.5 : i);
+  const reihe = RL_LEKTIONEN.map((l, i) => [rang(l, i), l]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+  for (const lektion of reihe) {
+    if (lektion.art === 'ereignis' || gelernt[lektion.key]) continue;
+    if ((lektion.ab ?? 0) > k.stationNr) continue;
+    if (lektion.art === 'kosmisch' && k.kosmischGespielt) continue;
+    if (lektion.art === 'zug') {
+      if (k.zugLektion) continue;
+      if (!lektion.dringend && k.letzterLehrZug > 0 && k.zugNr - k.letzterLehrZug <= abstand) continue;
+    }
+    if (rlLehrAusgeloest(lektion, k.spiel, k.idx, k.optionen)) return lektion;
+  }
+  return null;
+}
+
+/**
+ * Optionen auf den Pflichtzug beschränken. Passt nichts Legales (mehr), bleiben die Optionen, wie sie sind —
+ * eine Pflicht-Führung darf nie in die Sackgasse führen. `sackgasse: true` meldet das dem Aufrufer.
+ */
+function rlLehrFilter(lektion, optionen, spiel, idx) {
+  if (!lektion || !lektion.pflicht || !optionen) return { optionen, sackgasse: false };
+  const leer = { nova: [], jokerTausch: [], versiegelnFrei: [], spiegel: [] };
+  if (lektion.art === 'kosmisch') {
+    const kosmische = (optionen.kosmische ?? []).filter((w) => rlLehrPasstKosmisch(lektion, w));
+    if (!kosmische.length) return { optionen, sackgasse: true };
+    return { optionen: { ...optionen, ...leer, aktionen: [], kosmische }, sackgasse: false };
+  }
+  const aktionen = (optionen.aktionen ?? []).filter((a) => rlLehrPasst(lektion, a, spiel, idx));
+  if (!aktionen.length) return { optionen, sackgasse: true };
+  return { optionen: { ...optionen, ...leer, aktionen, kosmische: [] }, sackgasse: false };
+}
+
+/**
+ * Worauf V2-A2 zeigt: die beste passende Aktion (meiste Punkte, dann wenigste Karten) bzw. die kosmische Karte.
+ * @returns {{art:string, hand:number[], mitte:number[], sbId:string|null, sbBesitzer:number|null, aktion:object|null, wahl:object|null}|null}
+ */
+function rlLehrZiel(lektion, optionen, spiel, idx) {
+  if (!lektion || !optionen) return null;
+  if (lektion.art === 'kosmisch') {
+    const wahl = (optionen.kosmische ?? []).find((w) => rlLehrPasstKosmisch(lektion, w));
+    return wahl ? { art: wahl.art, hand: [wahl.kartenId], mitte: [], sbId: null, sbBesitzer: null, aktion: null, wahl } : null;
+  }
+  // Versiegeln: am liebsten das wertvollste Sternbild, das noch KLAUBAR ist (ein fertiges läuft weniger Gefahr).
+  const wert = (a) => {
+    if (a.art !== 'VERSIEGELN') return a.gewinn ?? 0;
+    const sb = spiel.findeSb(idx, a.sbId);
+    return (a.punkteNachher ?? 0) + (sb && !istSicher(sb) ? 1000 : 0);
+  };
+  let best = null;
+  for (const a of optionen.aktionen ?? []) {
+    if (!rlLehrPasst(lektion, a, spiel, idx)) continue;
+    const besser = !best || wert(a) > wert(best)
+      || (wert(a) === wert(best) && (a.kartenEinsatz ?? 99) < (best.kartenEinsatz ?? 99));
+    if (besser) best = a;
+  }
+  if (!best) return null;
+  const fremd = best.art === 'KLAUEN' || best.art === 'DRACHENKLAU' || best.art === 'JOKERKLAU';
+  return {
+    art: best.art, hand: [...(best.handIds ?? [])], mitte: [...(best.mitteIds ?? [])],
+    sbId: best.sbId ?? best.sbIdA ?? null, sbBesitzer: best.sbId == null && best.sbIdA == null ? null : (fremd ? best.opferIdx : idx),
+    aktion: best, wahl: null,
+  };
+}
+
+/** Eine Lektion als gelernt vermerken (einmal; mit Station und Zug fürs Protokoll). Liefert true beim ersten Mal. */
+function rlLehrGelernt(lehre, key, wo = {}) {
+  if (!lehre || !key) return false;
+  if (!lehre.gelernt) lehre.gelernt = {};
+  if (lehre.gelernt[key]) return false;
+  lehre.gelernt[key] = { station: wo.station ?? null, zug: wo.zug ?? null };
+  return true;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Der Lehr-Mischer                                                    */
+/* ------------------------------------------------------------------ */
+
+/** Eine schlichte Zahlenkarte (keine Spiegel-, Leucht-, Anker-, Planeten- oder aufgewertete Karte). */
+function rlLehrIstSchlicht(k) {
+  return istZahl(k) && !k.spiegel && !k.leucht && !k.anker && !k.stufe && !k.typBonus;
+}
+
+/**
+ * Eine zufällige Ausprägung der Wunschform: Werte für die Hand und für die Mitte (höchstens zwei aus der Mitte,
+ * mindestens eine aus der Hand — so wie man es auch spielen würde).
+ */
+function rlLehrWunschWerte(typ, rng) {
+  const LO = CONFIG.deck.zahlenMin, HI = CONFIG.deck.zahlenMax;
+  const zwei = () => { const a = LO + rng.int(HI - LO + 1); let b = a; while (b === a) b = LO + rng.int(HI - LO + 1); return [a, b]; };
+  switch (typ) {
+    case 'PFEIL': { const a = LO + rng.int(HI - LO - 1); return rng.int(2) ? { hand: [a, a + 1], mitte: [a + 2] } : { hand: [a + 1, a + 2], mitte: [a] }; }
+    case 'WAGEN': {
+      const d = CONFIG.wagen.minSchrittweite + rng.int(Math.max(1, Math.min(CONFIG.wagen.maxSchrittweite ?? 3, 3) - CONFIG.wagen.minSchrittweite + 1));
+      const a = LO + rng.int(Math.max(1, HI - LO + 1 - 2 * d));
+      return rng.int(2) ? { hand: [a, a + d], mitte: [a + 2 * d] } : { hand: [a + d, a + 2 * d], mitte: [a] };
+    }
+    case 'KREUZ': { const v = LO + rng.int(HI - LO + 1); return { hand: [v, v], mitte: [v, v] }; }
+    case 'KRONE': { const [v, w] = zwei(); return { hand: [v, v, w, w], mitte: [v] }; }
+    case 'ZWILLING': { const [u, v] = zwei(); let w = u; while (w === u || w === v) w = LO + rng.int(HI - LO + 1); return { hand: [u, u, v, v], mitte: [w, w] }; }
+    case 'DOPPELSTIER': { const [v, w] = zwei(); return { hand: [v, v, w, w], mitte: [v, w] }; }
+    default: return null;
+  }
+}
+
+/** Die erste schlichte Zahlenkarte mit diesem Wert aus dem Vorrat nehmen (oder null). */
+function rlLehrNimm(vorrat, wert) {
+  const i = vorrat.findIndex((k) => rlLehrIstSchlicht(k) && k.wert === wert);
+  return i >= 0 ? vorrat.splice(i, 1)[0] : null;
+}
+
+/**
+ * Die Klau-Bühne der ersten Station: Werte für den eigenen ersten Pfeil (`hand` + `mitte`), für den Pfeil, den der
+ * Gegner in seinem ersten Zug aus der Hand legt (`gegner`), und für die zwei Handkarten, mit denen man ihn im zweiten
+ * eigenen Zug klaut (`klau`). Beide Gruppen liegen mindestens einen Wert auseinander, damit sie sich nicht vermischen.
+ */
+function rlLehrKlauWerte(rng) {
+  const LO = CONFIG.deck.zahlenMin, HI = CONFIG.deck.zahlenMax;
+  for (let versuch = 0; versuch < 60; versuch++) {
+    const b = LO + rng.int(HI - LO - 1);
+    const klau = rng.int(2) ? [b + 3, b + 4] : [b - 2, b - 1];
+    if (klau[0] < LO || klau[1] > HI) continue;
+    const lo = Math.min(b, klau[0]), hi = Math.max(b + 2, klau[1]);
+    const moeglich = [];
+    for (let a = LO; a + 2 <= HI; a++) if (a + 2 < lo - 1 || a > hi + 1) moeglich.push(a);
+    if (!moeglich.length) continue;
+    const a = rng.pick(moeglich);
+    const pfeil = rng.int(2) ? { hand: [a, a + 1], mitte: [a + 2] } : { hand: [a + 1, a + 2], mitte: [a] };
+    return { ...pfeil, gegner: [b, b + 1, b + 2], klau };
+  }
+  return null;
+}
+
+/**
+ * Den Tisch für den ersten Zug stellen (nach `ablauf.start()`, vor dem ersten Bild): Die Wunschform ist aus Hand und
+ * Mitte baubar, Geschenke liegen auf der Hand (oder, wenn dort kein Platz ist, oben auf dem Stapel). Mit `klauBuehne`
+ * hält der erste Gegner außerdem einen Dreier-Pfeil auf der Hand, und die eigenen übrigen Handkarten klauen ihn.
+ * Es werden nur vorhandene Kartenobjekte umgeordnet. Gelingt es nicht (Karten fehlen), bleibt alles, wie es war.
+ * @param {object} kampf  RlKampf (Ablauf gestartet, Runde 1)
+ * @param {{wunsch?:string|null, geschenk?:string[], klauBuehne?:boolean, seed?:number}} [opt]
+ * @returns {{wunsch:string|null, hand:number[], mitte:number[], gegner:number[], klau:number[]}|null}
+ *   die Bühne (Kartenwerte des ersten Zuges, des Gegner-Pfeils, der Klaukarten) — oder null, wenn nicht gestellt wurde
+ */
+function rlLehrStellen(kampf, opt = {}) {
+  const s = kampf.spiel;
+  const m = kampf.menschIdx;
+  const sp = s.spieler[m];
+  if (!s.eigeneDecks || !sp || s.runde !== 1) return null;
+  const rng = rngVon((((opt.seed ?? kampf.seed) >>> 0) ^ 0x4c65686c) >>> 0);
+  const geschenk = [...(opt.geschenk ?? [])];
+  const handGroesse = sp.hand.length;
+  const gegnerSitz = kampf.sitzVonGegner.length === 1 ? s.spieler[kampf.sitzVonGegner[0]] : null;
+  const mitBuehne = !!opt.klauBuehne && opt.wunsch === 'PFEIL' && !!gegnerSitz;
+  const sicherung = { hand: sp.hand, deck: sp.deck, mitte: s.mitte, himmel: s.himmelDeck, gh: gegnerSitz ? gegnerSitz.hand : null, gd: gegnerSitz ? gegnerSitz.deck : null };
+  const zurueck = () => {
+    sp.hand = sicherung.hand; sp.deck = sicherung.deck; s.mitte = sicherung.mitte; s.himmelDeck = sicherung.himmel;
+    if (gegnerSitz) { gegnerSitz.hand = sicherung.gh; gegnerSitz.deck = sicherung.gd; }
+    return null;
+  };
+
+  for (let versuch = 0; versuch < 40; versuch++) {
+    const w = mitBuehne ? rlLehrKlauWerte(rng) : (opt.wunsch ? rlLehrWunschWerte(opt.wunsch, rng) : { hand: [], mitte: [] });
+    if (!w) return null;
+    const vorratH = [...sicherung.hand, ...sicherung.deck];
+    const vorratM = [...sicherung.mitte, ...sicherung.himmel];
+    const hand = [], mitte = [];
+    let ok = true;
+    for (const wert of [...w.hand, ...(w.klau ?? [])]) { const k = rlLehrNimm(vorratH, wert); if (!k) { ok = false; break; } hand.push(k); }
+    if (ok) for (const wert of w.mitte) { const k = rlLehrNimm(vorratM, wert); if (!k) { ok = false; break; } mitte.push(k); }
+    if (!ok || hand.length > handGroesse) continue;
+    // Klau-Bühne: der Gegner hält seinen Dreier-Pfeil auf der Hand (der Rest seiner Hand bleibt, wie er war).
+    if (mitBuehne) {
+      const vorratG = [...sicherung.gh, ...sicherung.gd];
+      const gHand = [];
+      for (const wert of w.gegner) { const k = rlLehrNimm(vorratG, wert); if (!k) { ok = false; break; } gHand.push(k); }
+      if (!ok) continue;
+      const alteG = new Set(sicherung.gh.map((k) => k.id));
+      for (const k of [...vorratG]) {
+        if (gHand.length >= sicherung.gh.length) break;
+        if (!alteG.has(k.id)) continue;
+        gHand.push(k); vorratG.splice(vorratG.indexOf(k), 1);
+      }
+      while (gHand.length < sicherung.gh.length && vorratG.length) gHand.push(vorratG.pop());
+      gegnerSitz.hand = gHand;
+      gegnerSitz.deck = rng.shuffle(vorratG);
+      gegnerSitz.gesehen = null;
+    }
+    // Geschenke: auf die Hand, solange Platz ist — sonst oben auf den Stapel (gezogen wird vom Ende).
+    const oben = [];
+    for (const art of geschenk) {
+      const i = vorratH.findIndex((k) => k.art === art);
+      if (i < 0) continue;
+      const k = vorratH.splice(i, 1)[0];
+      if (hand.length < handGroesse) hand.push(k); else oben.push(k);
+    }
+    // Hand auffüllen: erst die alten Handkarten (in ihrer Reihenfolge), dann vom Stapel.
+    const alteHand = new Set(sicherung.hand.map((k) => k.id));
+    for (const k of [...vorratH]) {
+      if (hand.length >= handGroesse) break;
+      if (!alteHand.has(k.id)) continue;
+      hand.push(k); vorratH.splice(vorratH.indexOf(k), 1);
+    }
+    while (hand.length < handGroesse && vorratH.length) hand.push(vorratH.pop());
+    // Mitte auffüllen: die alten Mittelkarten zuerst, bis die alte Größe erreicht ist.
+    const alteMitte = new Set(sicherung.mitte.map((k) => k.id));
+    const mitteGroesse = sicherung.mitte.length;
+    for (const k of [...vorratM]) {
+      if (mitte.length >= mitteGroesse) break;
+      if (!alteMitte.has(k.id)) continue;
+      mitte.push(k); vorratM.splice(vorratM.indexOf(k), 1);
+    }
+    sp.hand = hand;
+    sp.deck = [...rng.shuffle(vorratH), ...oben.reverse()];
+    s.mitte = rng.shuffle(mitte);
+    s.himmelDeck = rng.shuffle(vorratM);
+    sp.gesehen = null;
+    const buehne = { wunsch: opt.wunsch ?? null, hand: [...w.hand], mitte: [...w.mitte], gegner: [...(w.gegner ?? [])], klau: [...(w.klau ?? [])] };
+    if (!opt.wunsch) return buehne;
+    if (generiereAktionen(s, m).some((a) => (a.art === 'BAUEN' || a.art === 'KLAUEN') && a.typ === opt.wunsch)) return buehne;
+    zurueck();
+  }
+  return zurueck();
+}
+
+/** Die Werte (sortiert) der Karten mit diesen Ids. */
+function rlLehrWerte(ids, karten) {
+  return (ids ?? []).map((id) => { const k = karten.find((x) => x.id === id); return k ? k.wert : null; }).sort((x, y) => x - y);
+}
+
+/** Dieselben Werte? (Reihenfolge egal) */
+function rlLehrGleicheWerte(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  const x = [...a].sort((p, q) => p - q), y = [...b].sort((p, q) => p - q);
+  return x.every((w, i) => w === y[i]);
+}
+
+/**
+ * Der Gegner der Klau-Bühne: in seinem ERSTEN Zug legt er den Dreier-Pfeil aus der Hand (wenn das legal ist) — danach
+ * spielt wieder sein normales Verhalten. So hat der Spieler im zweiten Zug sicher etwas zu klauen.
+ */
+function rlLehrGegnerSkript(bot, gegnerWerte) {
+  let ersterZug = true;
+  return (spiel, idx) => {
+    if (ersterZug) {
+      ersterZug = false;
+      const hand = spiel.spieler[idx].hand;
+      const a = generiereAktionen(spiel, idx).find((x) => x.art === 'BAUEN' && !x.sbId && !(x.mitteIds ?? []).length
+        && rlLehrGleicheWerte(rlLehrWerte(x.handIds, hand), gegnerWerte));
+      if (a) return { aktion: a };
+    }
+    return bot(spiel, idx);
+  };
+}
+
+/**
+ * „Nichts geht → Karte tauschen": die empfohlene Abwurfkarte suchen und eine passende Karte oben auf den eigenen
+ * Stapel legen, damit nach dem Tauschen wieder etwas geht. Es wird nur der verdeckte Stapel umgeordnet.
+ * @returns {{abwurfId:number, zieht:object}|null} null, wenn keine Karte des Stapels hilft
+ */
+function rlLehrNachTausch(spiel, idx) {
+  const sp = spiel.spieler[idx];
+  if (!sp || !sp.deck || !sp.deck.length || !sp.hand.length) return null;
+  const hand = sp.hand;
+  const gesehen = new Set();
+  let best = null;
+  for (let i = sp.deck.length - 1; i >= 0; i--) {
+    const c = sp.deck[i];
+    if (!rlLehrIstSchlicht(c) || gesehen.has(c.wert)) continue;
+    gesehen.add(c.wert);
+    for (const weg of hand) {
+      sp.hand = [...hand.filter((k) => k.id !== weg.id), c];
+      const gewinn = generiereAktionen(spiel, idx).filter((a) => a.art === 'BAUEN' || a.art === 'KLAUEN').reduce((n, a) => Math.max(n, a.gewinn ?? 0), 0);
+      sp.hand = hand;
+      // Lieber eine Karte abwerfen, die doppelt ist oder am Rand liegt: bei gleichem Gewinn die mit dem höchsten Wert.
+      if (gewinn > 0 && (!best || gewinn > best.gewinn || (gewinn === best.gewinn && (weg.wert ?? 0) > (best.weg.wert ?? 0)))) best = { gewinn, weg, c, i };
+    }
+  }
+  sp.hand = hand;
+  if (!best) return null;
+  sp.deck.splice(best.i, 1);
+  sp.deck.push(best.c);
+  return { abwurfId: best.weg.id, zieht: best.c };
+}
+
+/**
+ * Einen Lehrlauf-Kampf starten: der Mensch beginnt (sonst nähme der Gegner dem ersten Lehrmoment die Karten weg),
+ * der Ablauf läuft an, der Lehr-Mischer stellt den Tisch für die Station.
+ * @param {object} kampf  frisch gebauter RlKampf eines Lehrlaufs (Ablauf noch nicht gestartet)
+ * @param {number} stationNr
+ * @returns {{gestellt:boolean, wunsch:string|null, geschenk:string[]}}
+ */
+function rlLehrKampfStart(kampf, stationNr) {
+  const st = RL_LEHRPLAN.stationen[stationNr] ?? { wunsch: null, geschenk: [] };
+  if (RL_KONFIG.lehrlauf.menschBeginnt !== false) kampf.spiel.starterIdx = kampf.menschIdx;
+  kampf.ablauf.start();
+  const buehne = (st.wunsch || st.geschenk.length) ? rlLehrStellen(kampf, { wunsch: st.wunsch, geschenk: st.geschenk, klauBuehne: !!st.klauBuehne }) : null;
+  kampf.lehrBuehne = buehne;
+  if (buehne && buehne.gegner.length) {
+    const g = kampf.sitzVonGegner[0];
+    kampf.bots[g] = rlLehrGegnerSkript(kampf.bots[g], buehne.gegner);
+  }
+  return { gestellt: !!buehne, wunsch: st.wunsch ?? null, geschenk: [...st.geschenk], buehne };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Der Lehrgang eines Kampfes                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Der Lehrgang EINES Kampfes: zählt die eigenen Züge, weiß, welche Lektion gerade läuft, beschränkt die Optionen auf
+ * den Pflichtzug und vermerkt Gelerntes im Lauf (`lauf.daten.lehre`). Oberfläche (rl-lehrmeister.js) und Simulation
+ * benutzen dieselbe Maschine:
+ *   1. `faellig()`            → die Lektion, die jetzt dran ist (oder null)
+ *   2. `beginne(lektion)`     → V2-A2 hat sie angesagt, der Pflichtzug gilt
+ *   3. `filter(optionen)`     → nur noch passende Optionen (mit Sackgassen-Freigabe)
+ *   4. Engine-Ereignisse      → der Zug / die kosmische Karte wurde gespielt: gelernt
+ * Ereignis-Lektionen (beklaut, Gegner spielt Kosmisches, zerstört, fertig) sammelt `ereignisLektionen()`.
+ */
+class RlLehrgang {
+  /**
+   * @param {object} kampf  RlKampf eines Lehrlaufs (`kampf.lehrlauf`)
+   * @param {object} lauf   RlLauf (`lauf.daten.lehre`)
+   * @param {{beiGelernt?:(key:string)=>void}} [opt]
+   */
+  constructor(kampf, lauf, opt = {}) {
+    this.kampf = kampf;
+    this.lauf = lauf;
+    this.spiel = kampf.spiel;
+    this.m = kampf.menschIdx;
+    this.lehre = lauf.daten.lehre;
+    this.stationNr = kampf.lehrStation ?? 0;
+    this.beiGelernt = opt.beiGelernt ?? (() => {});
+    this.zugNr = 0;
+    this.letzterLehrZug = 0;
+    this.zugLektion = false;
+    this.kosmischGespielt = false;
+    this.aktiv = null;             // die laufende Pflicht-Lektion
+    this.freigegeben = false;      // Sackgasse: der Filter wurde in diesem Zug aufgegeben
+    this.sackgassen = 0;
+    this.wartend = [];             // Ereignis-Lektionen, die die Oberfläche noch erzählen soll
+    // Der Ablauf läuft schon (rlLehrKampfStart): der erste eigene Zug hat begonnen, bevor dieser Hörer hing.
+    if (kampf.ablauf.phase === 'ZUG' && kampf.ablauf.amZug === this.m) this.zugNr = 1;
+    this.abmelden = this.spiel.beiEreignis((e) => this.beiEreignis(e));
+  }
+
+  /** Hörer abmelden. */
+  beenden() { if (this.abmelden) { this.abmelden(); this.abmelden = null; } }
+
+  gelernt(key) { return !!(this.lehre.gelernt ?? {})[key]; }
+
+  /** Eine Lektion vermerken (einmal) und melden. `selbst`: der Spieler hat es ohne Ansage getan. */
+  merke(key, selbst = false) {
+    if (rlLehrGelernt(this.lehre, key, { station: this.stationNr, zug: this.zugNr })) this.beiGelernt(key, selbst);
+  }
+
+  /**
+   * Der Spieler hat etwas von selbst getan, wofür es eine Pflicht-Lektion gäbe (frei erweitert, geklaut, versiegelt,
+   * eine neue Form gelegt): dann gilt sie als gelernt — V2-A2 zwingt niemanden zu etwas, das er schon kann.
+   */
+  selbstGelernt(key) {
+    if (this.aktiv && this.aktiv.key === key) return;      // läuft gerade als Pflichtzug: das vermerkt ZUG_ENDE
+    if (!this.gelernt(key)) this.merke(key, true);
+  }
+
+  beiEreignis(e) {
+    const m = this.m;
+    switch (e.art) {
+      case 'ZUG_START':
+        if (e.idx === m) { this.zugNr++; this.zugLektion = false; this.kosmischGespielt = false; this.freigegeben = false; }
+        break;
+      case 'KOSMISCH':
+        if (e.idx === m) {
+          this.kosmischGespielt = true;
+          if (this.aktiv && this.aktiv.art === 'kosmisch' && this.aktiv.kosmisch === e.kartenArt) { this.merke(this.aktiv.key); this.aktiv = null; }
+        } else if (!this.gelernt('gegnerKosmisch:' + e.kartenArt)) {
+          this.wartend.push({ key: 'gegnerKosmisch:' + e.kartenArt, art: e.kartenArt, idx: e.idx, zielIdx: e.zielIdx });
+        }
+        break;
+      case 'KLAU':
+        if (e.opfer === m && !this.gelernt('beklaut')) this.wartend.push({ key: 'beklaut', idx: e.dieb, karten: e.karten });
+        if (e.dieb === m) this.selbstGelernt(e.drachenklau ? 'drachenklau' : 'klauen');
+        break;
+      case 'GEBAUT':
+        if (e.idx === m) {
+          if (!e.neu) this.selbstGelernt('erweitern');
+          const form = RL_LEKTIONEN.find((l) => l.typ && l.typ === e.typ);
+          if (form && (e.neu || e.typ !== e.alterTyp)) this.selbstGelernt(form.key);
+        }
+        break;
+      case 'VERSIEGELT':
+        if (e.idx === m) this.selbstGelernt('versiegeln');
+        break;
+      case 'DRACHE':
+        if (e.idx === m && !e.drachenklau) this.selbstGelernt('drache');
+        break;
+      case 'ZUG_ENDE':
+        if (e.idx === m && this.aktiv && this.aktiv.art === 'zug') {
+          if (!this.freigegeben) { this.merke(this.aktiv.key); this.letzterLehrZug = this.zugNr; }
+          this.aktiv = null;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Die ungefilterten Optionen des Menschen (oder null, wenn er nicht dran ist). */
+  optionen() {
+    const a = this.kampf.ablauf;
+    return a.phase === 'ZUG' && a.amZug === this.m ? this.spiel.optionen(this.m) : null;
+  }
+
+  /** Die Lektion, die jetzt dran ist — nur wenn keine läuft und der Mensch am Zug ist. */
+  faellig() {
+    if (this.aktiv) return null;
+    const optionen = this.optionen();
+    if (!optionen) return null;
+    return rlLehrFaellig({
+      lehre: this.lehre, stationNr: this.stationNr, spiel: this.spiel, idx: this.m, optionen,
+      zugNr: this.zugNr, letzterLehrZug: this.letzterLehrZug, zugLektion: this.zugLektion, kosmischGespielt: this.kosmischGespielt,
+    });
+  }
+
+  /** Die Lektion läuft (V2-A2 hat sie angesagt). Hinweise ohne Pflicht gelten sofort als gelernt. */
+  beginne(lektion) {
+    if (!lektion) return;
+    if (!lektion.pflicht) { this.merke(lektion.key); return; }
+    this.aktiv = lektion;
+    this.freigegeben = false;
+    if (lektion.art === 'zug') this.zugLektion = true;
+  }
+
+  /** Optionen auf den laufenden Pflichtzug beschränken (Sackgasse → alles frei, die Lektion kommt später wieder). */
+  filter(optionen) {
+    if (!this.aktiv || !optionen) return optionen;
+    // Gestellter erster Zug (Bühne): solange genau DIESER Pfeil legal ist, bleibt nur er übrig — der allererste Zug
+    // des Spiels soll eindeutig sein. Sonst gilt der allgemeine Filter der Lektion.
+    const b = this.kampf.lehrBuehne;
+    if (b && this.aktiv.key === 'pfeil' && b.wunsch === 'PFEIL' && this.zugNr === 1) {
+      const hand = this.spiel.spieler[this.m].hand;
+      const genau = (optionen.aktionen ?? []).filter((a) => a.art === 'BAUEN' && !a.sbId
+        && rlLehrGleicheWerte(rlLehrWerte(a.handIds, hand), b.hand) && rlLehrGleicheWerte(rlLehrWerte(a.mitteIds, this.spiel.mitte), b.mitte));
+      if (genau.length) return { ...optionen, aktionen: genau, kosmische: [], nova: [], jokerTausch: [], versiegelnFrei: [], spiegel: [] };
+    }
+    const r = rlLehrFilter(this.aktiv, optionen, this.spiel, this.m);
+    if (r.sackgasse) {
+      if (!this.freigegeben) this.sackgassen++;
+      this.freigegeben = true;
+      if (this.aktiv.art === 'kosmisch') this.aktiv = null;
+      return optionen;
+    }
+    return r.optionen;
+  }
+
+  /** Worauf V2-A2 für die laufende Lektion zeigt. */
+  ziel() {
+    const optionen = this.optionen();
+    if (!this.aktiv || !optionen) return null;
+    const gefiltert = this.filter(optionen);          // die Bühne des ersten Zuges zählt mit
+    return this.aktiv ? rlLehrZiel(this.aktiv, gefiltert, this.spiel, this.m) : null;
+  }
+
+  /** Die gesammelten Ereignis-Lektionen abholen (jede Art einmal je Profil-Lernstand). */
+  ereignisLektionen() {
+    const out = [];
+    for (const w of this.wartend.splice(0)) {
+      if (this.gelernt(w.key) || out.some((x) => x.key === w.key)) continue;
+      out.push(w);
+    }
+    return out;
+  }
 }
 
 /* ===== app\roguelike\rl-karte.js ===== */
@@ -16310,12 +17471,19 @@ function rlPlanetZeigen(wurzel, lauf, rueckrufe = {}, opt = {}) {
 
   const gegner = lauf.naechsterGegner();
   rechts.appendChild(rlPlanetGegnerEl(lauf, gegner));
+  // Lehrlauf: was dieser Kampf neu bringt (Sternbild, geschenkte kosmische Karte).
+  if (lauf.istLehrlauf()) {
+    const st = RL_LEHRPLAN.stationen[lauf.lehrStation()];
+    const namen = st ? [...st.formen.map((f) => RL_TXT_LEHRE.formName[f] || f), ...st.geschenk.map((a) => ART_TEXT[a] || a)] : [];
+    if (namen.length) rechts.appendChild(rlSchirmEl('p', 'rl-lehr-neu', RL_TXT_LEHRE.frei.neuImKampf(namen)));
+  }
 
   const knoepfe = rlSchirmEl('div', 'rl-planet-knoepfe');
   knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.kampfBeginnen, 'haupt gross', { rl: 'kampf' }));
   // Überspringen (Spieltest-Runde 3): eine leuchtende Tafel zeigt, WAS es bringt — die Prämie wechselt je Lakai.
   let skipBox = null;
-  if (!boss) {
+  // Lehrlauf: auf dem ersten Planeten wird jeder Kampf gespielt — dort steht die Überspring-Tafel gar nicht erst da.
+  if (!boss && lauf.kannUeberspringen()) {
     const schuld = RL_KONFIG.boss.schuldProUebersprungenem;
     const praemie = lauf.skipPraemie();
     const T = RL_TXT_SCHIRM.skip;
@@ -16400,8 +17568,11 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   kranz.innerHTML = rlStrahlenkranzSvg(sieg ? '#D9A02B' : '#8C93A8', sieg ? 0.22 : 0.1);
   titel.appendChild(kranz);
   titel.appendChild(rlSchirmEl('span', 'rl-titel-ober', RL_TXT_UI.untertitel + ' — ' + RL_TXT_UI.titel));
-  titel.appendChild(rlSchirmEl('h2', 'rl-titel-haupt', sieg ? RL_TXT_UI.raubzugGelungen : RL_TXT_UI.gestrandet + ' ' + rlText(RL_TXT_PLANET, hier)));
-  titel.appendChild(rlSchirmEl('span', 'rl-titel-unter', sieg ? RL_TXT_SCHIRM.siegText : RL_TXT_SCHIRM.niederlageText));
+  // Lehrlauf (Spieltest-Runde 6): eigener Abschluss — nichts wird freigeschaltet, dafür steht da, wo man nachschlägt.
+  const lehrlauf = typeof lauf.istLehrlauf === 'function' && lauf.istLehrlauf();
+  const TE = RL_TXT_LEHRE.ende;
+  titel.appendChild(rlSchirmEl('h2', 'rl-titel-haupt', lehrlauf ? TE.titel : (sieg ? RL_TXT_UI.raubzugGelungen : RL_TXT_UI.gestrandet + ' ' + rlText(RL_TXT_PLANET, hier))));
+  titel.appendChild(rlSchirmEl('span', 'rl-titel-unter', lehrlauf ? TE.unter : (sieg ? RL_TXT_SCHIRM.siegText : RL_TXT_SCHIRM.niederlageText)));
   ende.appendChild(titel);
 
   // Reise
@@ -16418,7 +17589,16 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
 
   // Freischaltung (Sieg) bzw. nächster Startort
   const frei = rlSchirmEl('div', 'rl-ende-frei');
-  const decks = st.bosseBesiegt.map((b) => RL_BOSSE[b] && RL_PLANETEN[RL_BOSSE[b].planet].freischaltDeck).filter(Boolean);
+  const decks = lehrlauf ? [] : st.bosseBesiegt.map((b) => RL_BOSSE[b] && RL_PLANETEN[RL_BOSSE[b].planet].freischaltDeck).filter(Boolean);
+  if (lehrlauf) {
+    const box = rlSchirmEl('div', 'rl-ende-nachschlagen');
+    box.appendChild(rlSchirmEl('h3', 'rl-ueberschrift klein', TE.nachschlagenTitel));
+    const liste = rlSchirmEl('dl', 'rl-nachschlagen');
+    for (const [wo, was] of TE.nachschlagen) { liste.appendChild(rlSchirmEl('dt', '', wo)); liste.appendChild(rlSchirmEl('dd', '', was)); }
+    box.appendChild(liste);
+    box.appendChild(rlSchirmEl('p', 'rl-hinweis', TE.gelernt(Object.keys((d.lehre && d.lehre.gelernt) || {}).length)));
+    ende.appendChild(box);
+  }
   if (decks.length) {
     frei.appendChild(rlSchirmEl('span', 'rl-ende-frei-titel', RL_TXT_SCHIRM.freischaltung));
     for (const dk of [...new Set(decks)]) frei.appendChild(rlSchirmEl('span', 'rl-chip gold', RL_TXT_SCHIRM.deckFrei(rlText(RL_TXT_DECK, dk))));
@@ -16449,7 +17629,7 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   ende.appendChild(best);
 
   const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
-  knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.neu, 'haupt gross', { rl: 'neu' }));
+  knoepfe.appendChild(rlSchirmKnopf(lehrlauf ? TE.knopf : RL_TXT_UI.neu, 'haupt gross', { rl: 'neu' }));
   knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.zumMenue, '', { rl: 'menue' }));
   ende.appendChild(knoepfe);
   innen.appendChild(ende);
@@ -18460,8 +19640,12 @@ function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
  *   reiseBereit, skizze, gratisRerolls, ersteGroesseAngeboten, sternwarten, sternwarte, bosseBekannt
  *   gegnerPlan[planet].partner: GegnerSpec[3] — die Duo-Partner je Kampfplatz.
  *
- * Exporte: RlLauf, rlProfilNeu, rlProfilNachSieg, rlProfilNachNiederlage, rlGegnerPlanErzeugen,
+ * Exporte: RlLauf, rlProfilNeu, rlProfilNachSieg, rlProfilNachNiederlage, rlProfilNachLehrlauf, rlGegnerPlanErzeugen,
  *   RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG, rlRegelnVereinen, rlRouteErzeugen.
+ *
+ * Spieltest-Runde 6: der LEHRLAUF (`daten.lehrlauf`, Lernstand `daten.lehre`, Lehrplan in rl-lehrlauf.js) — `istLehrlauf()`,
+ * `lehrStation()`, `lehrNeu()`, `lehrFreischalten()`, `kannUeberspringen()`; ein verlorener Kampf wird wiederholt, und
+ * `rlProfilNachLehrlauf` schaltet nichts frei.
  *
  * Spieltest-Runde 5: `daten.route` (Reiseroute: Startplanet vorn, danach je Etappe die Planeten zur Wahl — ersetzt die
  * Nachbarschaft der alten Sternkarte), `zurKarte()` (vom Planetenschirm zurück, solange dort nichts passiert ist),
@@ -18470,7 +19654,7 @@ function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
  * Top-Level-Namen dieser Datei: RL_LAUF_VERSION, RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG,
  *   RL_STUFEN_TYPEN, RL_REGEL_MINIMUM, rlLakaiName, rlLakaiFuerPlatz, rlLakaiSpec, rlEliteSpec, rlBossSpec,
  *   rlGegnerPlanErzeugen, rlRouteErzeugen, rlRegelnVereinen, rlStufeAus, rlStufeGesamt, rlDeckKopie, RlLauf, rlProfilNeu,
- *   rlProfilNachBossen, rlProfilNachSieg, rlProfilNachNiederlage.
+ *   rlProfilNachBossen, rlProfilNachSieg, rlProfilNachLehrlauf, rlProfilNachNiederlage.
  */
 
 /** Version des Speicherformats (§2.3). */
@@ -18736,24 +19920,28 @@ class RlLauf {
    * Neuer Lauf: Startort ist Platz 1, Phase KARTE (die Karte zeigt den Startort, „Landen"
    * ruft `waehlePlanet(startort)`).
    */
-  static neu({ seed, schwierigkeit = 1, deckWahl = 'standard', startort = 'frost', profil = null, tutorial = false }) {
+  static neu({ seed, schwierigkeit = 1, deckWahl = 'standard', startort = 'frost', profil = null, tutorial = false, lehrlauf = false }) {
     if (!RL_DECKS[deckWahl]) throw new Error('Unbekanntes Deck: ' + deckWahl);
     rlPlanet(startort);
     if (![1, 2, 3].includes(schwierigkeit)) throw new Error('Ungültige Schwierigkeit: ' + schwierigkeit);
     const wurzel = (seed ?? 1) >>> 0;
     const rng = rngVon(wurzel ^ 0x5bd1e995);
-    const deck = rlStartdeck(deckWahl, 0);
+    const volles = rlStartdeck(deckWahl, 0);
+    // Lehrlauf (Spieltest-Runde 6): das Deck beginnt mit den Zahlen — die kosmischen Karten legt V2-A2 Station für
+    // Station dazu (`lehrFreischalten`). Die uids der weggelassenen Karten bleiben frei.
+    const deck = lehrlauf ? volles.filter((k) => k.art === 'ZAHL') : volles;
     const stufen = {};
     for (const t of RL_STUFEN_TYPEN) stufen[t] = { gespielt: 0, stufe: 0, gekauft: 0 };
     const daten = {
-      version: RL_LAUF_VERSION, seed: wurzel, schwierigkeit, deckWahl, tutorial: !!tutorial,
+      version: RL_LAUF_VERSION, seed: wurzel, schwierigkeit, deckWahl, tutorial: !!tutorial && !lehrlauf,
+      lehrlauf: !!lehrlauf, lehre: lehrlauf ? rlLehreNeu() : null,
       phase: 'KARTE', ergebnis: null, platz: 1, planetenReihe: [startort], kampfIndex: 0,
       geld: RL_KONFIG.lauf.startgeld[schwierigkeit], deck, module: [], vorrat: [], stufen,
       garantie: false, bossSchuld: 0, uebersprungen: 0,
       gegnerPlan: rlGegnerPlanErzeugen(rng, profil, schwierigkeit),
       shop: null, kampfSeed: 0,
       statistik: { kaempfe: 0, siege: 0, klaus: 0, geklaut: 0, geldGesamt: 0, gekauft: 0, bosseBesiegt: [] },
-      naechsteUid: deck.length,
+      naechsteUid: volles.length,
       // Zusätze (Nachtrag AP3)
       reiseBereit: false, skizze: false, gratisRerolls: 0, ersteGroesseAngeboten: 0,
       sternwarten: 0, sternwarte: null,
@@ -18785,6 +19973,50 @@ class RlLauf {
     const d = this.d;
     if (d.fuehrung && d.fuehrung.fertig) return false;
     return !!d.tutorial && d.platz === 1 && d.kampfIndex === 0 && d.uebersprungen === 0 && d.phase !== 'ENDE' && d.phase !== 'IMFLUG';
+  }
+
+  /** Ist dieser Lauf der Lehrlauf (Spieltest-Runde 6)? Dann trägt `daten.lehre` den Lernstand. */
+  istLehrlauf() { return !!this.d.lehrlauf && !!this.d.lehre; }
+
+  /** Station des Lehrplans für den aktuellen (oder einen anderen) Kampfplatz. */
+  lehrStation(kampfIndex = this.d.kampfIndex) { return rlLehrStationNr(this.d.platz, kampfIndex); }
+
+  /** Nachhilfe-Stufe eines Kampfplatzes: so oft wurde er im Lehrlauf schon verloren (gedeckelt) — außerhalb des Lehrlaufs 0. */
+  lehrNachhilfe(kampfIndex = this.d.kampfIndex) {
+    if (!this.istLehrlauf()) return 0;
+    const verloren = (this.d.lehre.verloren ?? {})[this.lehrStation(kampfIndex)] ?? 0;
+    return Math.min(((RL_KONFIG.lehrlauf ?? {}).nachhilfe ?? {}).max ?? 0, verloren);
+  }
+
+  /** Die Station des NÄCHSTEN Kampfes — im Shop nach einem Sieg (Umlaufbahn: nächster Kampfplatz, Flug: nächster Planet). */
+  lehrNaechsteStation() {
+    const d = this.d;
+    if (d.phase === 'UMLAUFBAHN') return rlLehrStationNr(d.platz, d.kampfIndex + 1);
+    if (d.phase === 'IMFLUG') return rlLehrStationNr(d.platz + 1, 0);
+    return this.lehrStation();
+  }
+
+  /** Was an der Station neu dazukäme und noch nicht freigeschaltet ist: `{formen, kosmische}` (leer außerhalb des Lehrlaufs). */
+  lehrNeu(stationNr = this.lehrStation()) {
+    if (!this.istLehrlauf()) return { formen: [], kosmische: [] };
+    return rlLehrNeuAn(this.d.lehre.freiBis ?? -1, stationNr);
+  }
+
+  /**
+   * Bis zur Station freischalten: Geschenke (kosmische Karten) wandern ins Deck, `lehre.freiBis` rückt vor.
+   * Mehrfach ungefährlich. Liefert, was dabei neu war — die Oberfläche zeigt dazu das aufspringende Schloss.
+   */
+  lehrFreischalten(stationNr = this.lehrStation()) {
+    const neu = this.lehrNeu(stationNr);
+    if (!this.istLehrlauf()) return neu;
+    const lehre = this.d.lehre;
+    for (const art of neu.kosmische) {
+      if (this.d.deck.length >= RL_KONFIG.deck.maxGroesse) break;
+      this.deckHinzu({ art });
+      lehre.geschenkt.push(art);
+    }
+    lehre.freiBis = Math.max(lehre.freiBis ?? -1, stationNr);
+    return neu;
   }
 
   /** Gegnerplan des aktuellen Planeten. */
@@ -18845,7 +20077,10 @@ class RlLauf {
     // Geführter Lauf (AP9 Feinschliff): der allererste Lakai spielt mit den einfachen Gewichten,
     // damit ein Anfänger den ersten Kampf gewinnen kann (rlBotFuer versteht gewichte 'einfach').
     if (d.tutorial && d.platz === 1 && i === 0) haupt.gewichte = 'einfach';
-    const duo = d.platz >= 3 || (d.platz === 2 && i === 2);
+    // Lehrlauf: auf den ersten Plätzen spielen alle Lakaien einfach, und zwei Gegner gibt es erst spät.
+    const L = RL_KONFIG.lehrlauf ?? {};
+    if (this.istLehrlauf() && d.platz <= (L.einfacheGegnerBisPlatz ?? 0)) haupt.gewichte = 'einfach';
+    const duo = this.istLehrlauf() ? d.platz >= (L.duoAbPlatz ?? 99) : (d.platz >= 3 || (d.platz === 2 && i === 2));
     if (!duo) return haupt;
     return [haupt, mitAussetzer(rlLakaiFuerPlatz(rlDeckKopie(plan.partner[i]), d.platz, d.schwierigkeit))];
   }
@@ -18857,9 +20092,9 @@ class RlLauf {
   aussetzerFuer(kampfIndex = this.d.kampfIndex) {
     const d = this.d;
     if (kampfIndex >= RL_KONFIG.lauf.lakaienProPlanet) return 0;
-    const tabelle = (RL_KONFIG.schwierigkeit.aussetzer ?? {})[d.schwierigkeit] ?? {};
+    const tabelle = this.istLehrlauf() ? ((RL_KONFIG.lehrlauf ?? {}).aussetzer ?? {}) : ((RL_KONFIG.schwierigkeit.aussetzer ?? {})[d.schwierigkeit] ?? {});
     const reihe = tabelle[d.platz] ?? [];
-    return Math.max(0, Math.min(1, Number(reihe[kampfIndex]) || 0));
+    return Math.max(0, Math.min(0.9, (Number(reihe[kampfIndex]) || 0) + this.lehrNachhilfe(kampfIndex) * (((RL_KONFIG.lehrlauf ?? {}).nachhilfe ?? {}).aussetzer ?? 0)));
   }
 
   /** Bossleben: Basis je Platz (Duo-Basis bei den Zwillingen) × Schwierigkeitsfaktor × Bossfaktor + Schuld. */
@@ -18868,7 +20103,9 @@ class RlLauf {
     const boss = this.planAktuell().boss;
     const tabelle = boss.gruppe ? RL_KONFIG.boss.lebenDuo : RL_KONFIG.boss.lebenBasis;
     const faktor = (RL_KONFIG.boss.lebenFaktor ?? {})[boss.key] ?? 1;
-    return Math.round(tabelle[d.platz] * RL_KONFIG.boss.stufenFaktor[d.schwierigkeit] * faktor) + d.bossSchuld;
+    const nachhilfe = 1 - this.lehrNachhilfe() * (((RL_KONFIG.lehrlauf ?? {}).nachhilfe ?? {}).bossLeben ?? 0);
+    const lehr = this.istLehrlauf() ? (((RL_KONFIG.lehrlauf ?? {}).bossLebenFaktor ?? {})[d.platz] ?? 1) * Math.max(0.3, nachhilfe) : 1;
+    return Math.round(tabelle[d.platz] * RL_KONFIG.boss.stufenFaktor[d.schwierigkeit] * faktor * lehr) + d.bossSchuld;
   }
 
   /** Regeln des Menschen: Deck-Regeln + Modul-Regeln (§4.5). */
@@ -18981,6 +20218,7 @@ class RlLauf {
     if (d.phase !== 'PLANET') throw new Error('Überspringen nur auf dem Planetenschirm');
     if (this.istBossKampf()) throw new Error('Der Boss lässt sich nicht überspringen');
     if (this.istGefuehrt()) throw new Error('Der Übungskampf lässt sich nicht überspringen');
+    if (!this.kannUeberspringen()) throw new Error('Im Lehrlauf wird auf diesem Planeten jeder Kampf gespielt');
     if (d.sofortPack) throw new Error('Erst das offene Pack nehmen');
     const praemie = praemieKey ? { key: praemieKey, betrag: praemieKey === 'geld' ? ((RL_KONFIG.ueberspringen.praemien.find((p) => p.key === 'geld') || {}).betrag ?? 0) : 0 } : this.skipPraemie();
     switch (praemie.key) {
@@ -18996,12 +20234,22 @@ class RlLauf {
     d.kampfIndex++;
   }
 
+  /** Darf hier übersprungen werden? Im Lehrlauf erst ab `lehrlauf.ueberspringenAbPlatz` (vorher kommen die Grundlagen). */
+  kannUeberspringen() {
+    if (!this.istLehrlauf()) return true;
+    return this.d.platz >= ((RL_KONFIG.lehrlauf ?? {}).ueberspringenAbPlatz ?? 1);
+  }
+
   /** Kampf beginnt (PLANET → KAMPF); der Seed wird gespeichert, ein Reload startet den Kampf neu. */
   kampfBeginnt(seed) {
     const d = this.d;
     if (d.phase !== 'PLANET') throw new Error('Kampf nur vom Planetenschirm aus');
     if (d.sofortPack) throw new Error('Erst das offene Pack nehmen');
-    d.kampfSeed = (seed ?? (d.seed ^ (d.platz * 1000 + d.kampfIndex * 7 + 1))) >>> 0;
+    // Lehrlauf: spätestens jetzt ist freigeschaltet, was zu dieser Station gehört (Geschenke liegen im Deck).
+    if (this.istLehrlauf()) this.lehrFreischalten();
+    // Ein wiederholter Lehrlauf-Kampf bekommt neue Karten — sonst liefe derselbe Kampf noch einmal genauso ab.
+    const wdh = this.istLehrlauf() ? (d.lehre.wiederholungen ?? 0) : 0;
+    d.kampfSeed = (seed ?? ((d.seed ^ (d.platz * 1000 + d.kampfIndex * 7 + 1)) + wdh * 7919)) >>> 0;
     d.phase = 'KAMPF';
   }
 
@@ -19015,6 +20263,14 @@ class RlLauf {
     if (d.phase !== 'KAMPF') throw new Error('Kein Kampf läuft');
     const st = d.statistik;
     st.kaempfe++;
+    // Im Lehrlauf strandet man nicht: ein verlorener Kampf wird wiederholt (zurück auf den Planetenschirm, nichts gutgeschrieben).
+    if (this.istLehrlauf() && !ergebnis.sieg) {
+      d.lehre.wiederholungen = (d.lehre.wiederholungen ?? 0) + 1;
+      if (!d.lehre.verloren) d.lehre.verloren = {};
+      d.lehre.verloren[this.lehrStation()] = (d.lehre.verloren[this.lehrStation()] ?? 0) + 1;
+      d.phase = 'PLANET';
+      return;
+    }
     st.klaus += ergebnis.klaus ?? 0;
     st.geklaut += ergebnis.geklaut ?? 0;
     this.geldPlus(ergebnis.geld ?? 0);
@@ -19299,6 +20555,18 @@ function rlProfilNachSieg(profil, lauf) {
   if (naechster) profil.planeten.push(naechster);
   if (d.schwierigkeit >= profil.schwierigkeit && profil.schwierigkeit < 3) profil.schwierigkeit++;
   profil.startort = lauf.planetAktuell();
+  return profil;
+}
+
+/**
+ * Nach dem Lehrlauf (Spieltest-Runde 6): das Tutorial gilt als geschafft, sonst ändert sich NICHTS — kein Deck, keine
+ * Stufe, kein Planet, keine Bestwerte. Der erste echte Raubzug beginnt wie immer auf dem Frostpfad.
+ */
+function rlProfilNachLehrlauf(profil) {
+  profil.tutorialGesehen = true;
+  profil.tutorialGeschafft = true;
+  profil.lehrlaufGeschafft = true;
+  profil.startort = 'frost';
   return profil;
 }
 
@@ -19631,6 +20899,15 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       rlGegnerInfoAnsicht(document.body, lauf, gruppe, { leben: bz ? { jetzt: bz.leben, max: bz.lebenMax } : null, himmel: kampf.effekt ? kampf.effekt.text : '' });
     },
 
+    /** Lehrlauf: die Sternbildtypen, die noch gesperrt sind — die Formentafel zeigt sie mit Schloss. */
+    formenGesperrt() {
+      if (!kampf.lehrlauf) return [];
+      const frei = rlLehrFrei(kampf.lehrStation).formen;
+      return RL_LEHR_FORMEN.filter((f) => !frei.includes(f));
+    },
+
+    formenGesperrtText() { return RL_TXT_LEHRE.frei.formZu; },
+
     /** Sternbildstufen für die Formentafel (Knopf „Formen" des Tisches). */
     formenStufen() {
       const out = {};
@@ -19666,7 +20943,7 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
     /* ---- Führung im Übungskampf (start.js fragt diese Haken nur, wenn es sie gibt) ---- */
     optionenFiltern(optionen) { return f ? f.optionenFiltern(optionen) : optionen; },
     nurGefuehrt() { return f ? f.nurGefuehrt() : false; },
-    abgelehntText() { return f ? f.abgelehntText() : ''; },
+    abgelehntText(auswahl) { return f ? f.abgelehntText(auswahl) : ''; },
     warteVorWeiter(ablauf) { return f ? f.warteVorWeiter(ablauf) : null; },
     nachZeichnen(s, dom) { if (f) f.nachZeichnen(s, dom); },
 
@@ -20243,6 +21520,13 @@ class RlKampf {
     const R = RL_KONFIG.partie.runden;
     this.runden = this.istBoss ? R.boss : R.lakai[Math.min(lauf.daten.kampfIndex ?? 0, R.lakai.length - 1)];
     this.zuegeJeRunde = RL_KONFIG.partie.zuegeJeRunde ?? null;
+    // Lehrlauf (Spieltest-Runde 6): eigene Zugzahl je Platz; die Station bestimmt, welche Sternbildtypen am Tisch erlaubt sind.
+    this.lehrStation = typeof lauf.istLehrlauf === 'function' && lauf.istLehrlauf() ? lauf.lehrStation() : null;
+    this.lehrlauf = this.lehrStation != null;
+    if (this.lehrlauf) {
+      const zuege = ((RL_KONFIG.lehrlauf ?? {}).zuegeJeRunde ?? {})[lauf.daten.platz];
+      if (zuege != null) this.zuegeJeRunde = Math.max(1, Math.floor(zuege));
+    }
     // Übungskampf des Pflicht-Tutorials (rl-uebung.js): eigene Rundenzahl und Zugzahl, und er ist nicht zu verlieren.
     if (opts.runden != null) this.runden = Math.max(1, Math.floor(opts.runden));
     if (opts.zuegeJeRunde != null) this.zuegeJeRunde = Math.max(1, Math.floor(opts.zuegeJeRunde));
@@ -20291,8 +21575,9 @@ class RlKampf {
     this.punkteBoni = {};
     for (let i = 0; i < n; i++) {
       let deckSpec;
-      // Regeln des Modus für alle Sitze (RL_KONFIG.regeln, z. B. Drachenklau) unter den Sitzregeln.
-      const modusRegeln = RL_KONFIG.regeln ?? {};
+      // Regeln des Modus für alle Sitze (RL_KONFIG.regeln, z. B. Drachenklau) unter den Sitzregeln. Im Lehrlauf kommt
+      // `erlaubteTypen` dazu: niemand am Tisch baut ein Sternbild, das der Spieler noch nicht kennt.
+      const modusRegeln = this.lehrlauf ? { ...(RL_KONFIG.regeln ?? {}), ...rlLehrRegeln(this.lehrStation) } : (RL_KONFIG.regeln ?? {});
       if (i === m) {
         deckSpec = lauf.daten.deck;
         regeln[i] = rlRegelnVereinen(modusRegeln, lauf.regelnDesSpielers());
@@ -20300,6 +21585,8 @@ class RlKampf {
       } else {
         const spec = this.gegnerVonSitz[i];
         deckSpec = spec.deck ?? rlGegnerDeck({ verhalten: spec.verhalten, boss: !!spec.boss }, null, lauf.daten.schwierigkeit);
+        // Lehrlauf: kosmische Grundkarten, die der Spieler noch nicht kennt, stecken in keinem Gegnerdeck.
+        if (this.lehrlauf) deckSpec = rlLehrDeckOhneFremdes(deckSpec, this.lehrStation);
         const teile = [modusRegeln, spec.regeln ?? {}];
         const boni = [];
         for (const p of spec.privilegien ?? []) {
@@ -20408,7 +21695,7 @@ class RlKampf {
       if (this.uebung && !sieg) { sieg = true; grund = 'UEBUNG'; }
     }
     return {
-      sieg, grund, fertig: this.istFertig(), uebung: !!this.uebung,
+      sieg, grund, fertig: this.istFertig(), uebung: !!this.uebung, lehrlauf: !!this.lehrlauf,
       geld: this.geld, geldKlau: this.klauGeld, geldRunden: this.rundenGeld, stufenZaehler: { ...this.stufenZaehler },
       klaus: this.klaus, geklaut: this.geklaut, verloren: this.verloren,
       punkte, punkteMensch: punkte[m], punkteBesterGegner: bester,
@@ -20448,7 +21735,7 @@ class RlKampf {
       stufenMax: RL_KONFIG.stufen.max,
       stufenZaehler: { ...this.stufenZaehler },
       platz: d.platz, kampfIndex: d.kampfIndex, istBoss: this.istBoss, runden: this.runden, zuegeJeRunde: this.zuegeJeRunde,
-      menschIdx: this.menschIdx, uebung: !!this.uebung,
+      menschIdx: this.menschIdx, uebung: !!this.uebung, lehrlauf: !!this.lehrlauf, lehrStation: this.lehrStation,
     };
     // Rundenprämie: was die eigene Auslage gerade wert ist, was das an Geld bringt und wo die nächste Schwelle liegt.
     const auslage = this.spiel.spieler[this.menschIdx].sternbilder.reduce((n, sb) => n + this.spiel.punkteVon(sb, this.menschIdx), 0);
@@ -20964,6 +22251,439 @@ function rlUebungKampf(lauf, gegner, seed, opts = {}) {
   return { kampf, uebung };
 }
 
+/* ===== app\roguelike\rl-lehrmeister.js ===== */
+/**
+ * Roguelike-Modus — der LEHRMEISTER (Spieltest-Runde 6): V2-A2 im Kampf des Lehrlaufs.
+ *
+ * Der Spieler spielt selbst. V2-A2 kommt genau dann, wenn etwas Neues passiert: Er sagt es an (Pflicht-Lesen, der Tisch
+ * ruht solange), zeigt mit dem weißen Pfeil auf die Karten, und bis der eine Zug gemacht ist, bleiben nur passende Züge
+ * übrig (Pflichtzug). Danach ein Satz dazu — und wieder freies Spiel. WANN was dran ist, entscheidet die Engine
+ * (engine/src/roguelike/rl-lehrlauf.js: `RlLehrgang`, Lektionen, Pflichtzug-Filter mit Sackgassen-Freigabe); hier stehen
+ * Sprache, Zeiger und Fußleiste.
+ *
+ * `rlLehrmeisterHaken(opt)` liefert dieselben Haken wie `RlFuehrung.fuerKampf()` (rl-tutorial.js) — rl-kampf-ui.js reicht
+ * sie über `S.modus` an start.js durch: optionenFiltern, nurGefuehrt, abgelehntText, warteVorWeiter, sichtErweitern,
+ * nachZeichnen, knoepfe, wertung — dazu `beenden()` und `lehrgang` (für Prüfgriffe und Selbsttest).
+ *
+ * Dazu `rlLehrFreischaltungZeigen`: die Ebene nach einem Sieg, auf der das Schloss eines neuen Sternbilds (oder einer
+ * geschenkten kosmischen Karte) aufspringt.
+ *
+ * Top-Level-Namen dieser Datei: RL_LEHRMEISTER_KNOPF, rlLehrmeisterMarke, rlLehrmeisterHaken, rlLehrmeisterSchlossSvg,
+ *   rlLehrFreischaltungZeigen.
+ */
+
+/** Der Knopf der Fußleiste, um den es bei einer Lektion geht (statt des Bestätigen-Knopfs). */
+const RL_LEHRMEISTER_KNOPF = { versiegeln: /versiegeln/i, tauschen: /Karte tauschen/i, drache: /Drachen zusammensetzen/i };
+
+/** Wertmarke einer Karte: gleiche Zahlen sind austauschbar, kosmische Karten zählen nach ihrer Art. */
+function rlLehrmeisterMarke(k) {
+  if (!k) return '?';
+  return k.art === 'ZAHL' ? 'Z' + k.wert : 'K' + k.art;
+}
+
+/**
+ * @param {{kampf:object, lauf:object, fuehrung:object, speichern?:()=>void, tischZeichnen?:()=>void}} opt
+ *   kampf: RlKampf des Lehrlaufs (gestartet, Tisch gestellt) · fuehrung: RlFuehrung (spricht über V2-A2, sperrt den Tisch)
+ */
+function rlLehrmeisterHaken(opt) {
+  const { kampf, lauf, fuehrung } = opt;
+  const speichern = opt.speichern || (() => {});
+  const tischZeichnen = opt.tischZeichnen || (() => {});
+  const T = RL_TXT_LEHRE;
+  const spiel = kampf.spiel;
+  const m = kampf.menschIdx;
+  const st = {
+    redet: null,          // Schlüssel der laufenden Rede
+    laufend: null,        // ihre Promise
+    danach: [],           // gelernte Lektionen, deren Nachsatz noch aussteht
+    tausch: null,         // {abwurfId, zieht} der Lektion „Karte tauschen"
+    ziel: null,           // das Ziel der laufenden Lektion, als sie angesagt wurde (für den Nachsatz)
+    wertung: false,
+    duoGesagt: false,
+    formenZeiger: false,  // »Formen« soll einmal geöffnet werden (der Knopf oben rechts trägt den Zeiger)
+    reihenfolge: [],      // angesagte Lektionen (für Tests)
+  };
+  const lehrgang = new RlLehrgang(kampf, lauf, {
+    // Nur Lektionen mit einem Nachsatz kommen in die Warteschlange (Hinweise und Ereignisse haben keinen).
+    // Was der Spieler von selbst getan hat, braucht keinen Nachsatz — er hat es ja schon verstanden.
+    beiGelernt: (key, selbst) => { if (!selbst && T[key] && typeof T[key] === 'object' && T[key].danach) st.danach.push(key); speichern(); },
+  });
+  const lektionVon = (key) => RL_LEKTIONEN.find((l) => l.key === key) || null;
+
+  /* ---------------- Kontext der Sätze ---------------- */
+
+  const werteVon = (ids, liste) => (ids || []).map((id) => liste.find((k) => k.id === id)).filter((k) => k && k.art === 'ZAHL').map((k) => k.wert).sort((a, b) => a - b);
+
+  /** Das eigene Sternbild, in dem eine dieser Karten liegt (nach dem Zug: das Ergebnis). */
+  const eigenesSbMit = (ids) => spiel.spieler[m].sternbilder.find((sb) => sb.karten.some((k) => (ids || []).includes(k.id))) || null;
+
+  function kontext(lektion, ziel, nachher) {
+    const hand = spiel.spieler[m].hand;
+    const k = {
+      hand: ziel ? werteVon(ziel.hand, hand) : [], mitte: ziel ? werteVon(ziel.mitte, spiel.mitte) : [],
+      zuege: kampf.zuegeJeRunde, minHand: spielRegel(spiel, m, 'klauenMinHandkarten'),
+      proKarte: RL_KONFIG.geld.proGeklauterKarte, maxSiegel: CONFIG.zug.versiegelnProRunde,
+      drache: CONFIG.punkte.DRACHE, kreuz: CONFIG.punkte.KREUZ, maxKarten: CONFIG.sternbild.maxKarten, punkte: 0, karten: 0, typName: 'Sternbild',
+    };
+    if (ziel && ziel.aktion) {
+      k.punkte = ziel.aktion.punkteNachher ?? 0;
+      if (ziel.aktion.art === 'VERSIEGELN') {
+        const sb = spiel.findeSb(m, ziel.aktion.sbId);
+        if (sb) { k.punkte = spiel.punkteVon(sb, m); k.typName = T.formName[bewerte(sb.karten).typ] || 'Sternbild'; }
+      }
+    }
+    if (nachher && ziel) {
+      const sb = eigenesSbMit([...ziel.hand, ...ziel.mitte]) || (ziel.sbId ? spiel.findeSb(m, ziel.sbId) : null);
+      if (sb) { k.punkte = spiel.punkteVon(sb, m); k.karten = sb.karten.length; }
+    }
+    return k;
+  }
+
+  /* ---------------- Sprechen ---------------- */
+
+  /** Sätze sprechen (Pflicht-Lesen über die Führung); solange ruht der Tisch. */
+  function rede(key, saetze, o = {}) {
+    const liste = (saetze || []).filter(Boolean);
+    if (!liste.length) { if (o.dann) o.dann(true); return null; }
+    st.redet = key;
+    st.laufend = fuehrung.sprich('lehre:' + key, liste, { pose: o.pose || 'neutral', seite: 'rechts', schluss: o.schluss, pflicht: o.pflicht })
+      .then((ok) => {
+        st.redet = null;
+        st.laufend = null;
+        if (o.dann) o.dann(ok);
+        tischZeichnen();
+        return ok;
+      });
+    return st.laufend;
+  }
+
+  /** Eine fällige Lektion ansagen: sie läuft ab sofort (der Filter greift), bedienbar wird der Tisch nach dem Lesen. */
+  function ansagen(lektion, pflichtLesen = true) {
+    st.reihenfolge.push(lektion.key);
+    st.tausch = null;
+    lehrgang.beginne(lektion);
+    if (lektion.key === 'tauschen') st.tausch = rlLehrNachTausch(spiel, m);
+    st.ziel = lehrgang.aktiv ? zielJetzt() : null;
+    const eintrag = T[lektion.key];
+    const saetze = eintrag && eintrag.vor ? eintrag.vor(kontext(lektion, st.ziel, false)) : [];
+    return rede(lektion.key, saetze, { pflicht: pflichtLesen, schluss: lektion.pflicht ? RL_TXT_UI.weiter : RL_TXT_UI.allesKlar });
+  }
+
+  /** Das Ziel der laufenden Lektion (beim Tauschen: die empfohlene Abwurfkarte). */
+  function zielJetzt() {
+    const l = lehrgang.aktiv;
+    if (!l) return null;
+    const z = lehrgang.ziel();
+    if (z && l.key === 'tauschen' && st.tausch) return { ...z, hand: [st.tausch.abwurfId] };
+    return z;
+  }
+
+  /** Was als Nächstes zu sagen ist: Nachsatz → Ereignisse → fertiges Sternbild → fällige Lektion → Tausch-Tipp. */
+  function naechstesReden(ablauf) {
+    if (st.redet) return st.laufend;
+    if (ablauf.beendet || ablauf.phase === 'RUNDENENDE') return null;
+    // 1. Der Satz nach einem gelernten Pflichtzug.
+    while (st.danach.length) {
+      const key = st.danach.shift();
+      const eintrag = T[key];
+      const l = lektionVon(key);
+      if (!eintrag || !eintrag.danach || !l) continue;
+      const r = rede(key + ':danach', eintrag.danach(kontext(l, st.ziel, true)), { pose: 'freut', schluss: RL_TXT_UI.weiter });
+      if (r) return r;
+    }
+    // 2. Was der Gegner getan hat (beklaut, kosmische Karte) — je Art einmal.
+    const ereignisse = lehrgang.ereignisLektionen();
+    if (ereignisse.length) {
+      const saetze = [];
+      for (const e of ereignisse) {
+        lehrgang.merke(e.key);
+        if (e.key === 'beklaut') saetze.push(...T.beklaut({ karten: e.karten || 0 }));
+        else if (e.art) saetze.push(T.gegnerKosmisch[e.art] || T.gegnerKosmisch.sonst(ART_TEXT[e.art] || e.art));
+      }
+      const r = rede('ereignis', saetze, { pose: 'warnt' });
+      if (r) return r;
+    }
+    if (!ablauf.istMensch()) return null;
+    // 3. Zwei Gegner am Tisch (einmal, zu Beginn des eigenen Zuges).
+    if (kampf.sitzVonGegner.length > 1 && !st.duoGesagt && !lehrgang.gelernt('duo')) {
+      st.duoGesagt = true;
+      lehrgang.merke('duo');
+      const r = rede('duo', T.duo(), {});
+      if (r) return r;
+    }
+    // 4. Ein eigenes Sternbild ist fertig geworden und liegt unversiegelt: erst nur „fertig = nicht mehr klaubar" — dass ein
+    //    Schwarzes Loch es trotzdem trifft, kommt, sobald der Spieler das Schwarze Loch kennt.
+    const fertigOffen = spiel.spieler[m].sternbilder.some((sb) => !sb.versiegelt && istSicher(sb));
+    // Im allerersten Kampf erst spät: dort reden Pfeil und Klauen schon die ersten beiden Züge lang.
+    if (fertigOffen && !lehrgang.gelernt('fertig') && (lehrgang.stationNr >= 1 || lehrgang.zugNr >= 5)) {
+      lehrgang.merke('fertig');
+      const r = rede('fertig', T.fertig(), {});
+      if (r) return r;
+    }
+    if (fertigOffen && !lehrgang.gelernt('fertigSiegel') && rlLehrFrei(lehrgang.stationNr).kosmische.includes('SCHWARZES_LOCH')) {
+      lehrgang.merke('fertigSiegel');
+      const r = rede('fertigSiegel', T.fertigSiegel(), { pose: 'warnt' });
+      if (r) return r;
+    }
+    // 5. Die fällige Lektion.
+    const lektion = lehrgang.faellig();
+    if (lektion) return ansagen(lektion);
+    // 6. Alle Sternbilder sind frei: einmal »Formen« oben rechts öffnen lassen (dort steht alles zum Nachschlagen).
+    if (!st.formenZeiger && !lehrgang.aktiv && !lehrgang.gelernt('formenTafel') && lehrgang.gelernt('doppelstier')) {
+      st.formenZeiger = true;
+      const knopf = typeof document !== 'undefined' ? document.getElementById('btn-formen') : null;
+      if (knopf) {
+        const gesehen = () => {
+          knopf.removeEventListener('click', gesehen);
+          knopf.classList.remove('rl-tut-ziel');
+          st.formenZeiger = false;
+          lehrgang.merke('formenTafel');
+        };
+        knopf.addEventListener('click', gesehen);
+        return rede('formenTafel', T.formenTafel.vor(), { dann: () => knopf.classList.add('rl-tut-ziel') });
+      }
+    }
+    // 7. „Karte tauschen" kam nie von selbst: ab dem dritten Kampf einmal als Tipp (die Pflicht-Lektion bleibt offen).
+    if (lehrgang.stationNr >= 2 && lehrgang.zugNr >= 2 && !lehrgang.aktiv && !lehrgang.gelernt('tauschen') && !lehrgang.gelernt('tauschenTipp')) {
+      lehrgang.merke('tauschenTipp');
+      return rede('tauschenTipp', T.tauschenTipp(), {});
+    }
+    return null;
+  }
+
+  return {
+    lehrgang,
+    zustand: st,
+
+    /** Während V2-A2 spricht, geht nichts; sonst gilt der Pflichtzug der laufenden Lektion (mit Sackgassen-Freigabe). */
+    optionenFiltern(optionen) {
+      naechstesReden(kampf.ablauf);
+      if (st.redet) return { ...optionen, aktionen: [], kosmische: [], nova: [], jokerTausch: [], versiegelnFrei: [], spiegel: [] };
+      return lehrgang.filter(optionen);
+    },
+
+    /** „Nur der gezeigte Zug": keine Knöpfe für Aussetzen und Tauschen — außer es geht gerade ums Tauschen. */
+    nurGefuehrt() {
+      if (st.redet) return true;
+      const l = lehrgang.aktiv;
+      return !!l && !lehrgang.freigegeben && l.key !== 'tauschen';
+    },
+
+    /**
+     * Warum die Auswahl nicht geht: im Pflichtzug der Hinweis auf die gezeigten Karten — sonst, wenn die Karten ein
+     * noch gesperrtes Sternbild ergäben, genau das („Das wäre ein Wagen …").
+     * @param {{karten?:object[]}} [auswahl]  die gewählten Karten samt denen des angetippten Sternbilds
+     */
+    abgelehntText(auswahl) {
+      if (lehrgang.aktiv && !lehrgang.freigegeben) return T.abgelehnt;
+      const karten = auswahl && Array.isArray(auswahl.karten) ? auswahl.karten : [];
+      if (karten.length < CONFIG.sternbild.minKarten) return '';
+      const b = bewerte(karten);
+      const frei = rlLehrFrei(lehrgang.stationNr).formen;
+      if (!b.gueltig || b.typ === 'DRACHE' || frei.includes(b.typ)) return '';
+      return T.gesperrt({ ein: T.formEin[b.typ] || typText(b.typ), frei: frei.map((f) => T.formName[f] || f).join(', ') });
+    },
+
+    /** Vor jedem Weiterlaufen der Tisch-Schleife: steht etwas zu sagen an, warten die Bots, bis es bestätigt ist. */
+    warteVorWeiter(ablauf) {
+      return naechstesReden(ablauf);
+    },
+
+    /** Aufgabe in die Fußleiste, Ziele ins Sichtmodell, den Knopf hervorheben, um den es geht. */
+    sichtErweitern(s) {
+      if (!s.dranMensch) return;
+      if (st.redet) { s.hinweis = T.erstLesen; s.hinweisIstFehler = false; return; }
+      const l = lehrgang.aktiv;
+      if (!l || lehrgang.freigegeben) return;
+      const z = zielJetzt();
+      if (!z) return;
+      const hand = s.z.spieler[m].hand || [];
+      const sollHand = z.hand.map((id) => rlLehrmeisterMarke(hand.find((k) => k.id === id)));
+      const sollMitte = z.mitte.map((id) => rlLehrmeisterMarke(s.z.mitte.find((k) => k.id === id)));
+      const passtZu = (soll, ids, liste) => {
+        const rest = [...soll];
+        for (const id of ids) {
+          const i = rest.indexOf(rlLehrmeisterMarke(liste.find((k) => k.id === id)));
+          if (i < 0) return false;
+          rest.splice(i, 1);
+        }
+        return true;
+      };
+      let zielSb = null;
+      for (const [sbId, v] of s.zieleSb) if (v && v.art === 'ZIEL') zielSb = sbId;
+      // Beim Drachenklau wählt man beliebige Handkarten zum Abwerfen — dort gibt es kein „daneben".
+      const freieHand = z.art === 'DRACHENKLAU';
+      const daneben = (!freieHand && !passtZu(sollHand, s.auswahlHand, hand)) || !passtZu(sollMitte, s.auswahlMitte, s.z.mitte)
+        || (zielSb != null && z.sbId != null && zielSb !== z.sbId);
+      const gueltig = (s.knoepfe || []).some((k) => /haupt/.test(k.klasse || '') && !k.aus);
+      s.rlLehre = { ...z, sollHand, sollMitte, zielGewaehlt: zielSb != null && zielSb === z.sbId, zielArt: s.zielArt || null };
+      // Der Knopf, um den es geht, trägt den Zeiger: der eigene Knopf der Lektion — oder Bestätigen, sobald die Auswahl passt.
+      const muster = RL_LEHRMEISTER_KNOPF[l.key] || null;
+      if (!s.zielArt) {
+        if (daneben && !gueltig) { s.hinweis = T.daneben; s.hinweisIstFehler = true; }
+        else if (!gueltig || muster) {
+          // Lektionen mit eigenem Knopf (versiegeln, tauschen, Drache) behalten ihre Aufgabe in der Leiste, bis er gedrückt ist.
+          const eintrag = T[l.key];
+          if (eintrag && eintrag.aufgabe) { s.hinweis = eintrag.aufgabe(kontext(l, z, false)); s.hinweisIstFehler = false; }
+        }
+      }
+      for (const k of s.knoepfe || []) {
+        const istZiel = muster ? (muster.test(k.text || '') && !k.aus) : (gueltig && /haupt/.test(k.klasse || '') && !k.aus);
+        if (istZiel) k.klasse = ((k.klasse || '') + ' rl-tut-ziel').trim();
+      }
+    },
+
+    /** Nach dem Zeichnen: der weiße Zeiger auf die noch nicht gewählten Karten und das Ziel-Sternbild. */
+    nachZeichnen(s, dom) {
+      const z = s.rlLehre;
+      if (!z) return;
+      const hand = s.z.spieler[m].hand || [];
+      const zeige = (bereich, liste, soll, auswahl) => {
+        if (!bereich) return;
+        const rest = [...soll];
+        for (const id of auswahl) {             // schon Gewähltes abziehen
+          const i = rest.indexOf(rlLehrmeisterMarke(liste.find((x) => x.id === id)));
+          if (i >= 0) rest.splice(i, 1);
+        }
+        for (const k of liste) {
+          if (auswahl.has(k.id)) continue;
+          const i = rest.indexOf(rlLehrmeisterMarke(k));
+          if (i < 0) continue;
+          rest.splice(i, 1);
+          const e = bereich.querySelector('.karte[data-id="' + k.id + '"]');
+          if (e) e.classList.add('rl-tut-ziel');
+        }
+      };
+      if (!z.zielArt) {
+        zeige(dom.meineHand, hand, z.sollHand, s.auswahlHand);
+        zeige(dom.mitteKarten, s.z.mitte, z.sollMitte, s.auswahlMitte);
+      }
+      // Das Sternbild: beim Bauen/Klauen/Versiegeln das Ziel, bei einer kosmischen Karte (Zielwahl) ihr Ziel.
+      const sbId = z.zielArt ? (z.wahl ? z.wahl.sbId : null) : z.sbId;
+      if (sbId != null && !z.zielGewaehlt && z.art !== 'DRACHE') {
+        const e = document.querySelector('.sternbild[data-sb="' + sbId + '"]');
+        if (e) e.classList.add('rl-tut-ziel');
+      }
+    },
+
+    /** Knopf „Noch mal erklären", solange ein Pflichtzug läuft und V2-A2 schweigt. */
+    knoepfe(s) {
+      const l = lehrgang.aktiv;
+      if (!s.dranMensch || !l || st.redet || lehrgang.freigegeben || (fuehrung.sextant && fuehrung.sextant.sichtbar)) return [];
+      const eintrag = T[l.key];
+      if (!eintrag || !eintrag.vor) return [];
+      return [{ text: T.nochmal, klasse: '', tun: () => { rede(l.key, eintrag.vor(kontext(l, zielJetzt(), false)), { pflicht: false, schluss: RL_TXT_UI.allesKlar }); } }];
+    },
+
+    /** Neben dem Rundenende-Fenster: die Wertung erklären (einmal je Lehrlauf). */
+    wertung() {
+      if (st.wertung || lehrgang.gelernt('wertung')) return;
+      st.wertung = true;
+      lehrgang.merke('wertung');
+      const punkte = spiel.spieler.map((sp) => sp.punkte);
+      let bester = 0;
+      for (const i of kampf.sitzVonGegner) bester = Math.max(bester, punkte[i]);
+      rede('wertung', T.wertung({ ich: punkte[m], gegner: bester }), { pose: 'freut' });
+    },
+
+    /** Kampf vorbei: Hörer abmelden, den Zeiger am »Formen«-Knopf wegnehmen. */
+    beenden() {
+      lehrgang.beenden();
+      const knopf = typeof document !== 'undefined' ? document.getElementById('btn-formen') : null;
+      if (knopf) knopf.classList.remove('rl-tut-ziel');
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Freischaltung: das Schloss springt auf                              */
+/* ------------------------------------------------------------------ */
+
+/** Ein Vorhängeschloss als Inline-SVG (der Bügel dreht sich per CSS auf, sobald die Ebene `.offen` trägt). */
+function rlLehrmeisterSchlossSvg() {
+  return '<svg class="rl-schloss" viewBox="0 0 48 58" aria-hidden="true">'
+    + '<path class="rl-schloss-buegel" d="M14 28V17a10 10 0 0 1 20 0v11" fill="none" stroke="#141414" stroke-width="6" stroke-linecap="round"/>'
+    + '<rect x="7" y="26" width="34" height="27" rx="6" fill="#F2C640" stroke="#141414" stroke-width="3"/>'
+    + '<circle cx="24" cy="38" r="4" fill="#141414"/><rect x="22.5" y="39" width="3" height="8" rx="1.5" fill="#141414"/></svg>';
+}
+
+/**
+ * Die Freischalt-Ebene nach einem Sieg im Lehrlauf: je neuem Sternbildtyp seine Zeile der Formentafel (Beispielkarten,
+ * Regel, Punkte), je geschenkter kosmischer Karte die Karte mit ihrem Einzeiler — erst grau und verschlossen, dann
+ * springt das Schloss auf und alles wird farbig. »Weiter« wird frei, sobald die Bewegung durch ist.
+ * @param {HTMLElement} wurzel  #rl-schirm
+ * @param {{formen:string[], kosmische:string[]}} neu  aus `lauf.lehrNeu(station)`
+ * @param {{dann?:()=>void}} [opt]
+ * @returns {HTMLElement|null} die Ebene (null, wenn nichts neu ist)
+ */
+function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
+  const formen = (neu && neu.formen) || [];
+  const kosmische = (neu && neu.kosmische) || [];
+  if (!wurzel || (!formen.length && !kosmische.length)) { if (opt.dann) opt.dann(); return null; }
+  const T = RL_TXT_LEHRE.frei;
+  const alt = wurzel.querySelector(':scope > .rl-ebene[data-ebene="freischaltung"]');
+  if (alt) alt.remove();
+  const ebene = rlSchirmEl('div', 'rl-ebene rl-frei');
+  ebene.dataset.ebene = 'freischaltung';
+  ebene.setAttribute('role', 'dialog');
+  ebene.setAttribute('aria-modal', 'true');
+  const kasten = rlSchirmEl('div', 'rl-ebene-kasten');
+  kasten.appendChild(rlSchirmEl('h3', 'rl-ueberschrift', T.titel));
+  const reihe = rlSchirmEl('div', 'rl-frei-reihe');
+  const tafel = formen.length ? formenTafel() : null;
+  for (const typ of formen) {
+    const zeile = tafel.querySelector('.form-zeile[data-typ="' + typ + '"]');
+    if (!zeile) continue;
+    const karte = rlSchirmEl('div', 'rl-frei-karte');
+    karte.dataset.typ = typ;
+    karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.sternbild));
+    karte.appendChild(zeile);
+    const schloss = rlSchirmEl('span', 'rl-frei-schloss');
+    schloss.innerHTML = rlLehrmeisterSchlossSvg();
+    karte.appendChild(schloss);
+    reihe.appendChild(karte);
+  }
+  for (const art of kosmische) {
+    const karte = rlSchirmEl('div', 'rl-frei-karte kosmisch');
+    karte.dataset.art = art;
+    karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.kosmisch));
+    const bild = rlSchirmEl('div', 'rl-frei-bild');
+    bild.appendChild(karteEl({ id: -1, art, wert: null }, 'schau', { klickbar: false }));
+    karte.appendChild(bild);
+    karte.appendChild(rlSchirmEl('b', 'rl-frei-name', ART_TEXT[art] || art));
+    karte.appendChild(rlSchirmEl('span', 'rl-frei-text', ART_KURZ[art] || ''));
+    const schloss = rlSchirmEl('span', 'rl-frei-schloss');
+    schloss.innerHTML = rlLehrmeisterSchlossSvg();
+    karte.appendChild(schloss);
+    reihe.appendChild(karte);
+  }
+  kasten.appendChild(reihe);
+  const namen = [...formen.map((f) => RL_TXT_LEHRE.formName[f] || f), ...kosmische.map((a) => ART_TEXT[a] || a)];
+  kasten.appendChild(rlSchirmEl('p', 'rl-hinweis rl-frei-hinweis', T.hinweis({ namen, formen: formen.length, kosmische: kosmische.length })));
+  const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
+  const weiter = rlSchirmKnopf(T.weiter, 'haupt', { rl: 'frei-weiter' });
+  weiter.disabled = true;
+  knoepfe.appendChild(weiter);
+  kasten.appendChild(knoepfe);
+  ebene.appendChild(kasten);
+  wurzel.appendChild(ebene);
+
+  const faktor = bewegungsFaktor();
+  const ruhig = !faktor || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const oeffnen = () => { ebene.classList.add('offen'); };
+  const frei = () => { weiter.disabled = false; try { weiter.focus({ preventScroll: true }); } catch { /* alte Browser */ } };
+  if (ruhig) { oeffnen(); frei(); }
+  else { setTimeout(oeffnen, Math.round(650 * faktor)); setTimeout(frei, Math.round(1500 * faktor)); }
+  ebene.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    const ziel = ev.target.closest('[data-rl="frei-weiter"]');
+    if (!ziel || ziel.disabled) return;
+    ebene.remove();
+    if (opt.dann) opt.dann();
+  });
+  return ebene;
+}
+
 /* ===== app\roguelike\rl-start.js ===== */
 /**
  * Roguelike-Modus „Raubzug" — Modus-Steuerung (Spezifikation §1, §5.1, §5.2, §5.6).
@@ -21010,6 +22730,7 @@ const rlS = {
   lauf: null,
   kampf: null,
   uebung: null,               // RlUebung des geführten Übungskampfes (Pflicht-Tutorial), sonst null
+  lehre: null,                // Haken des Lehrmeisters im laufenden Lehrlauf-Kampf (rl-lehrmeister.js), sonst null
   modus: null,
   abgeschlossen: null,        // der Kampf, dessen Ergebnis schon verarbeitet ist
   name: 'Du',
@@ -21337,7 +23058,9 @@ function rlStartProfilFortschreiben() {
   const lauf = rlS.lauf;
   const d = lauf.daten;
   if (d.phase !== 'ENDE' || d.profilFortgeschrieben) return;
-  if (d.ergebnis === 'SIEG') rlProfilNachSieg(rlS.profil, lauf);
+  // Der Lehrlauf schaltet nichts frei und zählt nicht in die Bestwerte — danach beginnt der erste echte Raubzug auf dem Frostpfad.
+  if (lauf.istLehrlauf()) rlProfilNachLehrlauf(rlS.profil);
+  else if (d.ergebnis === 'SIEG') rlProfilNachSieg(rlS.profil, lauf);
   else rlProfilNachNiederlage(rlS.profil, lauf);
   d.profilFortgeschrieben = true;
   rlProfilSpeichern(rlS.profil);
@@ -21363,23 +23086,36 @@ function rlStartKampfStarten(neu) {
   // Pflicht-Tutorial: der erste Kampf des geführten Laufs ist der gestellte Übungskampf (rl-uebung.js) —
   // feste Karten, Skript-Gegner, nur der angesagte Zug, nicht zu verlieren.
   const gefuehrt = lauf.istGefuehrt() && !Array.isArray(gegner);
+  // Lehrlauf (Spieltest-Runde 6): jeder Kampf ist ein echter Kampf — der Lehr-Mischer stellt nur den ersten Zug, und der
+  // Lehrmeister (rl-lehrmeister.js) erklärt, was neu ist.
+  const lehrlauf = lauf.istLehrlauf();
   let kampf;
   let uebung = null;
+  let lehre = null;
   try {
     if (gefuehrt) ({ kampf, uebung } = rlUebungKampf(lauf, gegner, d.kampfSeed, { menschName: rlS.name, protokoll: true }));
     else kampf = new RlKampf(lauf, gegner, d.kampfSeed, { menschName: rlS.name, protokoll: true });
+    if (lehrlauf) {
+      rlLehrKampfStart(kampf, kampf.lehrStation);
+      haken.fuehrung.lehrMessen({ k: 'kampf:start' });
+      lehre = rlLehrmeisterHaken({
+        kampf, lauf, fuehrung: haken.fuehrung, speichern: () => rlStartSpeichern(),
+        tischZeichnen: () => { if (rlS.kampf === kampf && rlS.api && rlS.api.zeichne) rlS.api.zeichne(); },
+      });
+    }
   } catch (e) {
     rlStartFehler(e);
     return;
   }
   rlS.kampf = kampf;
   rlS.uebung = uebung;
+  rlS.lehre = lehre;
   rlS.abgeschlossen = null;
   const modus = rlModusFuer(kampf, lauf, {
     beiEnde: (k) => rlStartKampfBeendet(k),
     hinweis: (key) => haken.hinweis(key),      // bossSchaden → einmaliger Hinweis „erster Schaden"
     regelnHtml: () => rlStartRegelnHtml(true), // Abschnitt „Raubzug" vor den Grundregeln (Knopf „Regeln" im Kampf)
-    fuehrung: uebung ? haken.fuehrung.fuerKampf(kampf, uebung) : null,
+    fuehrung: uebung ? haken.fuehrung.fuerKampf(kampf, uebung) : lehre,
   });
   rlS.modus = modus;
   rlStartSextantWeg();
@@ -21387,7 +23123,7 @@ function rlStartKampfStarten(neu) {
   rlS.api.neuesSpielAus({ ablauf: kampf.ablauf, laenge: 'kurz', menschIdx: kampf.menschIdx, modus });
 
   const haupt = Array.isArray(gegner) ? gegner[0] : gegner;
-  if (uebung) return;                          // im Übungskampf spricht die Führung (Ansage des ersten Zuges)
+  if (uebung || lehre) return;                 // im Übungskampf spricht die Führung, im Lehrlauf der Lehrmeister
   if (neu === false) haken.satz(RL_TXT_KAMPF.neustart, { pose: 'warnt', seite: 'rechts' });
   else if (haupt.boss) haken.erstesMal('boss', lauf.planetAktuell());
   else if (haupt.elite) haken.erstesMal('elite');
@@ -21403,6 +23139,11 @@ function rlStartKampfBeendet(kampf) {
   const erg = kampf.ergebnis();
   kampf.beenden();
   if (rlS.uebung) { rlS.uebung.beenden(); rlS.uebung = null; }
+  if (rlS.lehre) {
+    rlStartFuehrung().lehrMessen({ k: 'kampf:ende', sieg: !!erg.sieg, zuege: rlS.lehre.lehrgang.zugNr, punkte: erg.punkteMensch });
+    rlS.lehre.beenden();
+    rlS.lehre = null;
+  }
   const kampfIndex = d.kampfIndex;
   const planet = lauf.planetAktuell();
   const geldVorher = d.geld;
@@ -21418,7 +23159,9 @@ function rlStartKampfBeendet(kampf) {
 
   const T = RL_TXT_KAMPF;
   const bossName = erg.boss ? (kampf.boss ? kampf.boss.name : rlText(RL_TXT_BOSS, erg.boss.key)) : '';
-  const titel = erg.sieg ? (erg.boss ? T.bossBesiegt(bossName) : T.sieg) : T.niederlage;
+  // Lehrlauf: ein verlorener Kampf wird wiederholt (der Lauf steht wieder auf dem Planetenschirm).
+  const nochmal = !erg.sieg && lauf.istLehrlauf() && d.phase === 'PLANET';
+  const titel = erg.sieg ? (erg.boss ? T.bossBesiegt(bossName) : T.sieg) : (nochmal ? RL_TXT_LEHRE.nochmalTitel : T.niederlage);
   const zeilen = [];
   if (erg.boss) {
     if (!erg.sieg && erg.grund === 'RUNDEN_UM') zeilen.push(T.rundenUm(bossName));
@@ -21428,19 +23171,25 @@ function rlStartKampfBeendet(kampf) {
   }
   zeilen.push(T.punkteZeile(erg.punkteMensch, erg.punkteBesterGegner));
   // Geld aus dem Kampf: Rundenprämien (Spieltest-Runde 5) und Klau-Geld getrennt, damit man sieht, woher es kommt.
-  if (erg.geldRunden > 0) zeilen.push(T.geldZeileRunden(erg.geldRunden));
-  if (erg.geldKlau > 0) zeilen.push(T.geldZeileKlau(erg.geldKlau));
-  if (erg.geld > 0 && !(erg.geldRunden > 0) && !(erg.geldKlau > 0)) zeilen.push(T.geldZeile(erg.geld));
+  // (Ein verlorener Lehrlauf-Kampf schreibt nichts gut — dann stehen hier auch keine Geldzeilen.)
+  if (!nochmal) {
+    if (erg.geldRunden > 0) zeilen.push(T.geldZeileRunden(erg.geldRunden));
+    if (erg.geldKlau > 0) zeilen.push(T.geldZeileKlau(erg.geldKlau));
+    if (erg.geld > 0 && !(erg.geldRunden > 0) && !(erg.geldKlau > 0)) zeilen.push(T.geldZeile(erg.geld));
+  }
   const praemie = d.geld - geldVorher - (erg.geld || 0);
   if (praemie > 0) zeilen.push(T.bossBonusZeile(praemie, lauf.hatModul('zinsmodul')));
   zeilen.push(T.geldStand(d.geld));
   if (d.phase === 'ENDE') zeilen.push(d.ergebnis === 'SIEG' ? T.laufGelungen : T.laufVorbei);
-  const knopf = d.phase === 'UMLAUFBAHN' ? T.weiterUmlaufbahn : d.phase === 'IMFLUG' ? T.weiterFlug : T.weiterEnde;
+  if (nochmal) zeilen.push(RL_TXT_LEHRE.nochmalZeile);
+  const knopf = nochmal ? RL_TXT_LEHRE.nochmalKnopf : d.phase === 'UMLAUFBAHN' ? T.weiterUmlaufbahn : d.phase === 'IMFLUG' ? T.weiterFlug : T.weiterEnde;
   const html = '<ul class="rl-kampf-ende">' + zeilen.map((z) => '<li>' + rlStartEsc(z) + '</li>').join('') + '</ul>';
   zeigeModal(rlS.api.dom, titel, html,
     [{ text: knopf, klasse: 'haupt', tun: () => { schliesseModal(rlS.api.dom); rlStartNachKampf(); } }], true);
   // Übungskampf: V2-A2 erklärt neben dem Fenster die Prämie und kündigt den Shop an.
   if (erg.uebung && erg.sieg) rlStartFuehrung().kampfEnde({ praemie: Math.max(0, praemie), geld: d.geld });
+  // Lehrlauf: nach einer Niederlage ein Satz Mut und ein Tipp.
+  if (nochmal) rlStartFuehrung().sprich('lehre:niederlage', RL_TXT_LEHRE.niederlage(), { pose: 'warnt', seite: 'rechts' });
 }
 
 /** Nach dem Kampfende-Fenster: Tisch verlassen und den nächsten Schirm zeigen. */
@@ -21448,6 +23197,25 @@ function rlStartNachKampf() {
   rlS.api.tischVerlassen();
   rlS.modus = null;
   rlStartZeigeAktuell();
+  rlStartLehrFreischaltung();
+}
+
+/**
+ * Lehrlauf: nach einem Sieg springt über dem Shop das Schloss dessen auf, was der nächste Kampf neu bringt (Sternbild,
+ * geschenkte kosmische Karte). Freigeschaltet wird sofort — das Geschenk liegt dann schon im Deck, wenn man es im Shop ansieht.
+ */
+function rlStartLehrFreischaltung() {
+  const lauf = rlS.lauf;
+  if (!lauf || !lauf.istLehrlauf()) return;
+  const phase = lauf.daten.phase;
+  if (phase !== 'UMLAUFBAHN' && phase !== 'IMFLUG') return;
+  const station = lauf.lehrNaechsteStation();
+  const neu = lauf.lehrNeu(station);
+  if (!neu.formen.length && !neu.kosmische.length) return;
+  lauf.lehrFreischalten(station);
+  rlStartSpeichern();
+  rlStartSextantWeg();
+  rlLehrFreischaltungZeigen(rlS.schirm, neu, { dann: () => rlStartZeigeAktuell() });
 }
 
 /* ------------------------------------------------------------------ */
@@ -21530,14 +23298,20 @@ function rlStartRegelnZeigen() {
 function rlStartNeuerLauf(o = {}) {
   const profil = rlS.profil;
   const tutorial = o.tutorial ?? !profil.tutorialGeschafft;
-  if (tutorial) o = { ...o, deck: 'standard', stufe: 1, startort: 'frost', seed: o.seed ?? RL_START_TUTORIAL_SEED };
+  // Spieltest-Runde 6: das Pflicht-Tutorial ist der LEHRLAUF — ein ganzer Raubzug mit V2-A2 (rl-lehrlauf.js). Er läuft mit
+  // frischem Zufall (die Tische der Lehrmomente stellt der Lehr-Mischer). `RL_KONFIG.lehrlauf.aktiv = false` bringt das
+  // alte Tutorial zurück (Übungskampf + erster Shop, fester Seed).
+  const lehrlauf = tutorial && !!(RL_KONFIG.lehrlauf && RL_KONFIG.lehrlauf.aktiv) && o.lehrlauf !== false;
+  if (tutorial) o = { ...o, deck: 'standard', stufe: 1, startort: 'frost', seed: o.seed ?? (lehrlauf ? undefined : RL_START_TUTORIAL_SEED) };
   const seed = o.seed ?? ((Math.random() * 2 ** 32) >>> 0);
   const deckWahl = o.deck && profil.decks.includes(o.deck) ? o.deck : 'standard';
   const schwierigkeit = Math.max(1, Math.min(profil.schwierigkeit, Number(o.stufe) || 1));
   const startort = o.startort && profil.planeten.includes(o.startort) ? o.startort : profil.startort;
-  rlS.lauf = RlLauf.neu({ seed, schwierigkeit, deckWahl, startort, profil, tutorial });
+  rlS.lauf = RlLauf.neu({ seed, schwierigkeit, deckWahl, startort: tutorial ? 'frost' : startort, profil, tutorial, lehrlauf });
+  if (rlS.lauf.istLehrlauf()) rlS.lauf.daten.lehre.start = Date.now();
   rlS.kampf = null;
   rlS.uebung = null;
+  rlS.lehre = null;
   rlS.abgeschlossen = null;
   rlStartHakenNeu(rlS.lauf);
   // Die Begrüßung gilt als gesehen, sobald der geführte Lauf beginnt; GESCHAFFT ist das Tutorial erst nach dem
@@ -21564,6 +23338,7 @@ function rlStartFortsetzen() {
   rlS.abgeschlossen = null;
   rlStartHakenNeu(rlS.lauf);
   rlStartZeigeAktuell();
+  rlStartLehrFreischaltung();   // Lehrlauf: wurde das Spiel auf dem Sieg-Fenster verlassen, springt das Schloss jetzt auf
   return true;
 }
 
@@ -21590,6 +23365,43 @@ function rlStartKampfSofort(gegnerKey) {
   return rlS.kampf;
 }
 
+/**
+ * Tempo-Bericht des laufenden Lehrlaufs aus `lehre.protokoll`: Zeit bis zum ersten eigenen Zug, je Station Dauer, Blasen,
+ * Zeichen und Redezeit, dazu die Summen. Prüfgriff `sternenraub.roguelike.lehrBericht()`.
+ */
+function rlStartLehrBericht() {
+  const lauf = rlS.lauf;
+  if (!lauf || !lauf.istLehrlauf()) return null;
+  const lehre = lauf.daten.lehre;
+  const p = lehre.protokoll || [];
+  const start = lehre.start || (p[0] ? p[0].t : Date.now());
+  const sek = (ms) => Math.round(ms / 100) / 10;
+  const stationen = {};
+  let blasen = 0, zeichen = 0, reden = 0;
+  let kampfStart = null;
+  for (const e of p) {
+    const st = stationen[e.s] || (stationen[e.s] = { station: e.s, blasen: 0, zeichen: 0, redeSek: 0, kampfSek: 0, zuege: 0, anlaeufe: 0 });
+    if (e.k === 'kampf:start') { kampfStart = e.t; st.anlaeufe++; }
+    else if (e.k === 'kampf:ende') { if (kampfStart != null) st.kampfSek += sek(e.t - kampfStart); st.zuege += e.zuege || 0; kampfStart = null; }
+    else { st.blasen += e.n || 0; st.zeichen += e.z || 0; st.redeSek += sek(e.d || 0); blasen += e.n || 0; zeichen += e.z || 0; reden += e.d || 0; }
+  }
+  const erste = p.find((e) => e.k === 'lehre:pfeil:danach');
+  const letzte = p.length ? p[p.length - 1] : null;
+  return {
+    ersterZugSek: erste ? sek(erste.t - start) : null,
+    gesamtSek: letzte ? sek(letzte.t + (letzte.d || 0) - start) : 0,
+    blasen, zeichen, redeSek: sek(reden),
+    wiederholungen: lehre.wiederholungen || 0,
+    gelernt: Object.keys(lehre.gelernt || {}).length,
+    stationen: Object.values(stationen).map((s) => ({ ...s, redeSek: Math.round(s.redeSek), kampfSek: Math.round(s.kampfSek) })),
+  };
+}
+
+/** Ist der Lehrlauf eingeschaltet (`RL_KONFIG.lehrlauf.aktiv`)? Sonst gilt das alte Pflicht-Tutorial. */
+function rlStartLehrlaufAn() {
+  return !!(RL_KONFIG.lehrlauf && RL_KONFIG.lehrlauf.aktiv);
+}
+
 /** Was der Startschirm über Profil und Lauf wissen will (rueckrufe.roguelikeStand). */
 function rlStartStand() {
   const profil = rlS.profil;
@@ -21610,18 +23422,24 @@ function rlStartStand() {
     const haken = rlS.lauf ? rlTutorialHaken(null, profil, { sextant: rlS.sextant, profilSpeichern: rlProfilSpeichern }) : rlStartHaken();
     // Erst lesen, dann starten: solange V2-A2 begrüßt, ist „Raubzug beginnen" gesperrt (Pflicht-Lesen wie in der Führung).
     const knopf = document.getElementById('btn-rl-neu');
-    const begruessung = haken.sag('start', { pflicht: true });
+    const begruessung = haken.sag('start', { pflicht: true, lehrlauf: rlStartLehrlaufAn() });
     if (knopf && rlS.sextant && rlS.sextant.bereit) {
       setTimeout(() => { knopf.disabled = true; knopf.title = RL_TXT_FUEHRUNG.gesperrt; }, 0);   // nach dem Aufbau der Ebene
       begruessung.then(() => { knopf.disabled = false; knopf.title = ''; });
     }
   }
+  // Bestehende Profile (altes Tutorial geschafft) bekommen den Lehrlauf einmal angeboten — nachsitzen muss niemand.
+  if (!pflicht && rlStartLehrlaufAn() && !profil.lehrlaufGeschafft && !profil.lehrlaufAngeboten && rlS.sextant && rlS.sextant.bereit) {
+    profil.lehrlaufAngeboten = true;
+    rlProfilSpeichern(profil);
+    rlS.sextant.erzaehle(RL_TXT_LEHRE.angebot(), { pose: 'freut' });
+  }
   return {
     // Pflicht-Tutorial: die Ebene zeigt dann nur „Raubzug beginnen" (Deck- und Stufenwahl kommen danach).
     pflicht,
     pflichtKnopf: RL_TXT_FUEHRUNG.ebene.knopf,
-    pflichtHinweis: RL_TXT_FUEHRUNG.ebene.hinweis,
-    tutorialKnopf: RL_TXT_FUEHRUNG.ebene.wiederholen,
+    pflichtHinweis: rlStartLehrlaufAn() ? RL_TXT_FUEHRUNG.ebene.hinweisLehrlauf : RL_TXT_FUEHRUNG.ebene.hinweis,
+    tutorialKnopf: rlStartLehrlaufAn() ? RL_TXT_FUEHRUNG.ebene.lehrlaufSpielen : RL_TXT_FUEHRUNG.ebene.wiederholen,
     laufVorhanden: rlLaufGespeichert(),
     decks,
     stufen,
@@ -21687,6 +23505,9 @@ function rlStartEinrichten(api) {
     tutorial: () => rlS.tutorial,
     fuehrung: () => rlStartFuehrung(),
     uebung: () => rlS.uebung,
+    lehre: () => rlS.lehre,                      // Haken des Lehrmeisters im laufenden Lehrlauf-Kampf (oder null)
+    lehrBericht: () => rlStartLehrBericht(),      // Tempo-Messung des Lehrlaufs (Spieltest-Runde 6)
+    konfig: () => RL_KONFIG,                     // Stellschrauben des Modus (Selbsttest: altes Tutorial über lehrlauf.aktiv = false)
     regeln: () => rlStartRegelnZeigen(),
     regelnHtml: () => rlStartRegelnHtml(),
   };
@@ -21735,7 +23556,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '19.09.2026 15:25';
+const BAU_STAND = '19.09.2026 17:08';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -22461,7 +24282,11 @@ function pruefeAuswahl() {
   }
   // Dasselbe im geführten Übungskampf des Roguelike-Modus (S.modus-Vertrag: abgelehntText).
   if (S.modus && S.modus.abgelehntText) {
-    const t = S.modus.abgelehntText();
+    // Der Lehrlauf erklärt damit auch gesperrte Sternbilder: er bekommt die gewählten Karten samt denen des Ziel-Sternbilds.
+    const zielKarten = [];
+    if (S.zielSb) for (const sp of z.spieler) for (const sb of sp.sternbilder) if (sb.id === S.zielSb) zielKarten.push(...sb.karten);
+    const gewaehlt = [...(ich.hand || []).filter((k) => S.auswahlHand.has(k.id)), ...z.mitte.filter((k) => S.auswahlMitte.has(k.id)), ...zielKarten];
+    const t = S.modus.abgelehntText({ karten: gewaehlt });
     if (t) return { grund: t };
   }
 
@@ -22539,6 +24364,7 @@ function baueSicht() {
     wlKarten: new Set(),
     jokerSb: new Set(),      // fremde Sternbilder, aus denen du gerade einen Joker holen kannst
     jokerZiel: S.jokerZiel,  // die angewählte fremde Sternschnuppe
+    zielArt: S.zielModus ? S.zielModus.art : null,   // läuft gerade die Zielwahl einer kosmischen Karte? (Roguelike-Lehrlauf: Zeiger aufs Ziel)
     dranMensch,
   };
 
@@ -23769,6 +25595,18 @@ function zeigeFormen() {
       e.className = 'form-stufe';
       e.dataset.stufe = String(info.stufe);
       e.textContent = info.text;
+      zeile.appendChild(e);
+    }
+  }
+  // Roguelike-Lehrlauf: noch gesperrte Sternbilder tragen ein Schloss (S.modus-Vertrag: formenGesperrt → {typen, text}).
+  if (S.modus && S.modus.formenGesperrt) {
+    const gesperrt = S.modus.formenGesperrt() || [];
+    for (const zeile of tafel.querySelectorAll('.form-zeile')) {
+      if (!gesperrt.includes(zeile.dataset.typ)) continue;
+      zeile.classList.add('rl-form-zu');
+      const e = document.createElement('div');
+      e.className = 'form-gesperrt';
+      e.textContent = S.modus.formenGesperrtText ? S.modus.formenGesperrtText() : 'noch gesperrt';
       zeile.appendChild(e);
     }
   }
