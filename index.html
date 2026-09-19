@@ -6694,11 +6694,17 @@ class Spiel {
         break;
       }
       case 'URKNALL': {
-        this.log(`${sp.name} spielt den Urknall`);
+        // Das Protokoll sagt, was passiert ist UND warum etwas stehen blieb — sonst sieht es aus wie ein Fehler,
+        // wenn beim einen alles weg ist und beim anderen nichts (Spieltest-Runde 5). Die Regel selbst ist unverändert.
+        let zerfallen = 0, geblieben = 0;
         for (const p of this.spieler) {
           // Der Urknall ist die Ausnahme: "Fertige und versiegelte bleiben stehen."
-          for (const sb of [...p.sternbilder]) if (!istSicher(sb)) this.loeseSbAuf(p.idx, sb, 'ZERSTOERT', 'URKNALL', spielerIdx);
+          for (const sb of [...p.sternbilder]) {
+            if (!istSicher(sb)) { this.loeseSbAuf(p.idx, sb, 'ZERSTOERT', 'URKNALL', spielerIdx); zerfallen++; } else geblieben++;
+          }
         }
+        this.log(`${sp.name} spielt den Urknall: ${zerfallen === 1 ? '1 offenes Sternbild zerfällt' : zerfallen + ' offene Sternbilder zerfallen'}`
+          + (geblieben ? ` — ${geblieben === 1 ? '1 fertiges oder versiegeltes bleibt' : geblieben + ' fertige oder versiegelte bleiben'} stehen (sechs Karten, Kreuz, Drache, Siegel)` : ''));
         break;
       }
       case 'MILCHSTRASSE': {
@@ -10852,7 +10858,9 @@ const RL_TXT_REGELN = {
       <b>Drachen</b> (${k.drache} Punkte). Der Bestohlene bekommt Trostpunkte, du das Geld für sechs geklaute Karten. Davor schützen nur das
       <b>Siegel</b>, eine Ankerkarte im Pfeil und Nebel — Privilegien wie die unklaubaren Pfeile des Lotsen schützen <b>nicht</b>.
       Die Gegner dürfen das auch. Deshalb lässt sich im Raubzug <b>jedes</b> Sternbild versiegeln, auch ein fertiges: eigenes Sternbild
-      antippen, dann „versiegeln". Eine Marke „nicht klaubar" gibt es hier nicht — sicher ist nur, was versiegelt ist.</p>` },
+      antippen, dann „versiegeln". Eine Marke „nicht klaubar" gibt es hier nicht. <b>Fertig</b> (sechs Karten, Kreuz, Drache) heißt nur:
+      Klauen geht nicht mehr, und der <b>Urknall</b> lässt es stehen — er reißt nur offene Sternbilder auseinander, bei allen am Tisch.
+      Vor Schwarzem und Weißem Loch, Komet und dem Drachenklau schützt allein das <b>Siegel</b>.</p>` },
     { titel: 'Besondere Karten', html:
       `<ul>
         <li><b>Riese</b> +${k.riese}, <b>Überriese</b> +${k.ueberriese} Punkte je Wertung (Aufwertung einer Zahlenkarte; Überriese nur auf einen Riesen).</li>
@@ -21676,7 +21684,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '19.09.2026 11:51';
+const BAU_STAND = '19.09.2026 12:52';
 
 /** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
 function tempoUebernehmen() {
@@ -22676,7 +22684,7 @@ function drachenklauGrund(z, ziel, zielBesitzer) {
   if (ziel.versiegelt) return kopf + 'versiegelt — da kommt niemand mehr heran.';
   const n = CONFIG.drache.teilLaenge;
   if (!(ziel.typ === 'PFEIL' && ziel.karten.length === n)) {
-    return kopf + 'fertig — da passt nichts mehr dazu, klauen geht nicht. Ein Schwarzes oder Weißes Loch trifft es trotzdem, solange es nicht versiegelt ist.';
+    return kopf + 'fertig — da passt nichts mehr dazu, klauen geht nicht, und auch der Urknall lässt es stehen. Ein Schwarzes oder Weißes Loch trifft es trotzdem, solange es nicht versiegelt ist.';
   }
   if (ziel.karten.some((k) => k.art !== 'ZAHL')) return kopf + 'Darin liegt eine Sternschnuppe — der Drache braucht zwölf echte Zahlen, dieser Pfeil ist nicht zu holen.';
   if (ziel.karten.some((k) => k.anker)) return kopf + 'Eine Ankerkarte hält ihn fest — auch der Drachenklau kommt nicht heran.';
@@ -23043,7 +23051,7 @@ function baueKnoepfe(s) {
     s.hinweis = `${typText(eigenesZiel.typ)} ${werteText(eigenesZiel.karten.map((k) => k.wert).filter((w) => w != null).sort((x, y) => x - y))} — ${eigenesZiel.punkte} Punkte. `
       + (eigenesZiel.versiegelt ? 'Schon versiegelt: niemand kommt mehr heran.'
         : s.drachenGefahrSb && s.drachenGefahrSb.has(eigenesZiel.id) ? 'Achtung: der Gegner hat das Gegenstück und kann diesen Pfeil zum Drachen klauen — nur das Siegel schützt.'
-          : eigenesZiel.sicher ? 'Fertig — klauen kann es niemand mehr, aber kosmische Karten (und beim Sechser-Pfeil der Drachenklau) treffen es, solange es nicht versiegelt ist.'
+          : eigenesZiel.sicher ? 'Fertig — klauen kann es niemand mehr, und der Urknall lässt es stehen. Schwarzes Loch, Weißes Loch und Komet (beim Sechser-Pfeil auch der Drachenklau) treffen es aber, solange es nicht versiegelt ist.'
             : 'Versiegeln macht es unantastbar. Oder tippe Handkarten an, um hier anzulegen.');
   } else {
     // Hier steht entweder, was herauskommt, oder woran es scheitert.
