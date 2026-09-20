@@ -4158,6 +4158,49 @@ body[data-modus="roguelike"] #btn-formen.rl-tut-ziel::before {
 @media (max-width: 560px) { .rl-nachschlagen { grid-template-columns: 1fr; gap: 2px; } .rl-nachschlagen dd { margin-bottom: 8px; } }
 @media (prefers-reduced-motion: reduce) { body[data-modus="roguelike"] #btn-formen.rl-tut-ziel, body[data-modus="roguelike"] #btn-formen.rl-tut-ziel::before { animation: none; outline-color: #fff; } }
 
+/* ---------- 31. Spieltest-Runde 7: Freischaltungen einzeln, mit Pflicht-Lesen ---------- */
+/* Je Seite EIN neues Stück; »Weiter« füllt sich über die Lesezeit (wie der Knopf in V2-A2s Sprechblase). */
+.rl-frei-zaehler { font-size: .62em; letter-spacing: .08em; opacity: .75; }
+.rl-lese-knopf.liest { position: relative; overflow: hidden; cursor: wait; opacity: .85; }
+.rl-lese-knopf.liest::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 100%;
+  background: rgba(27, 34, 51, .55); transform-origin: right center;
+  animation: rl-lesezeit var(--rl-lesezeit, 2000ms) linear forwards;
+}
+@media (prefers-reduced-motion: reduce) { .rl-lese-knopf.liest::after { animation-duration: 1ms; } }
+.rl-frei-hinweis { font-size: 16px; line-height: 1.45; min-height: 3em; }
+
+/* ---------- 32. Spieltest-Runde 7: Zug-Banner — wer zieht gerade? ---------- */
+/* Ein Tester wusste nicht, wann die Gegner ziehen. Das Banner sitzt mittig auf der Oberkante der Mitte (Lage setzt
+   rl-kampf-ui.js), sagt den Gegnerzug an, nennt danach das Gelegte und meldet kurz „Du bist dran". Nimmt keine Klicks. */
+#rl-zug-banner {
+  position: fixed; z-index: 40; transform: translate(-50%, -50%);
+  display: grid; justify-items: center; gap: 1px; padding: 7px 22px 8px; pointer-events: none;
+  font-family: var(--display); letter-spacing: .04em; text-align: center; color: var(--tinte, #141414);
+  background: var(--rl-gold, #F2C640); border: 3px solid var(--tinte, #141414); border-radius: 10px;
+  box-shadow: 4px 4px 0 #000; max-width: min(720px, 80vw);
+}
+#rl-zug-banner[hidden] { display: none; }
+#rl-zug-banner .rl-zug-banner-kopf { font-size: 22px; line-height: 1.1; text-transform: uppercase; }
+#rl-zug-banner .rl-zug-banner-text { font-family: var(--grotesk, sans-serif); font-size: 14px; letter-spacing: 0; line-height: 1.25; font-weight: 600; }
+#rl-zug-banner[data-phase="denkt"] { background: #FF9B54; }
+#rl-zug-banner[data-phase="gezogen"] { background: #FFD9A0; }
+#rl-zug-banner[data-phase="mensch"] { background: #8EE3A1; }
+#rl-zug-banner.rl-zug-banner-an { animation: rl-zug-banner-rein .28s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes rl-zug-banner-rein { from { opacity: 0; transform: translate(-50%, -50%) scale(.7) rotate(-2deg); } to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); } }
+/* Die Figur des Gegners, der gerade zieht, wippt — zusammen mit dem Banner ist klar, wer dran ist. */
+body[data-modus="roguelike"] #gegner-bereich .gegner.aktiv > .gegner-figur { animation: rl-gegner-denkt .9s ease-in-out infinite; }
+@keyframes rl-gegner-denkt { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+@media (prefers-reduced-motion: reduce) {
+  #rl-zug-banner.rl-zug-banner-an { animation: none; }
+  body[data-modus="roguelike"] #gegner-bereich .gegner.aktiv > .gegner-figur { animation: none; }
+}
+/* Einstellungen in der laufenden Partie (Knopf oben rechts): Spielgeschwindigkeit, Bewegung, Ton */
+.ein-spiel-block { margin: 0 0 16px; }
+.ein-spiel-block h3 { margin: 0 0 6px; font-family: var(--display); font-size: 17px; letter-spacing: .04em; }
+.ein-spiel-block .wahl-gruppe { display: flex; gap: 8px; flex-wrap: wrap; }
+.ein-spiel-block .ein-hinweis { margin: 6px 0 0; font-size: 13px; opacity: .85; }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -4505,10 +4548,13 @@ body[data-modus="roguelike"] #gegner-bereich .rl-gegner-faecher .karte:first-chi
   background: var(--rl-gold); border: 2px solid var(--tinte); border-radius: 999px;
 }
 
-/* Seine Auslage: eine Reihe unter ihm, mittig. */
+/* Seine Auslage: eine Reihe unter ihm, mittig.
+   flex-direction ausdrücklich (Spieltest-Runde 7): die Sitzplätze „links"/„rechts" des Grundspiels (stil.css) stellen die
+   Auslage in eine Spalte — beim zweiten von zwei Gegnern (Trabanten, Zwillinge, Duo) klebte sie deshalb am linken Rand
+   seines Feldes statt unter der Figur. */
 body[data-modus="roguelike"] #gegner-bereich .gegner > .sternbilder {
   grid-area: sb;
-  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+  display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start;
   gap: var(--raum) var(--raum2);
   margin-top: calc(var(--brett-faecher-h) * .30);
   min-height: calc(var(--g-karte-h, 42px) + 26px);
@@ -4903,13 +4949,15 @@ body[data-modus="roguelike"] #tisch #mitte-bereich { padding-top: 18px; }
       </fieldset>
 
       <fieldset class="ein-block">
-        <legend>Bots</legend>
+        <legend>Gameplay — Geschwindigkeit</legend>
         <div class="wahl-gruppe">
-          <button class="wahl-knopf" data-tempo="langsam" type="button">langsam</button>
-          <button class="wahl-knopf" data-tempo="normal" type="button">normal</button>
-          <button class="wahl-knopf" data-tempo="schnell" type="button">schnell</button>
+          <button class="wahl-knopf" data-geschwindigkeit="1" type="button">×1</button>
+          <button class="wahl-knopf" data-geschwindigkeit="2" type="button">×2</button>
+          <button class="wahl-knopf" data-geschwindigkeit="3" type="button">×3</button>
+          <button class="wahl-knopf" data-geschwindigkeit="4" type="button">×4</button>
         </div>
-        <p class="ein-hinweis" id="ein-tempo-text"></p>
+        <p class="ein-hinweis" id="ein-geschwindigkeit-text"></p>
+        <p class="ein-hinweis">Gilt für die Züge der Gegner und für deine eigenen. Im Spiel jederzeit über »Einstellungen« oben rechts.</p>
       </fieldset>
 
       <fieldset class="ein-block">
@@ -4969,6 +5017,7 @@ body[data-modus="roguelike"] #tisch #mitte-bereich { padding-top: 18px; }
     <div id="kopf-knoepfe">
       <button class="knopf klein" id="btn-formen" type="button" title="Die sechs Sternbilder">Formen</button>
       <button class="knopf klein" id="btn-regeln" type="button">Regeln</button>
+      <button class="knopf klein" id="btn-spiel-ein" type="button" title="Geschwindigkeit, Bewegung, Ton">Einstellungen</button>
       <button class="knopf klein" id="btn-neu" type="button">Neu</button>
     </div>
   </header>
@@ -10730,6 +10779,10 @@ const RL_TXT_LEHRE = {
     sternbild: 'Neues Sternbild',
     kosmisch: 'Neu in deinem Deck',
     weiter: 'Weiter',
+    weiterNaechstes: 'Weiter — da ist noch etwas',
+    zaehler: (i, n) => `${i} von ${n}`,
+    seiteForm: (name) => `${name}: ab dem nächsten Kampf darfst du dieses Sternbild bauen — dein Gegner auch. V2-A2 zeigt dir dort, wie es geht.`,
+    seiteKosmisch: (name) => `${name} liegt ab jetzt in deinem Deck. Sobald du die Karte ziehst, zeigt dir V2-A2, wie man sie spielt.`,
     hinweis: (k) => `${k.namen.join(' und ')}: ab dem nächsten Kampf dabei. V2-A2 zeigt dir dort, wie es geht.`,
     neuImKampf: (namen) => `Neu in diesem Kampf: ${namen.join(' · ')}`,
     formZu: 'noch gesperrt — V2-A2 schaltet es im Lehrlauf frei',
@@ -10740,15 +10793,17 @@ const RL_TXT_LEHRE = {
     karteRoute: () => ['Hyperraum! Ab jetzt wählst du selbst: Tipp einen Planeten der nächsten Etappe an und lies seinen Himmelseffekt — er ändert dort die Regeln. Dann »Kurs setzen«.'],
     planetStart: () => ['Rechts steht dein erster Gegner. Keine Sorge: Im Lehrlauf spielst du einen verlorenen Kampf einfach noch einmal. Drück auf »Kampf beginnen«.'],
     planetAufbau: () => ['Auf jedem Planeten warten drei Lakaien und am Ende der Boss — oben siehst du die vier Stationen. Rechts stehen Verhalten und Sonderregel des nächsten Gegners.'],
+    planetTempo: () => ['Noch etwas: Im Kampf steht oben rechts »Einstellungen«. Dort stellst du die Geschwindigkeit ein — ×1 zum Zusehen, bis ×4, wenn dir die Gegner zu langsam ziehen.'],
     planetElite: () => ['Der dritte Gegner ist eine Elite: Sie hat zusätzlich eine eigene Fähigkeit — lies sie rechts. Im Kampf kannst du die Figur des Gegners jederzeit antippen und nachlesen.'],
     planetBoss: (k) => [
       `${k.bossName ? k.bossName + '. ' : ''}Der Boss hat eine Lebensleiste: Jede deiner Rundenwertungen ist Schaden.`,
       `Er heilt sich auf seine Art — lies sie rechts. Du hast ${k.runden} Runden; steht sein Leben dann nicht auf null, spielst du den Kampf noch einmal.`,
     ],
     planetSkip: (k) => [
-      `Neu: Überspringen. Du lässt einen Lakaien aus und bekommst die Prämie auf der Tafel — dafür hat der Boss ${k.schuld} Leben mehr.`,
-      'Steht dort ein Pack, geht es sofort auf. Ob es sich lohnt, entscheidest du.',
+      `Neu: Überspringen. Du lässt einen Lakaien aus und bekommst die Prämie auf der Tafel — dafür hat der Boss ${k.schuld} Leben mehr, und dir fehlt das Geld aus dem Kampf.`,
+      'Steht dort ein Pack, geht es sofort auf. Im Lehrlauf geht das einmal je Planet — im echten Raubzug so oft du willst.',
     ],
+    skipVerbraucht: 'Überspringen ist für diesen Planeten verbraucht (im Lehrlauf einmal je Planet). Die nächsten Kämpfe bringen dir Geld und Übung für den Boss.',
     geld: (k) => [`Die Umlaufbahn: Nach jedem besiegten Lakaien kaufst du ein. Oben steht dein Geld — ${k.geld} Münzen.`],
     angebote: () => ['Die Angebote: Karten für dein Deck, kosmische Karten, Module fürs Schiff. Der farbige Rand zeigt die Seltenheit — grau ist häufig, dann grün, blau, lila.'],
     details: () => 'Was ein Angebot genau tut, steht hinter »Details«. Tipp bei einer Kachel darauf.',
@@ -10757,6 +10812,9 @@ const RL_TXT_LEHRE = {
     weiter: () => ['Karten liegen ab dem nächsten Kampf in deinem Deck, Module wirken den ganzen Lauf. Mit »Weiter« geht es zum nächsten Gegner — sieh dich vorher ruhig um.'],
     pack: (k) => `Unten liegen zwei Packs. Öffne das Sternbilderpack — es kostet ${k.preis} Münzen.`,
     packZuTeuer: () => ['Unten liegen zwei Packs — für das Sternbilderpack reicht das Geld gerade nicht. In jedem Shop liegt ein neues.'],
+    // Lehrgeld (Spieltest-Runde 7): fehlt für eine Shop-Lektion das Geld, legt V2-A2 es dazu.
+    zuschussPack: (k) => [`Für das Sternbilderpack fehl${k.n === 1 ? 't dir 1 Münze' : 'en dir ' + k.n + ' Münzen'} — ich lege sie dir dazu, damit du es ausprobieren kannst. Im echten Raubzug musst du dafür sparen.`],
+    zuschussKaufen: (k) => [`Für ein Angebot fehl${k.n === 1 ? 't dir 1 Münze' : 'en dir ' + k.n + ' Münzen'} — die lege ich dir dazu. Geld verdienst du in den Kämpfen: mit Punkten je Runde und mit jeder geklauten Karte.`],
     packwahl: (k) => `Drei Sternbilder liegen offen, eines davon steigt eine Stufe: Dieser Typ bringt dann bei jeder Wertung ${k.bonus} Punkte mehr. Nimm den, den du am ehesten baust.`,
     planetenpack: () => ['Das zweite Pack ist das Planetenpack: Karten, die es nur auf diesem Planeten gibt. Jedes Pack geht je Shop einmal auf.'],
     werkstatt: (k) => [`Die Werkstatt macht eine Zahlenkarte zum Riesen: Sie zählt dann in jedem Sternbild ${k.riese} Punkte mehr. Karte antippen, dann »Zum Riesen«.`],
@@ -11100,6 +11158,8 @@ const RL_TXT_KAMPF = {
   rundeBossStand: (name, leben, max, rest) => `${name}: ${leben} von ${max} Leben · noch ${rest} ${rest === 1 ? 'Runde' : 'Runden'}`,
   rundeLakaiStand: (du, gegner) => `Stand: du ${du}, bester Gegner ${gegner} — Sieg bei mindestens gleich vielen Punkten.`,
   rundeFuss: 'Alle Karten kehren in ihre Decks zurück und werden neu gemischt.',
+  // Zug-Banner über der Mitte (Spieltest-Runde 7): wer zieht, was gelegt wurde, wann man selbst dran ist.
+  zugBanner: { gegner: 'Gegner', denkt: 'ist am Zug …', gezogen: 'hat gezogen', duKopf: 'Du bist dran', duText: 'Wähl Karten aus Hand und Mitte' },
   faehigkeit: {
     sondeWaechst: (name) => `${name} lässt den Pfeil von selbst wachsen`,
     sturm: (name) => `${name} reißt eine Karte aus einem Sternbild`,
@@ -12710,9 +12770,10 @@ function baueStartschirm(rueckrufe) {
       document.getElementById('ein-' + id + '-wert').textContent = r.value;
     }
     const e = rueckrufe.einStand();
-    umschalten(einBereich, 'tempo', e.tempo);
+    umschalten(einBereich, 'geschwindigkeit', e.geschwindigkeit);
     umschalten(einBereich, 'bewegung', e.bewegung);
-    document.getElementById('ein-tempo-text').textContent = e.tempoText;
+    const gText = document.getElementById('ein-geschwindigkeit-text');
+    if (gText) gText.textContent = e.geschwindigkeitText;
     document.getElementById('ein-bewegung-text').textContent = e.bewegungText;
     document.getElementById('ein-stand').textContent =
       `Stand ${e.stand} · Merker fürs Tutorial: ${SPEICHER_TUTORIAL}`;
@@ -12727,9 +12788,9 @@ function baueStartschirm(rueckrufe) {
   reglerAn('sprechen', (v) => rueckrufe.setzeSprechen(v), 'blip');
 
   einBereich.addEventListener('click', (ev) => {
-    const b = ev.target.closest('button[data-tempo], button[data-bewegung]');
+    const b = ev.target.closest('button[data-geschwindigkeit], button[data-bewegung]');
     if (!b) return;
-    if (b.dataset.tempo) rueckrufe.setzeTempo(b.dataset.tempo);
+    if (b.dataset.geschwindigkeit) rueckrufe.setzeGeschwindigkeit(Number(b.dataset.geschwindigkeit));
     else rueckrufe.setzeBewegung(b.dataset.bewegung);
     einAnzeigen();
   });
@@ -13568,8 +13629,8 @@ function probeTon(welcher) {
  * Einstellungen, die nicht den Ton betreffen.
  *
  * Der Ton hat seinen eigenen Speicher (ton.js, Schlüssel `sternenraub.ton`),
- * weil er auch ohne diese Datei laufen muss. Hier stehen Bot-Tempo und
- * Bewegung.
+ * weil er auch ohne diese Datei laufen muss. Hier stehen Spielgeschwindigkeit
+ * und Bewegung.
  *
  * Alles landet unter EINEM Schlüssel, damit `alleSpeicherLoeschen()` weiß,
  * was es aufzuräumen gibt.
@@ -13599,6 +13660,29 @@ const EIN_TEMPO = {
   schnell: { denken: 350,  nachlauf: 200,  text: 'Rund eine Sekunde je Botzug. Für Ungeduldige.' },
 };
 
+/**
+ * Spielgeschwindigkeit ×1 … ×4 (Spieltest-Runde 7, wie in Balatro): EIN Regler für alles, was dauert — die Züge der Bots
+ * (Ansage, Legen, Stehenlassen) und alle Bewegungen, auch die eigenen. ×1 ist zum Zusehen, ×4 läuft fast sofort durch,
+ * man sieht die Bewegungen aber noch. Ersetzt die alte Wahl „Bots: langsam / normal / schnell" (EIN_TEMPO bleibt nur,
+ * um gespeicherte Werte zu übernehmen: schnell → ×2).
+ */
+const EIN_GESCHWINDIGKEIT = {
+  1: { text: 'Zum Zusehen: Jeder Zug der Gegner wird angesagt, gelegt und bleibt kurz stehen.' },
+  2: { text: 'Doppelt so schnell — Gegner und eigene Züge.' },
+  3: { text: 'Dreimal so schnell.' },
+  4: { text: 'Fast sofort: Die Bewegungen sieht man noch, sie halten aber nicht mehr auf.' },
+};
+
+/**
+ * Grundzeiten eines Botzugs bei ×1, in Millisekunden: Denkpause vor dem Zug und Nachlauf, nachdem die Karten geflogen
+ * sind. Das Grundspiel behält seine bisherigen Zeiten; im Raubzug wird jeder Gegnerzug ausführlicher gezeigt (Banner
+ * „… ist am Zug", langsamerer Flug, das Ergebnis bleibt stehen) — der Tester wusste nicht, wann die Gegner ziehen.
+ */
+const EIN_BOTZUG = {
+  grundspiel: { denken: 900, nachlauf: 650, flug: 1 },
+  raubzug: { denken: 1300, nachlauf: 1500, flug: 1.5 },
+};
+
 /** Wie lange die Bewegungen dauern. `aus` heißt: gar keine. */
 const EIN_BEWEGUNG = {
   voll: { faktor: 1,   text: 'Kosmische Karten und Klauen laufen ganz ab.' },
@@ -13606,7 +13690,7 @@ const EIN_BEWEGUNG = {
   aus:  { faktor: 0,   text: 'Karten springen sofort an ihren Platz.' },
 };
 
-const EIN_VORGABE = { tempo: 'normal', bewegung: 'voll' };
+const EIN_VORGABE = { tempo: 'normal', bewegung: 'voll', geschwindigkeit: 1 };
 
 const EIN = { ...EIN_VORGABE };
 
@@ -13617,6 +13701,8 @@ function einLies() {
     const w = JSON.parse(roh);
     if (EIN_TEMPO[w.tempo]) EIN.tempo = w.tempo;
     if (EIN_BEWEGUNG[w.bewegung]) EIN.bewegung = w.bewegung;
+    if (EIN_GESCHWINDIGKEIT[w.geschwindigkeit]) EIN.geschwindigkeit = Number(w.geschwindigkeit);
+    else if (w.tempo === 'schnell') EIN.geschwindigkeit = 2;   // alte Wahl „Bots: schnell"
   } catch { /* kaputt oder gesperrt: Vorgaben behalten */ }
 }
 
@@ -13634,6 +13720,17 @@ function setzeTempo(t) {
   einSchreib();
 }
 
+function setzeGeschwindigkeit(n) {
+  if (!EIN_GESCHWINDIGKEIT[n]) return;
+  EIN.geschwindigkeit = Number(n);
+  einSchreib();
+}
+
+/** Der Teiler für alle Wartezeiten: 1 … 4. */
+function geschwindigkeit() {
+  return EIN.geschwindigkeit || 1;
+}
+
 function setzeBewegung(b) {
   if (!EIN_BEWEGUNG[b]) return;
   EIN.bewegung = b;
@@ -13648,7 +13745,8 @@ function setzeBewegung(b) {
 function bewegungsFaktor() {
   const ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (ruhig) return 0;
-  return EIN_BEWEGUNG[EIN.bewegung].faktor;
+  // Die Spielgeschwindigkeit teilt jede Bewegung mit — bei ×1 bleibt alles wie eingestellt.
+  return EIN_BEWEGUNG[EIN.bewegung].faktor / geschwindigkeit();
 }
 
 /** Alles vergessen, was das Spiel gespeichert hat. */
@@ -14479,7 +14577,11 @@ const RL_KONFIG = {
     // Nachhilfe: jeder verlorene Anlauf macht DIESEN Kampf leichter (mehr Aussetzer, weniger Bossleben) — niemand bleibt hängen.
     nachhilfe: { aussetzer: 0.15, bossLeben: 0.12, max: 4 },
     duoAbPlatz: 3,                                   // zwei Gegner am Tisch erst auf dem letzten Planeten
-    ueberspringenAbPlatz: 2,                         // auf Planet 1 wird jeder Kampf gespielt (dort kommen die Grundlagen)
+    // Überspringen (Spieltest-Runde 7): erst auf dem letzten Planeten — auf Planet 1 und 2 hängt an jedem Kampf eine Freischaltung —
+    // und je Planet nur einmal (der Tester übersprang zwei Kämpfe in Folge und stand ohne Geld und Lektionen vor der Elite).
+    ueberspringenAbPlatz: 3,
+    ueberspringenJePlanet: 1,
+    ohnePrivilegien: ['auslageVerdeckt'],            // kein Lakai und keine Elite (Schleier) mit verdeckter Auslage: V2-A2 kann dort nichts zeigen
     minAbstandZuege: 1,                              // freie Züge zwischen zwei Pflichtzügen (dringende Lektionen ausgenommen)
     versiegelnAbPunkte: 6,                           // ab so vielen Punkten eines offenen Sternbilds kommt die Lektion „versiegeln"
     menschBeginnt: true,                             // der Mensch eröffnet jeden Kampf (der Lehr-Mischer stellt seinen ersten Zug)
@@ -15227,6 +15329,36 @@ const RL_TUTORIAL_STIMME = 650;
  * hatten das Tutorial weggeklickt, ohne zu lesen — jetzt geht das nicht mehr.
  */
 const RL_TUTORIAL_LESEZEIT = { jeZeichen: 42, min: 1500, max: 8000 };
+/** Läuft gerade eine Kartenbewegung (ansicht.js: fliegeUm) oder der Wertungs-Angriff (rl-kampf-ui.js)? */
+function rlTutorialBewegungLaeuft() {
+  return typeof document !== 'undefined' && !!document.querySelector('.flug-buehne, .rl-wertung-zahl, .rl-wertung-stoss, .gegner-leben.wertung-laeuft');
+}
+
+/**
+ * Wartet, bis am Tisch nichts mehr fliegt — höchstens `maxMs`. Ruhe heißt: seit 60 ms keine Bühne; so bekommt auch eine
+ * Bewegung ihren Platz, die erst im selben Augenblick startet (zeichne() ruft den Lehrmeister VOR fliegeUm). Nach einer
+ * echten Bewegung bleibt das Ergebnis noch kurz stehen, bevor V2-A2 spricht.
+ * @returns {Promise<number>} gewartete Millisekunden
+ */
+function rlTutorialBisRuhe(maxMs = 6000) {
+  if (typeof document === 'undefined') return Promise.resolve(0);
+  return new Promise((fertig) => {
+    const start = Date.now();
+    let ruhigSeit = 0;
+    let bewegt = false;
+    const pruefe = () => {
+      const jetzt = Date.now();
+      if (rlTutorialBewegungLaeuft()) { bewegt = true; ruhigSeit = 0; } else if (!ruhigSeit) ruhigSeit = jetzt;
+      const ruheNoetig = bewegt ? 320 : 60;
+      if ((ruhigSeit && jetzt - ruhigSeit >= ruheNoetig) || jetzt - start > maxMs) { fertig(jetzt - start); return; }
+      setTimeout(pruefe, 30);
+    };
+    setTimeout(pruefe, 0);
+  });
+}
+
+/** Lehrlauf: so viele Münzen legt V2-A2 höchstens dazu, damit eine Shop-Lektion (kaufen, Pack öffnen) auch gespielt werden kann. */
+const RL_TUTORIAL_ZUSCHUSS_MAX = 12;
 
 /** Pose je Auslöser; `ende` hängt vom Ergebnis ab (siehe rlTutorialSchritte). */
 const RL_TUTORIAL_POSE = { start: 'freut', ernst: 'warnt', vorBoss: 'warnt', ersterSchaden: 'freut', imflug: 'neutral' };
@@ -15600,7 +15732,12 @@ class RlFuehrung {
     const pflicht = opt.pflicht !== false;
     const nr = ++this.redeNr;
     if (pflicht && typeof document !== 'undefined') document.body.dataset.rlRedet = '1';
-    return this.sextant.erzaehle(saetze, { ...opt, pflicht }).then((ok) => {
+    // Spieltest-Runde 7: V2-A2 redet nicht mehr in eine Bewegung hinein. Seine Blase kam 100 ms nach dem Zug und legte sich
+    // über das Schwarze Loch oder den Bossschaden — jetzt wartet er, bis die Bühne leer ist (der Tisch ist solange schon gesperrt).
+    return rlTutorialBisRuhe().then(() => {
+      if (nr !== this.redeNr) return false;   // inzwischen hat eine neuere Rede übernommen
+      return this.sextant.erzaehle(saetze, { ...opt, pflicht });
+    }).then((ok) => {
       if (nr === this.redeNr && typeof document !== 'undefined') delete document.body.dataset.rlRedet;
       if (mess) mess.d = Date.now() - mess.t;
       return ok;
@@ -15843,6 +15980,7 @@ class RlFuehrung {
     const kaufbar = () => (shop().angebote || []).some((a) => !a.gekauft && a.preis <= geld());
     const nichts = () => false;
     const nurLesen = (a) => a === 'deck' || a === 'details';
+    const billigstes = () => { const p = (shop().angebote || []).filter((a) => !a.gekauft).map((a) => a.preis); return p.length ? Math.min(...p) : 0; };
     if (ansicht === 'karte') {
       return [
         { key: 'karte:start', art: 'reden', wenn: () => !d.reiseBereit && d.platz === 1, saetze: () => T.karteStart(), frei: nichts },
@@ -15855,6 +15993,8 @@ class RlFuehrung {
       return [
         { key: 'planet:start', art: 'reden', wenn: () => station === 0, saetze: () => T.planetStart(), frei: nichts },
         { key: 'planet:aufbau', art: 'reden', wenn: () => station === 1, saetze: () => T.planetAufbau(), frei: nichts, ziel: '.rl-stationen' },
+        // Spieltest-Runde 7: die Gegnerzüge laufen bei ×1 bewusst langsam — wem das zu langsam ist, der soll wissen, wo man es dreht.
+        { key: 'planet:tempo', art: 'reden', wenn: () => station === 1, saetze: () => T.planetTempo(), frei: nichts },
         { key: 'planet:elite', art: 'reden', wenn: () => !boss && d.kampfIndex === RL_KONFIG.lauf.lakaienProPlanet - 1, saetze: () => T.planetElite(), frei: nichts, ziel: '.rl-gegner-karte' },
         { key: 'planet:boss', art: 'reden', wenn: () => boss, saetze: () => T.planetBoss({ bossName: plan.boss.name, runden: lauf.rundenFuer() }), frei: nichts, ziel: '.rl-gegner-karte', pose: 'warnt' },
         { key: 'planet:skip', art: 'reden', wenn: () => !boss && lauf.kannUeberspringen(), saetze: () => T.planetSkip({ schuld: RL_KONFIG.boss.schuldProUebersprungenem }), frei: nichts, ziel: '.rl-skip' },
@@ -15874,6 +16014,8 @@ class RlFuehrung {
           frei: (a) => a === 'kaufen' || a === 'aufwertung-ziel' || a === 'wahl-zu' || a === 'details',
           ziel: '.rl-angebot-kachel:not(.gekauft) [data-rl="kaufen"]:not(:disabled)',
           fertig: () => gekauft(), ersatz: () => (!gekauft() && !kaufbar() ? T.kaufenZuTeuer() : null),
+          // Spieltest-Runde 7: reicht das Geld für kein Angebot, legt V2-A2 das Fehlende dazu — jede Lektion wird auch wirklich gespielt.
+          zuschuss: () => (gekauft() ? 0 : Math.max(0, billigstes() - geld())), zuschussText: (n) => T.zuschussKaufen({ n }),
         },
         { key: 'shop:weiter', art: 'reden', saetze: () => T.weiter(), frei: nurLesen, ziel: '[data-rl="weiter"]', seite: 'rechts' },
         {
@@ -15882,6 +16024,7 @@ class RlFuehrung {
           ziel: '.rl-pack[data-pack="sternbilder"] [data-rl="pack-oeffnen"]',
           fertig: () => !pack() || pack().zustand !== 'zu',
           ersatz: () => (pack() && pack().zustand === 'zu' && geld() < pack().preis ? T.packZuTeuer() : null),
+          zuschuss: () => (pack() && pack().zustand === 'zu' ? Math.max(0, pack().preis - geld()) : 0), zuschussText: (n) => T.zuschussPack({ n, preis: pack() ? pack().preis : 0 }),
         },
         {
           key: 'shop:packwahl', art: 'aufgabe', wenn: () => station >= 1 && !!pack() && pack().zustand === 'offen', seite: 'rechts',
@@ -15927,6 +16070,25 @@ class RlFuehrung {
     }
     if (s.art === 'aufgabe') {
       if (s.fertig()) { this.lehrMerke(s.key); this.lehrWeiter(); return; }
+      // Lehrgeld (Spieltest-Runde 7): fehlt für die Aufgabe das Geld, legt V2-A2 es dazu und sagt es — erst danach kommt die Aufgabe.
+      const fehlt = s.zuschuss ? s.zuschuss() : 0;
+      if (fehlt > 0 && fehlt <= RL_TUTORIAL_ZUSCHUSS_MAX) {
+        if (this.redet === s.key) return;
+        this.redet = s.key;
+        this.lauf.geldPlus(fehlt);
+        const lehre = this.lauf.daten.lehre;
+        lehre.zuschuss = (lehre.zuschuss || 0) + fehlt;
+        this.speichern();
+        this.neuZeichnen();          // der Schirm zeigt das neue Geld (der erneute lehrWeiter()-Aufruf endet an `redet`)
+        this.frei = () => false;     // … und solange V2-A2 spricht, ist nichts bedienbar
+        this.ziel = '.rl-geld';
+        this.markiere();
+        this.sprich(s.key + ':zuschuss', s.zuschussText(fehlt), { pose: 'freut', seite: s.seite }).then(() => {
+          if (this.redet === s.key) this.redet = null;
+          this.lehrWeiter();
+        });
+        return;
+      }
       const ersatz = s.ersatz ? s.ersatz() : null;
       if (ersatz) {
         this.frei = () => false;
@@ -17515,6 +17677,8 @@ function rlPlanetZeigen(wurzel, lauf, rueckrufe = {}, opt = {}) {
   knoepfe.appendChild(rlSchirmKnopf(RL_TXT_UI.zurKarte, 'klein', { rl: 'karte' }, { aus: !zurueckFrei, titel: zurueckFrei ? '' : RL_TXT_SCHIRM.zurKarteGesperrt }));
   rechts.appendChild(knoepfe);
   if (skipBox) rechts.appendChild(skipBox);
+  // Lehrlauf (Spieltest-Runde 7): je Planet nur ein Überspringen — danach sagt der Schirm, warum die Tafel fehlt.
+  else if (typeof lauf.lehrSkipVerbraucht === 'function' && lauf.lehrSkipVerbraucht()) rechts.appendChild(rlSchirmEl('p', 'rl-hinweis rl-skip-verbraucht', RL_TXT_LEHRE.schirm.skipVerbraucht));
   if (!boss && lauf.hatVorrat('notruf')) rechts.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.notrufHinweis));
   raster.appendChild(rechts);
   innen.appendChild(raster);
@@ -19772,13 +19936,18 @@ function rlBossSpec(planetKey, rng) {
  * einem Planeten nie; die beiden Haupt-Lakaien haben außerdem verschiedene Verhalten und
  * Privilegien. Ab `schwierigkeit.zweitesPrivilegAb` trägt jeder Lakai ein zweites Privileg.
  */
-function rlGegnerPlanErzeugen(rng, profil, schwierigkeit) {
+function rlGegnerPlanErzeugen(rng, profil, schwierigkeit, opt = {}) {
+  // Lehrlauf (Spieltest-Runde 7): Privilegien, an denen sich nichts lernen lässt (`opt.ohnePrivilegien`, z. B. die verdeckte
+  // Auslage — V2-A2 zeigte dort auf einen Joker, den niemand sehen konnte), trägt dort kein Lakai und keine Elite.
+  const verboten = new Set(opt.ohnePrivilegien ?? []);
   const plan = {};
   const zweites = schwierigkeit >= RL_KONFIG.schwierigkeit.zweitesPrivilegAb;
   for (const key of Object.keys(RL_PLANETEN)) {
     const p = RL_PLANETEN[key];
     const verhalten = [...new Set(p.verhalten)];
-    const privilegien = [...new Set(p.privilegien)];
+    const privilegienAlle = [...new Set(p.privilegien)];
+    const privilegienFrei = privilegienAlle.filter((pr) => !verboten.has(pr));
+    const privilegien = privilegienFrei.length >= 2 ? privilegienFrei : privilegienAlle;
     // Alle Kombinationen (Verhalten, Privileg) mischen — Grundlage ohne Doppelung.
     const paare = [];
     for (const v of verhalten) for (const pr of privilegien) paare.push([v, pr]);
@@ -19807,7 +19976,8 @@ function rlGegnerPlanErzeugen(rng, profil, schwierigkeit) {
       return rlLakaiSpec(key, v, privs, rng, schwierigkeit);
     };
     const l1 = lakai(true), l2 = lakai(true);
-    const elite = rlEliteSpec(key, rng.pick(p.elites), rng, schwierigkeit, profil);
+    const eliteWahl = p.elites.filter((e) => !(RL_ELITES[e].privilegien ?? []).some((pr) => verboten.has(pr)));
+    const elite = rlEliteSpec(key, rng.pick(eliteWahl.length ? eliteWahl : p.elites), rng, schwierigkeit, profil);
     const partner = [lakai(false), lakai(false), lakai(false)];
     plan[key] = { lakaien: [l1, l2, elite], partner, boss: rlBossSpec(key, rng) };
   }
@@ -19938,7 +20108,7 @@ class RlLauf {
       phase: 'KARTE', ergebnis: null, platz: 1, planetenReihe: [startort], kampfIndex: 0,
       geld: RL_KONFIG.lauf.startgeld[schwierigkeit], deck, module: [], vorrat: [], stufen,
       garantie: false, bossSchuld: 0, uebersprungen: 0,
-      gegnerPlan: rlGegnerPlanErzeugen(rng, profil, schwierigkeit),
+      gegnerPlan: rlGegnerPlanErzeugen(rng, profil, schwierigkeit, lehrlauf ? { ohnePrivilegien: (RL_KONFIG.lehrlauf ?? {}).ohnePrivilegien ?? [] } : {}),
       shop: null, kampfSeed: 0,
       statistik: { kaempfe: 0, siege: 0, klaus: 0, geklaut: 0, geldGesamt: 0, gekauft: 0, bosseBesiegt: [] },
       naechsteUid: volles.length,
@@ -20234,10 +20404,23 @@ class RlLauf {
     d.kampfIndex++;
   }
 
-  /** Darf hier übersprungen werden? Im Lehrlauf erst ab `lehrlauf.ueberspringenAbPlatz` (vorher kommen die Grundlagen). */
+  /**
+   * Darf hier übersprungen werden? Im Lehrlauf erst ab `lehrlauf.ueberspringenAbPlatz` (vorher hängt an jedem Kampf eine
+   * Freischaltung) und je Planet höchstens `lehrlauf.ueberspringenJePlanet`-mal: der Tester übersprang zwei Kämpfe in
+   * Folge und stand ohne Geld und ohne die Lektionen vor der Elite (Spieltest-Runde 7).
+   */
   kannUeberspringen() {
     if (!this.istLehrlauf()) return true;
-    return this.d.platz >= ((RL_KONFIG.lehrlauf ?? {}).ueberspringenAbPlatz ?? 1);
+    const L = RL_KONFIG.lehrlauf ?? {};
+    if (this.d.platz < (L.ueberspringenAbPlatz ?? 1)) return false;
+    return this.d.uebersprungen < (L.ueberspringenJePlanet ?? 99);
+  }
+
+  /** Lehrlauf: ist das Überspringen auf diesem Planeten schon verbraucht? (Der Planetenschirm sagt dann, warum die Tafel fehlt.) */
+  lehrSkipVerbraucht() {
+    if (!this.istLehrlauf() || this.istBossKampf()) return false;
+    const L = RL_KONFIG.lehrlauf ?? {};
+    return this.d.platz >= (L.ueberspringenAbPlatz ?? 1) && this.d.uebersprungen >= (L.ueberspringenJePlanet ?? 99);
   }
 
   /** Kampf beginnt (PLANET → KAMPF); der Seed wird gespeichert, ein Reload startet den Kampf neu. */
@@ -20702,12 +20885,13 @@ function rlLaufGespeichert() {
  *   deckAnsehen()       → Deckansicht mit Kampfstand (Stapel / Hand / gespielt) und Sternbildstufen (Spieltest-Runde 1)
  *   formenStufen()      → {typ: {stufe, text}} für die Formentafel des Tisches (Spieltest-Runde 1)
  *   regelnHtml()        → Abschnitt „Raubzug", den start.js vor die Grundregeln stellt (kontext.regelnHtml, AP9)
+ *   zugAnsage(k)        → Zug-Banner über der Mitte: Gegner am Zug / was er gelegt hat / „Du bist dran" (Spieltest-Runde 7)
  *
  * Die Lautmalerei (ZACK!/WUMM!/KLIRR) zeichnet fliegeUm selbst, sobald `body[data-modus]`
  * gesetzt ist; hier kommt nur das Schild „KRACH!" hinzu, wenn der Boss fällt.
  *
  * Top-Level-Namen dieser Datei: RL_KAMPF_UI_ZIEL, rlKampfUiSchild, rlKampfUiFaehigkeitText,
- *   rlModusFuer.
+ *   rlKampfUiZugBanner, rlModusFuer.
  */
 
 /** Zielart je kosmischer Karte (§5.5); die alten Arten stehen dabei, damit die Tabelle vollständig ist. */
@@ -20832,6 +21016,39 @@ function rlKampfUiWertung(kampf) {
     if (figur) figur.classList.remove('getroffen');
     if (chip) { chip.textContent = String(spiel.spieler[m].punkte); chip.classList.remove('rl-wertung-plus'); }
   })().catch(() => {});
+}
+
+/**
+ * Das Zug-Banner (Spieltest-Runde 7): ein Tester wusste nicht, wann die Gegner ziehen. Jetzt sagt ein Schild über der Mitte
+ * jeden Gegnerzug an („… ist am Zug"), nennt danach, was gelegt wurde, und meldet kurz „Du bist dran". Reine Anzeige,
+ * nimmt keine Klicks an. `phase`: 'denkt' | 'gezogen' | 'mensch' | 'weg'.
+ * @param {{phase:string, name?:string, text?:string, dauer?:number}} k
+ */
+function rlKampfUiZugBanner(k) {
+  if (typeof document === 'undefined') return;
+  let b = document.getElementById('rl-zug-banner');
+  if (k.phase === 'weg') { if (b) { clearTimeout(b._timer); b.hidden = true; } return; }
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'rl-zug-banner';
+    b.setAttribute('aria-live', 'polite');
+    b.innerHTML = '<span class="rl-zug-banner-kopf"></span><span class="rl-zug-banner-text"></span>';
+    document.body.appendChild(b);
+  }
+  clearTimeout(b._timer);
+  const T = RL_TXT_KAMPF.zugBanner;
+  b.dataset.phase = k.phase;
+  b.querySelector('.rl-zug-banner-kopf').textContent = k.phase === 'mensch' ? T.duKopf : (k.name || T.gegner);
+  b.querySelector('.rl-zug-banner-text').textContent = k.phase === 'mensch' ? T.duText : k.phase === 'denkt' ? T.denkt : (k.text || T.gezogen);
+  // Über der Mitte, mittig — die Lage kommt vom Tisch (das Brett ist je nach Fenster verschieden hoch).
+  const mitte = document.getElementById('mitte-bereich');
+  const r = mitte ? mitte.getBoundingClientRect() : null;
+  b.style.top = r && r.height ? Math.round(r.top) + 'px' : '40%';
+  b.style.left = r && r.width ? Math.round(r.left + r.width / 2) + 'px' : '50%';
+  b.hidden = false;
+  // Neu anstoßen, damit das Einblenden bei jedem Wechsel läuft.
+  b.classList.remove('rl-zug-banner-an'); void b.offsetWidth; b.classList.add('rl-zug-banner-an');
+  if (k.dauer) b._timer = setTimeout(() => { b.hidden = true; }, k.dauer);
 }
 
 /** Ein Satz zu einer Elite-Fähigkeit aus der Ereignisliste des Kampfes. */
@@ -20967,6 +21184,9 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       return zielart ? { zielart, hinweis: RL_TXT_ZIEL[art] || '' } : null;
     },
 
+    /** Zug-Banner (S.modus-Vertrag: zugAnsage): wer gerade zieht, was gelegt wurde, „Du bist dran". */
+    zugAnsage(k) { rlKampfUiZugBanner(k); },
+
     /** Wertungs-Angriff vor dem Rundenende-Fenster: start.js wartet auf die Promise (S.modus-Vertrag: wertungZeigen). */
     wertungZeigen() { return rlKampfUiWertung(kampf); },
 
@@ -21051,6 +21271,7 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
     },
 
     verlassen() {
+      rlKampfUiZugBanner({ phase: 'weg' });
       kampf.beenden();
     },
 
@@ -22433,14 +22654,20 @@ function rlLehrmeisterHaken(opt) {
       st.formenZeiger = true;
       const knopf = typeof document !== 'undefined' ? document.getElementById('btn-formen') : null;
       if (knopf) {
+        // Spieltest-Runde 7: wer »Formen« schon antippt, während V2-A2 noch spricht, hat es gesehen — früher hängte sich
+        // der Zeiger danach erst an den Knopf und ging nie wieder weg (der Hörer war da schon abgemeldet).
+        st.formenGesehen = false;
         const gesehen = () => {
           knopf.removeEventListener('click', gesehen);
           knopf.classList.remove('rl-tut-ziel');
+          st.formenGesehen = true;
           st.formenZeiger = false;
+          st.formenHoerer = null;
           lehrgang.merke('formenTafel');
         };
+        st.formenHoerer = gesehen;
         knopf.addEventListener('click', gesehen);
-        return rede('formenTafel', T.formenTafel.vor(), { dann: () => knopf.classList.add('rl-tut-ziel') });
+        return rede('formenTafel', T.formenTafel.vor(), { dann: () => { if (!st.formenGesehen) knopf.classList.add('rl-tut-ziel'); } });
       }
     }
     // 7. „Karte tauschen" kam nie von selbst: ab dem dritten Kampf einmal als Tipp (die Pflicht-Lektion bleibt offen).
@@ -22590,7 +22817,11 @@ function rlLehrmeisterHaken(opt) {
     beenden() {
       lehrgang.beenden();
       const knopf = typeof document !== 'undefined' ? document.getElementById('btn-formen') : null;
-      if (knopf) knopf.classList.remove('rl-tut-ziel');
+      if (knopf) {
+        knopf.classList.remove('rl-tut-ziel');
+        if (st.formenHoerer) knopf.removeEventListener('click', st.formenHoerer);
+      }
+      st.formenHoerer = null;
     },
   };
 }
@@ -22607,10 +22838,15 @@ function rlLehrmeisterSchlossSvg() {
     + '<circle cx="24" cy="38" r="4" fill="#141414"/><rect x="22.5" y="39" width="3" height="8" rx="1.5" fill="#141414"/></svg>';
 }
 
+/** Pflicht-Lesezeit der Freischalt-Seiten (wie RL_TUTORIAL_LESEZEIT der Sprechblasen). */
+const RL_LEHRMEISTER_LESEZEIT = { jeZeichen: 36, min: 1800, max: 6500 };
+
 /**
- * Die Freischalt-Ebene nach einem Sieg im Lehrlauf: je neuem Sternbildtyp seine Zeile der Formentafel (Beispielkarten,
- * Regel, Punkte), je geschenkter kosmischer Karte die Karte mit ihrem Einzeiler — erst grau und verschlossen, dann
- * springt das Schloss auf und alles wird farbig. »Weiter« wird frei, sobald die Bewegung durch ist.
+ * Die Freischalt-Ebene nach einem Sieg im Lehrlauf. Seit der Spieltest-Runde 7 kommt JEDES neue Stück auf einer eigenen
+ * Seite: erst das Sternbild (seine Zeile der Formentafel: Beispielkarten, Regel, Punkte), dann die geschenkte kosmische
+ * Karte mit ihrem Einzeiler — grau und verschlossen, das Schloss springt auf, alles wird farbig, darunter steht, was das
+ * Stück kann. »Weiter« füllt sich über die Lesezeit und lässt sich vorher nicht drücken (Pflicht-Lesen wie bei V2-A2):
+ * der Tester hatte zwei Freischaltungen auf einmal mit einem Klick weggedrückt, ohne sie zu lesen.
  * @param {HTMLElement} wurzel  #rl-schirm
  * @param {{formen:string[], kosmische:string[]}} neu  aus `lauf.lehrNeu(station)`
  * @param {{dann?:()=>void}} [opt]
@@ -22628,59 +22864,99 @@ function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
   ebene.setAttribute('role', 'dialog');
   ebene.setAttribute('aria-modal', 'true');
   const kasten = rlSchirmEl('div', 'rl-ebene-kasten');
-  kasten.appendChild(rlSchirmEl('h3', 'rl-ueberschrift', T.titel));
+  const kopf = rlSchirmEl('h3', 'rl-ueberschrift', T.titel);
+  const zaehler = rlSchirmEl('span', 'rl-frei-zaehler', '');
+  kopf.appendChild(zaehler);
+  kasten.appendChild(kopf);
   const reihe = rlSchirmEl('div', 'rl-frei-reihe');
-  const tafel = formen.length ? formenTafel() : null;
-  for (const typ of formen) {
-    const zeile = tafel.querySelector('.form-zeile[data-typ="' + typ + '"]');
-    if (!zeile) continue;
-    const karte = rlSchirmEl('div', 'rl-frei-karte');
-    karte.dataset.typ = typ;
-    karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.sternbild));
-    karte.appendChild(zeile);
-    const schloss = rlSchirmEl('span', 'rl-frei-schloss');
-    schloss.innerHTML = rlLehrmeisterSchlossSvg();
-    karte.appendChild(schloss);
-    reihe.appendChild(karte);
-  }
-  for (const art of kosmische) {
-    const karte = rlSchirmEl('div', 'rl-frei-karte kosmisch');
-    karte.dataset.art = art;
-    karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.kosmisch));
-    const bild = rlSchirmEl('div', 'rl-frei-bild');
-    bild.appendChild(karteEl({ id: -1, art, wert: null }, 'schau', { klickbar: false }));
-    karte.appendChild(bild);
-    karte.appendChild(rlSchirmEl('b', 'rl-frei-name', ART_TEXT[art] || art));
-    karte.appendChild(rlSchirmEl('span', 'rl-frei-text', ART_KURZ[art] || ''));
-    const schloss = rlSchirmEl('span', 'rl-frei-schloss');
-    schloss.innerHTML = rlLehrmeisterSchlossSvg();
-    karte.appendChild(schloss);
-    reihe.appendChild(karte);
-  }
   kasten.appendChild(reihe);
-  const namen = [...formen.map((f) => RL_TXT_LEHRE.formName[f] || f), ...kosmische.map((a) => ART_TEXT[a] || a)];
-  kasten.appendChild(rlSchirmEl('p', 'rl-hinweis rl-frei-hinweis', T.hinweis({ namen, formen: formen.length, kosmische: kosmische.length })));
+  const hinweis = rlSchirmEl('p', 'rl-hinweis rl-frei-hinweis', '');
+  hinweis.setAttribute('aria-live', 'polite');
+  kasten.appendChild(hinweis);
   const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
   const weiter = rlSchirmKnopf(T.weiter, 'haupt', { rl: 'frei-weiter' });
+  weiter.classList.add('rl-lese-knopf');
   weiter.disabled = true;
   knoepfe.appendChild(weiter);
   kasten.appendChild(knoepfe);
   ebene.appendChild(kasten);
   wurzel.appendChild(ebene);
 
+  const tafel = formen.length ? formenTafel() : null;
+  const seiten = [];
+  for (const typ of formen) {
+    const zeile = tafel.querySelector('.form-zeile[data-typ="' + typ + '"]');
+    if (zeile) seiten.push({ sorte: 'form', typ, zeile, name: RL_TXT_LEHRE.formName[typ] || typ });
+  }
+  for (const art of kosmische) seiten.push({ sorte: 'kosmisch', art, name: ART_TEXT[art] || art });
+  if (!seiten.length) { ebene.remove(); if (opt.dann) opt.dann(); return null; }
+
   const faktor = bewegungsFaktor();
   const ruhig = !faktor || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const oeffnen = () => { ebene.classList.add('offen'); };
-  const frei = () => { weiter.disabled = false; try { weiter.focus({ preventScroll: true }); } catch { /* alte Browser */ } };
-  if (ruhig) { oeffnen(); frei(); }
-  else { setTimeout(oeffnen, Math.round(650 * faktor)); setTimeout(frei, Math.round(1500 * faktor)); }
+  const L = RL_LEHRMEISTER_LESEZEIT;
+  let nr = -1;
+  let timer = [];
+  const stopp = () => { for (const t of timer) clearTimeout(t); timer = []; };
+
+  const zeige = (i) => {
+    stopp();
+    nr = i;
+    const seite = seiten[i];
+    ebene.classList.remove('offen');
+    ebene.dataset.seite = String(i + 1);
+    ebene.dataset.seiten = String(seiten.length);
+    zaehler.textContent = seiten.length > 1 ? ' · ' + T.zaehler(i + 1, seiten.length) : '';
+    while (reihe.firstChild) reihe.removeChild(reihe.firstChild);
+    const karte = rlSchirmEl('div', 'rl-frei-karte' + (seite.sorte === 'kosmisch' ? ' kosmisch' : ''));
+    if (seite.sorte === 'form') {
+      karte.dataset.typ = seite.typ;
+      karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.sternbild));
+      karte.appendChild(seite.zeile);
+    } else {
+      karte.dataset.art = seite.art;
+      karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.kosmisch));
+      const bild = rlSchirmEl('div', 'rl-frei-bild');
+      bild.appendChild(karteEl({ id: -1, art: seite.art, wert: null }, 'schau', { klickbar: false }));
+      karte.appendChild(bild);
+      karte.appendChild(rlSchirmEl('b', 'rl-frei-name', seite.name));
+      karte.appendChild(rlSchirmEl('span', 'rl-frei-text', ART_KURZ[seite.art] || ''));
+    }
+    const schloss = rlSchirmEl('span', 'rl-frei-schloss');
+    schloss.innerHTML = rlLehrmeisterSchlossSvg();
+    karte.appendChild(schloss);
+    reihe.appendChild(karte);
+    const text = seite.sorte === 'form' ? T.seiteForm(seite.name) : T.seiteKosmisch(seite.name);
+    hinweis.textContent = text;
+    weiter.textContent = i + 1 < seiten.length ? T.weiterNaechstes : T.weiter;
+    // Pflicht-Lesen: erst das Schloss, dann füllt sich der Knopf über die Lesezeit (Karte + Text).
+    weiter.disabled = true;
+    weiter.classList.remove('liest');
+    const gelesen = karte.textContent.length + text.length;
+    const lesezeit = ruhig ? L.min : Math.min(L.max, Math.max(L.min, Math.round(gelesen * L.jeZeichen)));
+    const schlossZeit = ruhig ? 0 : Math.round(650 * faktor);
+    const oeffnen = () => {
+      ebene.classList.add('offen');
+      weiter.style.setProperty('--rl-lesezeit', lesezeit + 'ms');
+      weiter.classList.add('liest');
+      timer.push(setTimeout(() => {
+        weiter.classList.remove('liest');
+        weiter.disabled = false;
+        try { weiter.focus({ preventScroll: true }); } catch { /* alte Browser */ }
+      }, lesezeit));
+    };
+    if (schlossZeit) timer.push(setTimeout(oeffnen, schlossZeit)); else oeffnen();
+  };
+
   ebene.addEventListener('click', (ev) => {
     ev.stopPropagation();
     const ziel = ev.target.closest('[data-rl="frei-weiter"]');
     if (!ziel || ziel.disabled) return;
+    if (nr + 1 < seiten.length) { zeige(nr + 1); return; }
+    stopp();
     ebene.remove();
     if (opt.dann) opt.dann();
   });
+  zeige(0);
   return ebene;
 }
 
@@ -23543,6 +23819,10 @@ const MAX_TIPPS = 8;
  */
 let botTempo = 900;
 let botNachlauf = 650;
+/** Faktor für den Kartenflug eines Botzugs (Raubzug bei ×1: langsamer, damit man sieht, was gelegt wird). */
+let botFlug = 1;
+/** Prüfgriff sternenraub.tempo(ms): eine feste Denkpause, die keine Einstellung mehr überschreibt. */
+let botTempoFest = null;
 /**
  * Nummer der laufenden Botschleife. Jede Schleife merkt sich ihre Nummer; hat
  * inzwischen eine neue begonnen (der Mensch hat gezogen, der Tisch wurde
@@ -23556,13 +23836,18 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '19.09.2026 17:08';
+const BAU_STAND = '20.09.2026 10:23';
 
-/** Die gespeicherte Bot-Geschwindigkeit übernehmen. */
+/**
+ * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
+ * Das Grundspiel läuft bei ×1 wie bisher; im Raubzug wird jeder Gegnerzug ausführlicher gezeigt.
+ */
 function tempoUebernehmen() {
-  const t = EIN_TEMPO[einstellungen().tempo];
-  botTempo = t.denken;
-  botNachlauf = t.nachlauf;
+  const basis = S.modus ? EIN_BOTZUG.raubzug : EIN_BOTZUG.grundspiel;
+  const g = geschwindigkeit();
+  botTempo = botTempoFest != null ? botTempoFest : Math.round(basis.denken / g);
+  botNachlauf = botTempoFest != null ? Math.min(botTempoFest, Math.round(basis.nachlauf / g)) : Math.round(basis.nachlauf / g);
+  botFlug = basis.flug;
 }
 
 /* ================================================================= */
@@ -23657,6 +23942,7 @@ function neuesSpielAus(optionen) {
   clearTimeout(S.botTimer);
   const a = optionen.ablauf;
   S.modus = optionen.modus || null;
+  tempoUebernehmen();                        // die Grundzeiten hängen an der Spielart (Raubzug: ausführlichere Gegnerzüge)
   if (optionen.laenge) S.laenge = optionen.laenge;
   S.menschIdx = optionen.menschIdx ?? 0;
   S.spielerzahl = a.spielerzahl;
@@ -23666,6 +23952,7 @@ function neuesSpielAus(optionen) {
   }
   S.wertungGezeigt = 0;
   S.wertungAnimiert = 0;
+  S.zugAnsageOffen = null;                   // Zug-Banner des Modus: wer zuletzt angesagt wurde
   S.ablauf = a;
   S.ablauf.start();
   merkeRundenStart();
@@ -23925,6 +24212,62 @@ function merkeRundenStart() {
   S.punkteRundenStart = S.ablauf.spiel.spieler.map((sp) => sp.punkte);
 }
 
+/**
+ * Einstellungen am Tisch (Knopf oben rechts): Spielgeschwindigkeit ×1 … ×4, Bewegung, Ton. Dieselben Werte wie auf dem
+ * Startschirm — ändern wirkt sofort, auch mitten in einem Gegnerzug (die nächste Wartezeit ist schon die neue).
+ */
+function zeigeSpielEinstellungen() {
+  // Ein Pflichtfenster (Rundenende, Kampfende) bleibt stehen — sonst ginge sein »Weiter« verloren.
+  if (!dom.modal.hidden && dom.modal.classList.contains('pflicht')) return;
+  const knopf = (attr, wert, text, an) => `<button class="wahl-knopf${an ? ' gewaehlt' : ''}" data-${attr}="${wert}" type="button">${text}</button>`;
+  const html = () => {
+    const e = einstellungen();
+    const ton = tonEinstellungen();
+    return '<div class="ein-spiel-block"><h3>Geschwindigkeit</h3><div class="wahl-gruppe">'
+      + [1, 2, 3, 4].map((n) => knopf('geschwindigkeit', n, '×' + n, e.geschwindigkeit === n)).join('')
+      + `</div><p class="ein-hinweis">${EIN_GESCHWINDIGKEIT[e.geschwindigkeit].text}</p></div>`
+      + '<div class="ein-spiel-block"><h3>Bewegung</h3><div class="wahl-gruppe">'
+      + Object.keys(EIN_BEWEGUNG).map((b) => knopf('bewegung', b, b, e.bewegung === b)).join('')
+      + `</div><p class="ein-hinweis">${EIN_BEWEGUNG[e.bewegung].text}</p></div>`
+      + '<div class="ein-spiel-block"><h3>Ton</h3><div class="wahl-gruppe">'
+      + knopf('ton', 'an', 'an', !!ton.an) + knopf('ton', 'aus', 'aus', !ton.an)
+      + '</div><p class="ein-hinweis">Lautstärken stellst du auf dem Startschirm unter »Einstellungen« ein.</p></div>';
+  };
+  zeigeModal(dom, 'Einstellungen', '<div id="ein-spiel">' + html() + '</div>', [{ text: 'Fertig', klasse: 'haupt', tun: () => schliesseModal(dom) }]);
+  const wurzel = document.getElementById('ein-spiel');
+  if (!wurzel) return;
+  wurzel.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-geschwindigkeit], button[data-bewegung], button[data-ton]');
+    if (!b) return;
+    if (b.dataset.geschwindigkeit) { setzeGeschwindigkeit(Number(b.dataset.geschwindigkeit)); tempoUebernehmen(); }
+    else if (b.dataset.bewegung) setzeBewegung(b.dataset.bewegung);
+    else { setzeTon(b.dataset.ton === 'an'); if (b.dataset.ton === 'an') spieleTon('legen'); }
+    wurzel.innerHTML = html();
+  });
+}
+
+/** Zug-Banner des Spielmodus (S.modus-Vertrag: zugAnsage) — im Grundspiel gibt es keines. */
+function zugAnsage(k) {
+  if (S.modus && S.modus.zugAnsage) S.modus.zugAnsage(k);
+}
+
+/**
+ * Die Meldungen eines Zuges fürs Banner: ohne den Namen vorn (den nennt die Kopfzeile schon), mit großem Anfang.
+ * Aus den einzelnen Protokollzeilen, nicht aus dem zusammengesetzten Satz — Gegnernamen tragen selbst ein „ · ".
+ */
+function zugKurz(zeilen, name) {
+  const teile = [];
+  for (const z of zeilen || []) {
+    let t = logText(z);
+    if (!t || t.indexOf('—') === 0) continue;
+    if (name && t.indexOf(name) === 0) t = t.slice(name.length).trim();
+    // Buchhaltung („: Deck leer — Ablage neu gemischt") ist kein Zug und gehört nicht ins Banner.
+    if (t && t.charAt(0) !== ':') teile.push(t);
+  }
+  const text = teile.slice(0, 3).join(' · ');
+  return text.length > 110 ? text.slice(0, 108) + '…' : text;
+}
+
 /** Bots ziehen lassen, bis der Mensch dran ist oder die Runde endet. */
 function weiterLaufen() {
   const a = S.ablauf;
@@ -23944,6 +24287,7 @@ function weiterLaufen() {
     }
   }
   if (a.beendet) {
+    zugAnsage({ phase: 'weg' });
     if (S.modus) {
       // Im Modus endet die Partie mit der letzten Wertung (Rundenzahl oder Boss
       // besiegt). Die Wertung soll man noch sehen; danach übernimmt der Modus.
@@ -23955,13 +24299,24 @@ function weiterLaufen() {
     return;
   }
   if (a.phase === 'HIMMELWAHL') return;      // wartet darauf, dass du ein Ziel anklickst
-  if (a.phase === 'RUNDENENDE') { rundenendeMitWertung(gilt); return; }
-  if (a.istMensch()) { S.kosmischGespielt = false; zeichne(); return; }
+  if (a.phase === 'RUNDENENDE') { zugAnsage({ phase: 'weg' }); rundenendeMitWertung(gilt); return; }
+  if (a.istMensch()) {
+    S.kosmischGespielt = false;
+    zeichne();
+    // Nach einem Gegnerzug (oder zu Kampfbeginn) kurz ansagen, dass man selbst dran ist.
+    if (S.zugAnsageOffen !== 'mensch') { S.zugAnsageOffen = 'mensch'; zugAnsage({ phase: 'mensch', dauer: Math.round(1500 / geschwindigkeit()) }); }
+    return;
+  }
+
+  // Raubzug (Spieltest-Runde 7): der Gegnerzug wird angesagt — das Banner steht die ganze Denkpause über der Mitte.
+  S.zugAnsageOffen = 'gegner';
+  zugAnsage({ phase: 'denkt', name: a.spiel.spieler[a.amZug].name });
 
   S.botTimer = setTimeout(() => {
     if (!gilt()) return;                     // inzwischen neu gestartet
     const vorher = kartenLage();
     const logVor = a.spiel.protokoll ? a.spiel.protokoll.length : 0;
+    const vorherAmZug = a.amZug;
 
     a.botZug(botFuerSitz(a.amZug));
 
@@ -23969,10 +24324,15 @@ function weiterLaufen() {
     // dass sich etwas verändert hat — nicht was.
     const neu = a.spiel.protokoll ? a.spiel.protokoll.slice(logVor) : [];
     S.zugMeldung = logText(neu.map((p) => p.text).filter((t) => t.indexOf('—') !== 0).join(' · '));
+    const zieher = a.spiel.spieler[vorherAmZug];
+    zugAnsage({ phase: 'gezogen', name: zieher ? zieher.name : '', text: zugKurz(neu.map((p) => p.text), zieher ? zieher.name : '') });
 
     zeichne();
     tonZumZug(vorher);
-    fliegeUm(vorher, bildDaten()).then(() => {
+    // Im Raubzug fliegen die Karten eines Gegnerzugs langsamer (EIN_BOTZUG.raubzug.flug) — man soll sehen, was er legt.
+    const bild = bildDaten();
+    if (S.modus) bild.faktor *= botFlug;
+    fliegeUm(vorher, bild).then(() => {
       if (!gilt()) return;
       // Kurz stehen lassen, damit das Ergebnis ankommt, bevor der Nächste zieht.
       S.botTimer = setTimeout(() => {
@@ -24072,8 +24432,10 @@ function pruefeJoker(z, ich) {
   const joker = sb.karten.find((k) => k.id === S.jokerZiel);
   const rest = gewaehlteHand.filter((k) => k.id !== tausch.id);
   const ausMitte = z.mitte.filter((k) => S.auswahlMitte.has(k.id));
-  if (ausMitte.length > CONFIG.zug.bauenMaxAusMitte) {
-    return { grund: kopf + `Höchstens ${CONFIG.zug.bauenMaxAusMitte} Karten aus der Mitte. ` +
+  // Die Grenze ist eine Sitzregel (Roguelike: Greifarm = 3); im Grundspiel liefert sie CONFIG.zug.bauenMaxAusMitte.
+  const maxMitte = meineRegel('bauenMaxAusMitte');
+  if (ausMitte.length > maxMitte) {
+    return { grund: kopf + `Höchstens ${maxMitte} Karte${maxMitte === 1 ? '' : 'n'} aus der Mitte. ` +
       `Du hast ${ausMitte.length} gewählt.` };
   }
 
@@ -24146,7 +24508,7 @@ function pruefeAuswahl() {
 
   if (gesamt === 0 && !S.zielSb) {
     return { grund: 'Wähle Karten aus deiner Hand — und dazu bis zu ' +
-      `${CONFIG.zug.bauenMaxAusMitte} aus der Mitte.` };
+      `${meineRegel('bauenMaxAusMitte')} aus der Mitte.` };
   }
 
   // Wem gehört das Ziel?
@@ -24201,14 +24563,18 @@ function pruefeAuswahl() {
 
   /* --- die harten Grenzen zuerst, sie sind am leichtesten zu erklären --- */
 
-  if (mitte > CONFIG.zug.bauenMaxAusMitte) {
-    return { grund: `Höchstens ${CONFIG.zug.bauenMaxAusMitte} Karten aus der Mitte. ` +
+  // Sitzregeln statt fester Zahlen (Spieltest-Runde 7): Greifarm (drei aus der Mitte) und Enterhaken (Klauen ab einer
+  // Handkarte) scheiterten hier an den Grundspiel-Grenzen, obwohl die Engine den Zug anbot. Im Grundspiel gleich.
+  const maxMitte = meineRegel(klauen ? 'klauenMaxAusMitte' : 'bauenMaxAusMitte');
+  if (mitte > maxMitte) {
+    return { grund: `${klauen ? 'Beim Klauen höchstens' : 'Höchstens'} ${maxMitte} Karte${maxMitte === 1 ? '' : 'n'} aus der Mitte. ` +
       `Du hast ${mitte} gewählt.` };
   }
 
-  if (klauen && hand < CONFIG.zug.klauenMinHandkarten) {
-    return { grund: klauKopf + `Du musst mindestens ${CONFIG.zug.klauenMinHandkarten} eigene ` +
-      `Handkarten dazulegen — gewählt hast du ${hand}.` };
+  const klauMinHand = meineRegel('klauenMinHandkarten');
+  if (klauen && hand < klauMinHand) {
+    return { grund: klauKopf + `Du musst mindestens ${klauMinHand} eigene ` +
+      `Handkarte${klauMinHand === 1 ? '' : 'n'} dazulegen — gewählt hast du ${hand}.` };
   }
   if (!klauen && hand < CONFIG.zug.bauenMinHandkarten) {
     return { grund: klauKopf + `Mindestens ${CONFIG.zug.bauenMinHandkarten} eigene Handkarte ` +
@@ -24812,9 +25178,9 @@ function baueKnoepfe(s) {
       text: 'Karte tauschen (abwerfen und nachziehen)',
       titel: mit
         ? 'Nur die Handkarte wandert auf die Ablage; die Mittelkarten bleiben liegen. '
-          + 'Am Zugende ziehst du wieder auf ' + CONFIG.spiel.handkarten + ' Karten auf.'
+          + 'Am Zugende ziehst du wieder auf ' + meineRegel('handkarten') + ' Karten auf.'
         : 'Die Karte geht auf den Ablagestapel, am Zugende ziehst du wieder auf '
-          + CONFIG.spiel.handkarten + ' Karten auf. Kostet den ganzen Zug.',
+          + meineRegel('handkarten') + ' Karten auf. Kostet den ganzen Zug.',
     });
     tun.push(() => fuehreAus({ art: 'ABWERFEN', handIds: [id], gewinn: 0, punkteNachher: 0 }));
 
@@ -25098,6 +25464,11 @@ function karteGeklickt(ort, id, el) {
     umschalten(S.auswahlMitte, id);
   }
   zeichne();
+}
+
+/** Sitzregel des Menschen — Roguelike-Module verschieben Grenzen (Greifarm, Enterhaken, Frachtraum); im Grundspiel = CONFIG. */
+function meineRegel(name) {
+  return spielRegel(S.ablauf.spiel, S.menschIdx, name);
 }
 
 /** So viele Mittelkarten darf der Mensch in einem Zug höchstens nehmen (Sitzregeln des Modus eingerechnet). */
@@ -25647,6 +26018,9 @@ function verdrahte() {
   dom.btnRegeln.addEventListener('click', zeigeRegeln);
   dom.btnNeu.addEventListener('click', zeigeStart);
   dom.btnFormen.addEventListener('click', zeigeFormen);
+  // Einstellungen in der laufenden Partie (Spieltest-Runde 7): Geschwindigkeit, Bewegung, Ton — ohne den Tisch zu verlassen.
+  const btnSpielEin = document.getElementById('btn-spiel-ein');
+  if (btnSpielEin) btnSpielEin.addEventListener('click', zeigeSpielEinstellungen);
   dom.erzEnde.addEventListener('click', beendeTutorial);
   verdrahteSchweber();
   /** Pflichtfenster (Start, Rundenende, Spielende) lassen sich nicht wegklicken. */
@@ -25759,14 +26133,14 @@ const startschirm = baueStartschirm({
   einStand: () => {
     const e = einstellungen();
     return {
-      tempo: e.tempo,
+      geschwindigkeit: e.geschwindigkeit,
       bewegung: e.bewegung,
-      tempoText: EIN_TEMPO[e.tempo].text,
+      geschwindigkeitText: EIN_GESCHWINDIGKEIT[e.geschwindigkeit].text,
       bewegungText: EIN_BEWEGUNG[e.bewegung].text,
       stand: BAU_STAND,
     };
   },
-  setzeTempo: (t) => { setzeTempo(t); tempoUebernehmen(); },
+  setzeGeschwindigkeit: (n) => { setzeGeschwindigkeit(n); tempoUebernehmen(); },
   setzeBewegung: (b) => setzeBewegung(b),
   allesZuruecksetzen: (danach) => {
     zeigeModal(dom, 'Alles zurücksetzen?',
@@ -25800,7 +26174,7 @@ galaxieNachStartschirm();
 
 /* Kleiner Griff für Tests in der Browser-Konsole: sternenraub.tempo(0) */
 window.sternenraub = {
-  tempo: (ms) => { botTempo = Math.max(0, Number(ms) || 0); },
+  tempo: (ms) => { botTempoFest = ms == null ? null : Math.max(0, Number(ms) || 0); tempoUebernehmen(); },
   zustand: () => (S.ablauf ? S.ablauf.zustand() : null),
   spiel: () => (S.ablauf ? S.ablauf.spiel : null),
   ablauf: () => S.ablauf,
@@ -25814,6 +26188,7 @@ window.sternenraub = {
   eintragen: (e) => partieEintragen(e),
   bestenliste: () => bestenlisteEl(typText),
   modus: () => S.modus,
+  config: () => CONFIG,   // Selbsttest der Schiffsmodule: Grundspiel-Zahlen zum Gegenrechnen
   // Roguelike-Modus: lauf(), kampf(), profil(), neu(opts), kampfSofort(gegnerKey), zeigeAktuell()
   roguelike: rlStart.debug,
 };
