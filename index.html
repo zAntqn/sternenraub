@@ -4201,6 +4201,14 @@ body[data-modus="roguelike"] #gegner-bereich .gegner.aktiv > .gegner-figur { ani
 .ein-spiel-block .wahl-gruppe { display: flex; gap: 8px; flex-wrap: wrap; }
 .ein-spiel-block .ein-hinweis { margin: 6px 0 0; font-size: 13px; opacity: .85; }
 
+/* ---------- 33. Spieltest-Runde 8: Alleinflug — der letzte Planet des Lehrlaufs ohne Wiederholen ---------- */
+/* Die Warnzeile auf dem Planetenschirm: hier strandet, wer verliert. */
+.rl-lehr-allein {
+  margin: 8px 0 0; padding: 7px 12px; border: 2px solid var(--tinte, #141414); border-radius: 8px;
+  background: #FF9B54; color: var(--tinte, #141414); font-weight: 700; font-size: 14px; line-height: 1.3;
+  box-shadow: 3px 3px 0 #000;
+}
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -10489,8 +10497,8 @@ const RL_TXT_SEXTANT = {
   start: (k) => (k.lehrlauf ? [
     'Willkommen an Bord. Ich bin V2-A2, dein Bordnavigator.',
     k.wiederholung
-      ? 'Ich fliege noch einmal den ganzen Lehrlauf mit: drei Planeten, und ich erkläre alles, wenn es so weit ist.'
-      : 'Dein erster Raubzug ist ein Lehrlauf: drei Planeten, und ich erkläre alles, wenn es so weit ist. Drück auf »Raubzug beginnen«.',
+      ? 'Ich fliege den Lehrlauf noch einmal mit: Zwei Planeten lang erkläre ich alles, wenn es so weit ist — den dritten fliegst du allein.'
+      : 'Dein erster Raubzug ist ein Lehrlauf: Zwei Planeten lang erkläre ich alles, wenn es so weit ist — den dritten fliegst du allein. Drück auf »Raubzug beginnen«.',
   ] : [
     'Willkommen an Bord. Ich bin V2-A2, dein Bordnavigator.',
     'Das hier ist der Raubzug: drei Planeten, ein eigenes Deck, ein Leben. Wer einen Kampf verliert, strandet.',
@@ -10548,7 +10556,7 @@ const RL_TXT_FUEHRUNG = {
     knopf: 'Raubzug beginnen',
     hinweis: 'Dein erster Raubzug ist geführt: V2-A2 zeigt dir den ersten Kampf und den ersten Shop. Deck und Schwierigkeit wählst du danach selbst.',
     wiederholen: 'Tutorial wiederholen',
-    hinweisLehrlauf: 'Dein erster Raubzug ist ein Lehrlauf: V2-A2 begleitet dich über alle drei Planeten und erklärt Sternbilder, Karten und Shops, wenn es so weit ist. Deck und Schwierigkeit wählst du danach selbst.',
+    hinweisLehrlauf: 'Dein erster Raubzug ist ein Lehrlauf: V2-A2 begleitet dich über zwei Planeten und erklärt Sternbilder, Karten und Shops, wenn es so weit ist — den dritten Planeten fliegst du allein. Deck und Schwierigkeit wählst du danach selbst.',
     lehrlaufSpielen: 'Lehrlauf spielen (Tutorial)',
   },
   gesperrt: 'Gleich — erst der Schritt, den V2-A2 gerade zeigt.',
@@ -10655,45 +10663,45 @@ const RL_TXT_LEHRE = {
   formEin: { PFEIL: 'ein Pfeil', WAGEN: 'ein Wagen', KREUZ: 'ein Kreuz', KRONE: 'eine Krone', ZWILLING: 'ein Zwilling', DOPPELSTIER: 'ein Doppelstier' },
   pfeil: {
     vor: () => [
-      'Unten liegt deine Hand, in der Mitte Karten für alle. Bau einen Pfeil — drei Zahlen in Folge: Tipp die Karten mit dem weißen Pfeil an und bestätige unten.',
+      'Unten deine Hand, in der Mitte Karten für alle. Bau einen Pfeil — drei Zahlen in Folge: Tipp die Karten mit dem weißen Pfeil an, dann unten bestätigen.',
     ],
     aufgabe: (k) => `Pfeil bauen: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? `, dann ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}. Danach unten bestätigen.`,
-    danach: (k) => [`Dein erster Pfeil — ${k.punkte} Punkte. Gezählt wird am Rundenende: Du hast ${k.zuege} Züge (oben links steht der Stand), und wer dann mehr Punkte hat, gewinnt.`],
+    danach: (k) => [`Dein erster Pfeil — ${k.punkte} Punkte. Gewertet wird am Rundenende, nach ${k.zuege} Zügen (Stand oben links): Wer mehr Punkte hat, gewinnt.`],
   },
   klauen: {
     vor: (k) => [
-      'Der Lakai hat auch einen Pfeil gelegt. Den holen wir uns — deshalb heißt das Spiel Sternenraub.',
-      `Klauen: mindestens ${k.minHand} eigene Handkarten anlegen, und das Sternbild muss dadurch mehr wert werden. Tipp die gezeigten Karten an, dann sein Sternbild — und bestätige.`,
+      'Der Lakai hat auch einen Pfeil gelegt. Den holen wir uns — daher der Name Sternenraub.',
+      `Klauen: mindestens ${k.minHand} eigene Handkarten anlegen, und das Sternbild muss mehr wert werden. Tipp die gezeigten Karten an, dann sein Sternbild, dann bestätigen.`,
     ],
     aufgabe: (k) => `Klauen: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? ` und ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}, dann das Sternbild des Gegners. Danach unten bestätigen.`,
-    danach: (k) => [`ZACK! Das ganze Sternbild gehört dir — ${k.punkte} Punkte. Und Klauen bringt Geld: ${k.proKarte === 1 ? 'eine Münze' : k.proKarte + ' Münzen'} je geklauter Karte, es steht oben neben der Rundenanzeige.`],
+    danach: (k) => [`ZACK! Das ganze Sternbild gehört dir — ${k.punkte} Punkte. Klauen bringt auch Geld: ${k.proKarte === 1 ? 'eine Münze' : k.proKarte + ' Münzen'} je geklauter Karte (oben neben der Rundenanzeige).`],
   },
   erweitern: {
-    vor: () => ['Eine deiner Karten passt an ein Sternbild, das schon vor dir liegt. Größer heißt mehr Punkte: Tipp die gezeigten Karten an, dann dein Sternbild — und bestätige.'],
+    vor: () => ['Eine deiner Karten passt an dein ausliegendes Sternbild. Größer heißt mehr Punkte: Tipp die gezeigten Karten an, dann dein Sternbild, dann bestätigen.'],
     aufgabe: (k) => `Erweitern: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? ` und ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}, dann dein Sternbild. Danach unten bestätigen.`,
     danach: (k) => [k.karten >= k.maxKarten
       ? `${k.karten} Karten, ${k.punkte} Punkte — mehr passt an dieses Sternbild nicht.`
-      : `${k.karten} Karten, ${k.punkte} Punkte. Aber Vorsicht: Was offen vor dir liegt, kann der Gegner genauso klauen.`],
+      : `${k.karten} Karten, ${k.punkte} Punkte. Vorsicht: Was offen liegt, kann der Gegner genauso klauen.`],
   },
   tauschen: {
     vor: () => [
-      'Jetzt passt nichts: Mit deinen Karten geht kein Sternbild. Das kommt vor.',
-      'Dann tauschst du eine Karte: Tipp die gezeigte Handkarte an und drück unten auf »Karte tauschen«. Das kostet den Zug, aber du ziehst sofort eine neue.',
+      'Jetzt passt nichts: Mit deinen Karten geht kein Sternbild.',
+      'Dann tauschst du: Tipp die gezeigte Handkarte an, dann unten »Karte tauschen«. Das kostet den Zug, du ziehst aber sofort eine neue.',
     ],
     aufgabe: () => 'Karte tauschen: Tipp die gezeigte Handkarte an, dann unten auf »Karte tauschen«.',
     danach: () => ['Getauscht — schau, was du gezogen hast. Im nächsten Zug geht wieder etwas.'],
   },
-  tauschenTipp: () => ['Übrigens: Wenn einmal gar nichts passt, tauschst du eine Karte. Eine Handkarte antippen, dann unten »Karte tauschen« — das kostet den Zug, aber du ziehst sofort nach.'],
+  tauschenTipp: () => ['Wenn einmal gar nichts passt: eine Handkarte antippen, dann unten »Karte tauschen«. Das kostet den Zug, du ziehst aber sofort nach.'],
   versiegeln: {
     vor: (k) => [
-      `Dein ${k.typName} ist ${k.punkte} Punkte wert, aber noch nicht versiegelt — so kann er dir wieder verloren gehen.`,
-      'Versiegeln schützt ihn vor allem, kostet aber den ganzen Zug. Tipp dein Sternbild an und drück unten auf »versiegeln«.',
+      `Dein ${k.typName} ist ${k.punkte} Punkte wert, aber nicht versiegelt — das kann wieder verloren gehen.`,
+      'Ein Siegel schützt vor allem, kostet aber den ganzen Zug. Tipp dein Sternbild an, dann unten »versiegeln«.',
     ],
     aufgabe: () => 'Versiegeln: Tipp dein Sternbild an, dann unten auf »… versiegeln«.',
     danach: (k) => [`Versiegelt — der Goldrand heißt: unantastbar. Pro Runde gehen höchstens ${k.maxSiegel} Siegel.`],
   },
   wagen: {
-    vor: () => ['Der Wagen: Zahlen mit gleichem Abstand, in Zweier- oder Dreierschritten — 2·4·6 oder 3·6·9. Deine Karten passen: Tipp die gezeigten an und bestätige.'],
+    vor: () => ['Der Wagen: Zahlen mit gleichem Abstand, in Zweier- oder Dreierschritten — 2·4·6 oder 3·6·9. Tipp die gezeigten Karten an und bestätige.'],
     aufgabe: () => 'Wagen bauen: die gezeigten Karten antippen, dann unten bestätigen.',
     danach: (k) => [`Ein Wagen — ${k.punkte} Punkte. Wie der Pfeil wächst er bis auf sechs Karten.`],
   },
@@ -10708,14 +10716,14 @@ const RL_TXT_LEHRE = {
     danach: (k) => [`Die Krone liegt — ${k.punkte} Punkte. Oben rechts unter »Formen« stehen alle Sternbilder mit ihren Punkten.`],
   },
   zwilling: {
-    vor: () => ['Der Zwilling: drei Paare, sechs Karten auf einmal. Hand und Mitte geben das her: Tipp die gezeigten Karten an und bestätige.'],
+    vor: () => ['Der Zwilling: drei Paare, sechs Karten auf einmal. Tipp die gezeigten Karten an und bestätige.'],
     aufgabe: () => 'Zwilling bauen: die gezeigten Karten antippen, dann unten bestätigen.',
     danach: (k) => [`Ein Zwilling — ${k.punkte} Punkte. Mit sechs Karten ist er sofort fertig: nicht mehr klaubar.`],
   },
   doppelstier: {
     vor: () => ['Der Doppelstier: zwei Drillinge, sechs Karten. Tipp die gezeigten Karten an und bestätige.'],
     aufgabe: () => 'Doppelstier bauen: die gezeigten Karten antippen, dann unten bestätigen.',
-    danach: (k) => [`Ein Doppelstier — ${k.punkte} Punkte. Damit kennst du alle sechs Sternbilder; unter »Formen« oben rechts stehen sie alle noch einmal.`],
+    danach: (k) => [`Ein Doppelstier — ${k.punkte} Punkte. Damit kennst du alle sechs Sternbilder; unter »Formen« oben rechts stehen sie noch einmal.`],
   },
   milchstrasse: {
     vor: () => [
@@ -10727,7 +10735,7 @@ const RL_TXT_LEHRE = {
   schwarzesLoch: {
     vor: () => ['Das Schwarze Loch zerstört ein offenes Sternbild des Gegners — nur ein Siegel schützt davor. Tipp die Karte an, dann sein Sternbild.'],
     aufgabe: () => 'Tipp das Schwarze Loch in deiner Hand an, dann ein Sternbild des Gegners.',
-    danach: () => ['Weg ist es. Genau das kann dir auch passieren — deshalb versiegelst du, was wertvoll ist.'],
+    danach: () => ['Weg ist es. Das kann dir auch passieren — versiegle, was wertvoll ist.'],
   },
   weissesLoch: {
     vor: () => ['Das Weiße Loch zieht eine Karte aus einem offenen Sternbild des Gegners auf deine Hand. Tipp die Karte an, dann eine Karte in seinem Sternbild.'],
@@ -10770,10 +10778,10 @@ const RL_TXT_LEHRE = {
   fertigSiegel: () => ['Fertig heißt nicht versiegelt: Ein Schwarzes Loch zerstört auch fertige Sternbilder. Davor schützt nur das Siegel — dein Sternbild antippen, dann »versiegeln«.'],
   duo: () => ['Zwei Gegner am Tisch. Beide ziehen nach dir — und beide können dir klauen.'],
   wertung: (k) => [
-    `Die Wertung: Jedes Sternbild, das jetzt vor dir liegt, bringt seine Punkte — du ${k.ich}, der Gegner ${k.gegner}.`,
-    'Und Punkte sind Geld: Über deinen Sternbildern steht, wie viele Münzen die Runde gerade bringt und ab wann es mehr wird.',
+    `Die Wertung: Jedes ausliegende Sternbild bringt seine Punkte — du ${k.ich}, der Gegner ${k.gegner}.`,
+    'Punkte sind auch Geld: Über deinen Sternbildern steht, wie viele Münzen die Runde bringt und ab wann es mehr wird.',
   ],
-  niederlage: () => ['Das ging verloren — macht nichts, im Lehrlauf strandest du nicht. Noch einmal: früh bauen, erweitern, und versiegeln, was viel wert ist.'],
+  niederlage: () => ['Verloren — macht nichts: Solange ich dich begleite, strandest du nicht. Noch einmal: früh bauen, erweitern, und versiegeln, was viel wert ist.'],
   frei: {
     titel: 'Freigeschaltet',
     sternbild: 'Neues Sternbild',
@@ -10791,10 +10799,16 @@ const RL_TXT_LEHRE = {
   schirm: {
     karteStart: () => ['Die Sternkarte: Dein Raubzug führt über drei Planeten, einen nach dem anderen. Wir starten auf dem Frostpfad — drück auf »Landen«.'],
     karteRoute: () => ['Hyperraum! Ab jetzt wählst du selbst: Tipp einen Planeten der nächsten Etappe an und lies seinen Himmelseffekt — er ändert dort die Regeln. Dann »Kurs setzen«.'],
-    planetStart: () => ['Rechts steht dein erster Gegner. Keine Sorge: Im Lehrlauf spielst du einen verlorenen Kampf einfach noch einmal. Drück auf »Kampf beginnen«.'],
-    planetAufbau: () => ['Auf jedem Planeten warten drei Lakaien und am Ende der Boss — oben siehst du die vier Stationen. Rechts stehen Verhalten und Sonderregel des nächsten Gegners.'],
-    planetTempo: () => ['Noch etwas: Im Kampf steht oben rechts »Einstellungen«. Dort stellst du die Geschwindigkeit ein — ×1 zum Zusehen, bis ×4, wenn dir die Gegner zu langsam ziehen.'],
-    planetElite: () => ['Der dritte Gegner ist eine Elite: Sie hat zusätzlich eine eigene Fähigkeit — lies sie rechts. Im Kampf kannst du die Figur des Gegners jederzeit antippen und nachlesen.'],
+    // Alleinflug (Spieltest-Runde 8): vor dem letzten Planeten sagt V2-A2, dass er ab dort nur noch zusieht — und was Stranden heißt.
+    karteAllein: () => [
+      'Den letzten Planeten fliegst du allein — du kennst jetzt alles, was du brauchst.',
+      'Dort gilt die echte Regel: Wer einen Kampf verliert, strandet. Dann endet der Raubzug, und dein nächster beginnt auf diesem Planeten.',
+    ],
+    planetStart: () => ['Rechts steht dein erster Gegner. Solange ich dich begleite, spielst du einen verlorenen Kampf einfach noch einmal. Drück auf »Kampf beginnen«.'],
+    planetAufbau: () => ['Jeder Planet hat drei Lakaien und am Ende den Boss — oben die vier Stationen. Rechts stehen Verhalten und Sonderregel des nächsten Gegners.'],
+    planetTempo: () => ['Im Kampf steht oben rechts »Einstellungen«: Dort stellst du die Geschwindigkeit ein — ×1 zum Zusehen, bis ×4, wenn dir die Gegner zu langsam ziehen.'],
+    planetElite: () => ['Der dritte Gegner ist eine Elite mit eigener Fähigkeit — lies sie rechts. Im Kampf kannst du die Figur jedes Gegners antippen und nachlesen.'],
+    alleinZeile: 'Alleinflug: kein Wiederholen mehr — wer hier einen Kampf verliert, strandet.',
     planetBoss: (k) => [
       `${k.bossName ? k.bossName + '. ' : ''}Der Boss hat eine Lebensleiste: Jede deiner Rundenwertungen ist Schaden.`,
       `Er heilt sich auf seine Art — lies sie rechts. Du hast ${k.runden} Runden; steht sein Leben dann nicht auf null, spielst du den Kampf noch einmal.`,
@@ -10809,13 +10823,13 @@ const RL_TXT_LEHRE = {
     details: () => 'Was ein Angebot genau tut, steht hinter »Details«. Tipp bei einer Kachel darauf.',
     kaufen: () => 'Jetzt kauf ein Angebot, das du bezahlen kannst: »Kaufen« drücken.',
     kaufenZuTeuer: () => ['Für ein Angebot reicht das Geld gerade nicht. Auch Sparen ist ein Plan.'],
-    weiter: () => ['Karten liegen ab dem nächsten Kampf in deinem Deck, Module wirken den ganzen Lauf. Mit »Weiter« geht es zum nächsten Gegner — sieh dich vorher ruhig um.'],
+    weiter: () => ['Karten liegen ab dem nächsten Kampf in deinem Deck, Module wirken den ganzen Lauf. »Weiter« führt zum nächsten Gegner — sieh dich vorher ruhig um.'],
     pack: (k) => `Unten liegen zwei Packs. Öffne das Sternbilderpack — es kostet ${k.preis} Münzen.`,
     packZuTeuer: () => ['Unten liegen zwei Packs — für das Sternbilderpack reicht das Geld gerade nicht. In jedem Shop liegt ein neues.'],
     // Lehrgeld (Spieltest-Runde 7): fehlt für eine Shop-Lektion das Geld, legt V2-A2 es dazu.
     zuschussPack: (k) => [`Für das Sternbilderpack fehl${k.n === 1 ? 't dir 1 Münze' : 'en dir ' + k.n + ' Münzen'} — ich lege sie dir dazu, damit du es ausprobieren kannst. Im echten Raubzug musst du dafür sparen.`],
     zuschussKaufen: (k) => [`Für ein Angebot fehl${k.n === 1 ? 't dir 1 Münze' : 'en dir ' + k.n + ' Münzen'} — die lege ich dir dazu. Geld verdienst du in den Kämpfen: mit Punkten je Runde und mit jeder geklauten Karte.`],
-    packwahl: (k) => `Drei Sternbilder liegen offen, eines davon steigt eine Stufe: Dieser Typ bringt dann bei jeder Wertung ${k.bonus} Punkte mehr. Nimm den, den du am ehesten baust.`,
+    packwahl: (k) => `Drei Sternbilder liegen offen, eines steigt eine Stufe: Dieser Typ bringt dann bei jeder Wertung ${k.bonus} Punkte mehr. Nimm den, den du am ehesten baust.`,
     planetenpack: () => ['Das zweite Pack ist das Planetenpack: Karten, die es nur auf diesem Planeten gibt. Jedes Pack geht je Shop einmal auf.'],
     werkstatt: (k) => [`Die Werkstatt macht eine Zahlenkarte zum Riesen: Sie zählt dann in jedem Sternbild ${k.riese} Punkte mehr. Karte antippen, dann »Zum Riesen«.`],
     rest: () => ['»Neu würfeln« tauscht die Angebote gegen Geld. »Deck ansehen« zeigt alle deine Karten, Module und Sternbildstufen — auch mitten im Kampf.'],
@@ -10827,14 +10841,19 @@ const RL_TXT_LEHRE = {
     vor: () => ['Alle Sternbilder mit ihren Punkten findest du jederzeit oben rechts unter »Formen«. Tipp den Knopf jetzt einmal an.'],
     danach: () => ['Genau dort. Was eine Karte kann, steht unter »Regeln« — und im Shop bei jedem Angebot unter »Details«.'],
   },
-  angebot: () => ['Neu an Bord: der Lehrlauf. Wenn du magst, begleite ich dich einmal durch einen ganzen Raubzug und erkläre alle Sternbilder, Karten und Shops — der Knopf steht unten.'],
+  angebot: () => ['Neu an Bord: der Lehrlauf. Wenn du magst, begleite ich dich zwei Planeten lang und erkläre alle Sternbilder, Karten und Shops — den dritten fliegst du allein. Der Knopf steht unten.'],
   ende: {
     titel: 'Lehrlauf geschafft',
     unter: 'Jetzt beginnt der echte Raubzug.',
-    rede: () => [
-      'Geschafft — der ganze Lehrlauf liegt hinter dir: alle sechs Sternbilder, der Drache, die kosmischen Karten, Shops und Bosse.',
-      'Ab jetzt ist es ernst: Im echten Raubzug strandest du, wenn du einen Kampf verlierst. Dafür schaltest du Decks, Planeten und härtere Stufen frei. Guten Flug!',
-    ],
+    titelGestrandet: (planet) => `Gestrandet auf ${planet}`,
+    unterGestrandet: 'Der Lehrlauf ist trotzdem geschafft — dein nächster Raubzug beginnt hier.',
+    rede: (k = {}) => (k.gestrandet ? [
+      `Gestrandet auf ${k.planet}. So läuft es im echten Raubzug: Ein verlorener Kampf beendet den Lauf — Deck, Geld und Module bleiben zurück.`,
+      `Dafür beginnt dein nächster Raubzug hier, auf ${k.planet}. Der Lehrlauf ist trotzdem geschafft: Du kennst alle Sternbilder, Karten und Shops. Guten Flug!`,
+    ] : [
+      'Geschafft — drei Planeten, den letzten ganz allein: alle sechs Sternbilder, die kosmischen Karten, Shops und Bosse.',
+      'Ab jetzt ist es immer ernst: Im echten Raubzug strandest du, wenn du einen Kampf verlierst. Dafür schaltest du Decks, Planeten und härtere Stufen frei. Guten Flug!',
+    ]),
     nachschlagenTitel: 'Zum Nachschlagen',
     nachschlagen: [
       ['»Formen«', 'am Kampftisch oben rechts: alle sechs Sternbilder mit Beispiel und Punkten.'],
@@ -10847,7 +10866,7 @@ const RL_TXT_LEHRE = {
     knopf: 'Ersten echten Raubzug beginnen',
   },
   nochmalTitel: 'Verloren — noch einmal',
-  nochmalZeile: 'Im Lehrlauf strandest du nicht: Der Kampf wird wiederholt, mit neuen Karten.',
+  nochmalZeile: 'Solange V2-A2 dich begleitet, strandest du nicht: Der Kampf wird wiederholt, mit neuen Karten.',
   nochmalKnopf: 'Noch einmal',
 };
 
@@ -14568,6 +14587,10 @@ const RL_KONFIG = {
   // das alte Pflicht-Tutorial (Übungskampf + erster Shop) wieder her.
   lehrlauf: {
     aktiv: true,
+    // Spieltest-Runde 8: V2-A2 begleitet nur die ersten beiden Planeten (dort stecken ALLE Freischaltungen) — 45 Minuten waren für ein
+    // Tutorial zu lang. Den letzten Planeten fliegt man allein: keine Wiederholung mehr, wer dort verliert, strandet wie im echten
+    // Raubzug (V2-A2 erklärt es dann, der nächste Lauf beginnt auf diesem Planeten).
+    begleitetBisPlatz: 2,
     zuegeJeRunde: { 1: 6, 2: 7, 3: 8 },              // Züge je Runde nach Platz (echter Lauf: 9) — kürzer, damit der Lehrlauf rund 40 Minuten dauert
     // Aussetzer der Lakaien [Lakai 1, Lakai 2, Elite] je Platz — höher als im echten Lauf (dort Stufe 1: 0.45/0.35/0.25 …)
     // Gemessen mit einem ANFÄNGER auf dem Menschensitz (einfacher Bot, kauft nichts): Ziel ≥ 90 % Siege im ersten Anlauf.
@@ -15985,6 +16008,8 @@ class RlFuehrung {
       return [
         { key: 'karte:start', art: 'reden', wenn: () => !d.reiseBereit && d.platz === 1, saetze: () => T.karteStart(), frei: nichts },
         { key: 'karte:route', art: 'reden', wenn: () => !!d.reiseBereit, saetze: () => T.karteRoute(), frei: nichts },
+        // Alleinflug (Spieltest-Runde 8): vor dem ersten Planeten ohne Begleitung — ab dort strandet, wer verliert.
+        { key: 'karte:allein', art: 'reden', wenn: () => !!d.reiseBereit && d.platz >= (RL_KONFIG.lehrlauf.begleitetBisPlatz ?? 99), saetze: () => T.karteAllein(), frei: nichts, pose: 'warnt' },
       ];
     }
     if (ansicht === 'planet') {
@@ -16047,7 +16072,10 @@ class RlFuehrung {
       ];
     }
     if (ansicht === 'ende') {
-      return [{ key: 'ende:abschluss', art: 'reden', saetze: () => RL_TXT_LEHRE.ende.rede(), frei: nichts, pose: 'freut' }];
+      // Gewonnen oder im Alleinflug gestrandet: beides beendet den Lehrlauf — gestrandet erklärt V2-A2, was das im echten Raubzug heißt.
+      const gestrandet = d.ergebnis !== 'SIEG';
+      const planetName = (RL_TXT_PLANET[lauf.planetAktuell()] || {}).name || lauf.planetAktuell();
+      return [{ key: 'ende:abschluss', art: 'reden', saetze: () => RL_TXT_LEHRE.ende.rede({ gestrandet, planet: planetName }), frei: nichts, pose: gestrandet ? 'warnt' : 'freut' }];
     }
     return [];
   }
@@ -17638,6 +17666,8 @@ function rlPlanetZeigen(wurzel, lauf, rueckrufe = {}, opt = {}) {
     const st = RL_LEHRPLAN.stationen[lauf.lehrStation()];
     const namen = st ? [...st.formen.map((f) => RL_TXT_LEHRE.formName[f] || f), ...st.geschenk.map((a) => ART_TEXT[a] || a)] : [];
     if (namen.length) rechts.appendChild(rlSchirmEl('p', 'rl-lehr-neu', RL_TXT_LEHRE.frei.neuImKampf(namen)));
+    // Alleinflug (Spieltest-Runde 8): auf dem letzten Planeten gibt es kein Wiederholen mehr — das steht vor jedem Kampf da.
+    if (typeof lauf.lehrAllein === 'function' && lauf.lehrAllein()) rechts.appendChild(rlSchirmEl('p', 'rl-lehr-allein', RL_TXT_LEHRE.schirm.alleinZeile));
   }
 
   const knoepfe = rlSchirmEl('div', 'rl-planet-knoepfe');
@@ -17735,8 +17765,11 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   // Lehrlauf (Spieltest-Runde 6): eigener Abschluss — nichts wird freigeschaltet, dafür steht da, wo man nachschlägt.
   const lehrlauf = typeof lauf.istLehrlauf === 'function' && lauf.istLehrlauf();
   const TE = RL_TXT_LEHRE.ende;
-  titel.appendChild(rlSchirmEl('h2', 'rl-titel-haupt', lehrlauf ? TE.titel : (sieg ? RL_TXT_UI.raubzugGelungen : RL_TXT_UI.gestrandet + ' ' + rlText(RL_TXT_PLANET, hier))));
-  titel.appendChild(rlSchirmEl('span', 'rl-titel-unter', lehrlauf ? TE.unter : (sieg ? RL_TXT_SCHIRM.siegText : RL_TXT_SCHIRM.niederlageText)));
+  // Lehrlauf, im Alleinflug gestrandet (Spieltest-Runde 8): der Titel sagt es, der Lehrlauf gilt trotzdem als geschafft.
+  const lehrGestrandet = lehrlauf && !sieg;
+  if (lehrGestrandet) ende.dataset.lehrlauf = 'gestrandet';
+  titel.appendChild(rlSchirmEl('h2', 'rl-titel-haupt', lehrlauf ? (lehrGestrandet ? TE.titelGestrandet(rlText(RL_TXT_PLANET, hier)) : TE.titel) : (sieg ? RL_TXT_UI.raubzugGelungen : RL_TXT_UI.gestrandet + ' ' + rlText(RL_TXT_PLANET, hier))));
+  titel.appendChild(rlSchirmEl('span', 'rl-titel-unter', lehrlauf ? (lehrGestrandet ? TE.unterGestrandet : TE.unter) : (sieg ? RL_TXT_SCHIRM.siegText : RL_TXT_SCHIRM.niederlageText)));
   ende.appendChild(titel);
 
   // Reise
@@ -20404,6 +20437,16 @@ class RlLauf {
     d.kampfIndex++;
   }
 
+  /** Lehrlauf, begleiteter Teil: V2-A2 ist dabei, ein verlorener Kampf wird wiederholt (bis `lehrlauf.begleitetBisPlatz`). */
+  lehrBegleitet() {
+    return this.istLehrlauf() && this.d.platz <= ((RL_KONFIG.lehrlauf ?? {}).begleitetBisPlatz ?? 99);
+  }
+
+  /** Lehrlauf, Alleinflug: die Planeten nach dem begleiteten Teil — echte Regeln, wer verliert, strandet. */
+  lehrAllein() {
+    return this.istLehrlauf() && !this.lehrBegleitet();
+  }
+
   /**
    * Darf hier übersprungen werden? Im Lehrlauf erst ab `lehrlauf.ueberspringenAbPlatz` (vorher hängt an jedem Kampf eine
    * Freischaltung) und je Planet höchstens `lehrlauf.ueberspringenJePlanet`-mal: der Tester übersprang zwei Kämpfe in
@@ -20446,8 +20489,9 @@ class RlLauf {
     if (d.phase !== 'KAMPF') throw new Error('Kein Kampf läuft');
     const st = d.statistik;
     st.kaempfe++;
-    // Im Lehrlauf strandet man nicht: ein verlorener Kampf wird wiederholt (zurück auf den Planetenschirm, nichts gutgeschrieben).
-    if (this.istLehrlauf() && !ergebnis.sieg) {
+    // Im begleiteten Teil des Lehrlaufs strandet man nicht: ein verlorener Kampf wird wiederholt (zurück auf den Planetenschirm,
+    // nichts gutgeschrieben). Im Alleinflug (letzter Planet, Spieltest-Runde 8) gilt die echte Regel: verloren = gestrandet.
+    if (this.lehrBegleitet() && !ergebnis.sieg) {
       d.lehre.wiederholungen = (d.lehre.wiederholungen ?? 0) + 1;
       if (!d.lehre.verloren) d.lehre.verloren = {};
       d.lehre.verloren[this.lehrStation()] = (d.lehre.verloren[this.lehrStation()] ?? 0) + 1;
@@ -20745,11 +20789,18 @@ function rlProfilNachSieg(profil, lauf) {
  * Nach dem Lehrlauf (Spieltest-Runde 6): das Tutorial gilt als geschafft, sonst ändert sich NICHTS — kein Deck, keine
  * Stufe, kein Planet, keine Bestwerte. Der erste echte Raubzug beginnt wie immer auf dem Frostpfad.
  */
-function rlProfilNachLehrlauf(profil) {
+function rlProfilNachLehrlauf(profil, lauf = null) {
   profil.tutorialGesehen = true;
   profil.tutorialGeschafft = true;
   profil.lehrlaufGeschafft = true;
   profil.startort = 'frost';
+  // Im Alleinflug gestrandet (Spieltest-Runde 8): wie im echten Raubzug beginnt der nächste Lauf auf diesem Planeten — sonst
+  // wäre V2-A2s Erklärung gelogen. Bestwerte, Decks und Planeten bleiben trotzdem unberührt.
+  if (lauf && lauf.daten.ergebnis === 'NIEDERLAGE') {
+    const planet = lauf.planetAktuell();
+    profil.startort = planet;
+    if (!profil.gescheitert.includes(planet)) profil.gescheitert.push(planet);
+  }
   return profil;
 }
 
@@ -23335,7 +23386,7 @@ function rlStartProfilFortschreiben() {
   const d = lauf.daten;
   if (d.phase !== 'ENDE' || d.profilFortgeschrieben) return;
   // Der Lehrlauf schaltet nichts frei und zählt nicht in die Bestwerte — danach beginnt der erste echte Raubzug auf dem Frostpfad.
-  if (lauf.istLehrlauf()) rlProfilNachLehrlauf(rlS.profil);
+  if (lauf.istLehrlauf()) rlProfilNachLehrlauf(rlS.profil, lauf);
   else if (d.ergebnis === 'SIEG') rlProfilNachSieg(rlS.profil, lauf);
   else rlProfilNachNiederlage(rlS.profil, lauf);
   d.profilFortgeschrieben = true;
@@ -23663,8 +23714,12 @@ function rlStartLehrBericht() {
   }
   const erste = p.find((e) => e.k === 'lehre:pfeil:danach');
   const letzte = p.length ? p[p.length - 1] : null;
+  // Spieltest-Runde 8: der begleitete Teil endet, wo der Alleinflug beginnt (erste Station des Planeten nach `begleitetBisPlatz`).
+  const alleinAb = (RL_KONFIG.lehrlauf.begleitetBisPlatz ?? 99) * (RL_KONFIG.lauf.lakaienProPlanet + 1);
+  const allein = p.find((e) => e.s != null && e.s >= alleinAb);
   return {
     ersterZugSek: erste ? sek(erste.t - start) : null,
+    begleitetSek: allein ? sek(allein.t - start) : (letzte ? sek(letzte.t + (letzte.d || 0) - start) : 0),
     gesamtSek: letzte ? sek(letzte.t + (letzte.d || 0) - start) : 0,
     blasen, zeichen, redeSek: sek(reden),
     wiederholungen: lehre.wiederholungen || 0,
@@ -23836,7 +23891,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '20.09.2026 10:23';
+const BAU_STAND = '20.09.2026 21:30';
 
 /**
  * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
