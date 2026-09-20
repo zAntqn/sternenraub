@@ -23755,8 +23755,18 @@ function rlStartStand() {
     const knopf = document.getElementById('btn-rl-neu');
     const begruessung = haken.sag('start', { pflicht: true, lehrlauf: rlStartLehrlaufAn() });
     if (knopf && rlS.sextant && rlS.sextant.bereit) {
-      setTimeout(() => { knopf.disabled = true; knopf.title = RL_TXT_FUEHRUNG.gesperrt; }, 0);   // nach dem Aufbau der Ebene
-      begruessung.then(() => { knopf.disabled = false; knopf.title = ''; });
+      // Fehler vom 20.9.2026 (ein Tester kam nicht mehr ins Spiel): Kennt das Profil die Begrüßung schon (zweiter Besuch, Tutorial
+      // noch offen), löst `sag` SOFORT auf — das Entsperren lief dann VOR dem Sperren im setTimeout, und der Knopf blieb für immer
+      // zu, ohne dass V2-A2 etwas sagte. Jetzt sperrt der Zeitgeber nur, solange die Begrüßung wirklich noch läuft.
+      let begruesst = false;
+      const freigeben = () => { begruesst = true; knopf.disabled = false; knopf.title = ''; };
+      begruessung.then(freigeben, freigeben);
+      setTimeout(() => { if (!begruesst) { knopf.disabled = true; knopf.title = RL_TXT_FUEHRUNG.gesperrt; } }, 0);   // nach dem Aufbau der Ebene
+      // Sicherheitsnetz: steht V2-A2 gar nicht (mehr) da, darf der Knopf nie gesperrt bleiben.
+      const wache = setInterval(() => {
+        const figur = document.getElementById('rl-figur');
+        if (begruesst || !figur || figur.hidden) { clearInterval(wache); freigeben(); }
+      }, 1500);
     }
   }
   // Bestehende Profile (altes Tutorial geschafft) bekommen den Lehrlauf einmal angeboten — nachsitzen muss niemand.
@@ -23891,7 +23901,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '20.09.2026 21:30';
+const BAU_STAND = '20.09.2026 22:08';
 
 /**
  * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
