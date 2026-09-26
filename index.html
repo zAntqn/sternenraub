@@ -4260,6 +4260,10 @@ body[data-modus="roguelike"][data-protokoll="1"] #protokoll-titel::after { conte
 .rl-details-zeilen { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 10px 0 0; font-size: 14px; line-height: 1.35; }
 .rl-details-zeilen dt { font-family: var(--display); letter-spacing: .04em; color: var(--rl-gold, #F2C640); }
 .rl-details-zeilen dd { margin: 0; }
+/* Ebenen (Freischaltung, Details, Deckansicht) stehen ÜBER der Schirm-Führung: ihre Knöpfe werden nie mit ausgegraut. */
+#rl-schirm[data-fuehrung] .rl-ebene [data-rl]:not([disabled]) { opacity: 1; filter: none; cursor: pointer; }
+#rl-schirm[data-fuehrung] .rl-ebene [data-rl][disabled] { filter: none; }
+#rl-schirm[data-fuehrung] .rl-ebene [data-rl].liest { opacity: .85; cursor: wait; }
 
 </style>
 <style>
@@ -15834,6 +15838,7 @@ class RlFuehrung {
    */
   waechter(aktion, daten, el) {
     if (!(this.aktiv() || this.lehrAktiv()) || !this.frei) return true;
+    if (el && el.closest && el.closest('.rl-ebene')) return true;   // Ebenen (Freischaltung, Details, Deck) stehen über der Führung
     if (this.frei(aktion, daten || {}, el)) return true;
     if (this.sextant) this.sextant.ruckeln();
     return false;
@@ -15847,7 +15852,7 @@ class RlFuehrung {
     if (!(this.aktiv() || this.lehrAktiv()) || !this.frei) { delete w.dataset.fuehrung; return; }
     w.dataset.fuehrung = this.ansicht;
     for (const e of w.querySelectorAll('[data-rl]')) {
-      if (this.frei(e.dataset.rl, { ...e.dataset }, e)) e.classList.add('rl-tut-frei');
+      if (e.closest('.rl-ebene') || this.frei(e.dataset.rl, { ...e.dataset }, e)) e.classList.add('rl-tut-frei');
       else if (!e.title) e.title = RL_TXT_FUEHRUNG.gesperrt;
     }
     if (this.ziel) {
@@ -17798,6 +17803,9 @@ function rlSchirmKlick(wurzel, tabelle) {
 function rlSchirmStart(wurzel, ansicht) {
   rlSchirmLeeren(wurzel);
   wurzel.dataset.ansicht = ansicht;
+  // Die Sperr-Marke der Führung gehört zum alten Schirm — sonst graut sie einen neu gezeichneten Schirm (und die Freischalt-Seiten
+  // darauf) aus, obwohl gerade keine Führung läuft (Spieltest-Runde 9: »Weiter« wirkte gesperrt, rotes Kreuz an der Maus).
+  delete wurzel.dataset.fuehrung;
   wurzel.hidden = false;
   const innen = rlSchirmEl('div', 'rl-schirm-innen');
   wurzel.appendChild(innen);
@@ -24189,7 +24197,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '26.09.2026 10:06';
+const BAU_STAND = '26.09.2026 10:12';
 
 /**
  * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
