@@ -10864,6 +10864,10 @@ const RL_TXT_LEHRE = {
     zaehler: (i, n) => `${i} von ${n}`,
     seiteForm: (name) => `${name}: ab dem nächsten Kampf darfst du dieses Sternbild bauen — dein Gegner auch. V2-A2 zeigt dir dort, wie es geht.`,
     seiteKosmisch: (name) => `${name} liegt ab jetzt in deinem Deck. Sobald du die Karte ziehst, zeigt dir V2-A2, wie man sie spielt.`,
+    // Antons Vorgabe (Runde 9): Was in den Regeln steht, wird beim Freischalten erklärt — die Joker-Ausnahme gleich auf der Seite.
+    seiteKosmischArt: {
+      STERNSCHNUPPE: (name) => `${name} liegt ab jetzt in deinem Deck: der Joker, er vertritt im Sternbild jede Zahl. Regel: Ein Kreuz und der Drache lassen sich NICHT mit ihr abschließen — dafür brauchst du echte Zahlen. Sobald du sie ziehst, zeigt dir V2-A2, wie man sie einbaut.`,
+    },
     hinweis: (k) => `${k.namen.join(' und ')}: ab dem nächsten Kampf dabei. V2-A2 zeigt dir dort, wie es geht.`,
     neuImKampf: (namen) => `Neu in diesem Kampf: ${namen.join(' · ')}`,
     formZu: 'noch gesperrt — V2-A2 schaltet es im Lehrlauf frei',
@@ -23245,7 +23249,8 @@ function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
     schloss.innerHTML = rlLehrmeisterSchlossSvg();
     karte.appendChild(schloss);
     reihe.appendChild(karte);
-    const text = seite.sorte === 'form' ? T.seiteForm(seite.name) : seite.sorte === 'erklaert' ? T.seiteErklaert(seite.name) : T.seiteKosmisch(seite.name);
+    const eigen = seite.sorte === 'kosmisch' && T.seiteKosmischArt ? T.seiteKosmischArt[seite.art] : null;   // z. B. die Joker-Ausnahme
+    const text = seite.sorte === 'form' ? T.seiteForm(seite.name) : seite.sorte === 'erklaert' ? T.seiteErklaert(seite.name) : eigen ? eigen(seite.name) : T.seiteKosmisch(seite.name);
     hinweis.textContent = text;
     weiter.textContent = i + 1 < seiten.length ? T.weiterNaechstes : T.weiter;
     // Pflicht-Lesen: erst das Schloss, dann füllt sich der Knopf über die Lesezeit (Karte + Text).
@@ -24184,7 +24189,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '26.09.2026 09:46';
+const BAU_STAND = '26.09.2026 10:06';
 
 /**
  * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
