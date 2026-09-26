@@ -4209,6 +4209,58 @@ body[data-modus="roguelike"] #gegner-bereich .gegner.aktiv > .gegner-figur { ani
   box-shadow: 3px 3px 0 #000;
 }
 
+/* ---------- 34. Spieltest-Runde 9: Bedienung am Tisch, Bot-Stapel, Nebel/Eklipse, Packs mit Schloss, Protokoll ---------- */
+/* Der Hauptknopf unten rechts (Legen / Klauen) war zu unauffällig — größer, und er pulsiert, sobald ein Zug bereitsteht. */
+body[data-modus="roguelike"] #leiste-knoepfe .knopf.haupt:not([disabled]) { font-size: 17px; padding: 10px 20px; animation: rl-haupt-pulst 1.3s ease-in-out infinite; }
+@keyframes rl-haupt-pulst { 0%, 100% { box-shadow: 3px 3px 0 #000, 0 0 0 0 rgba(242, 198, 64, 0); } 50% { box-shadow: 3px 3px 0 #000, 0 0 0 6px rgba(242, 198, 64, .55); } }
+body[data-modus="roguelike"] #leiste-knoepfe .knopf.tausch { background: #DCEBFF; border-color: var(--tinte); color: var(--tinte); font-weight: 700; }
+body[data-modus="roguelike"] #leiste-knoepfe .knopf.abbruch { background: #FFD6D0; border-color: #B3261E; color: #7A1410; font-weight: 700; }
+/* Joker klauen: die Sternschnuppe selbst leuchtet und trägt den Hinweis — nicht das ganze Sternbild. */
+body[data-modus="roguelike"] .karte.joker-holbar { outline: 3px dashed #fff; outline-offset: 2px; animation: rl-joker-pulst 1s ease-in-out infinite; position: relative; }
+body[data-modus="roguelike"] .karte.joker-holbar::after { content: "Joker holen"; position: absolute; left: 50%; top: -6px; translate: -50% -100%; padding: 2px 8px; font: 700 11px/1.2 var(--grotesk, sans-serif); color: var(--tinte); background: var(--rl-gold); border: 2px solid var(--tinte); border-radius: 8px; white-space: nowrap; pointer-events: none; z-index: 3; }
+@keyframes rl-joker-pulst { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .8); } 50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); } }
+/* Nebel: die Auslage liegt unter einer Wolke, solange die Runde läuft. */
+body[data-modus="roguelike"] .gegner.im-nebel > .sternbilder, body[data-modus="roguelike"] #ich-bereich.im-nebel > #meine-sternbilder { position: relative; }
+body[data-modus="roguelike"] .gegner.im-nebel > .sternbilder::after, body[data-modus="roguelike"] #ich-bereich.im-nebel > #meine-sternbilder::after {
+  content: "Nebel — diese Runde nicht klaubar"; position: absolute; inset: -6px; z-index: 3; pointer-events: none;
+  display: flex; align-items: flex-start; justify-content: center; padding-top: 4px;
+  font: 700 13px/1.2 var(--grotesk, sans-serif); color: var(--tinte); text-shadow: 0 0 6px #fff; border-radius: 14px;
+  background: radial-gradient(ellipse at 30% 40%, rgba(255,255,255,.72), rgba(220,228,240,.35) 55%, rgba(255,255,255,0) 80%), radial-gradient(ellipse at 75% 60%, rgba(255,255,255,.6), rgba(255,255,255,0) 70%);
+  animation: rl-nebel-wabert 4s ease-in-out infinite;
+}
+@keyframes rl-nebel-wabert { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
+/* Eklipse: das verdunkelte Sternbild — jetzt raubbar. */
+body[data-modus="roguelike"] .sternbild.verdunkelt { position: relative; filter: brightness(.55) saturate(.6); animation: rl-eklipse 1.2s ease-out; }
+body[data-modus="roguelike"] .sternbild.verdunkelt::after { content: "Eklipse — raubbar"; position: absolute; left: 50%; bottom: -8px; translate: -50% 100%; padding: 2px 8px; font: 700 11px/1.2 var(--grotesk, sans-serif); color: #fff; background: #1B2233; border: 2px solid #fff; border-radius: 8px; white-space: nowrap; pointer-events: none; z-index: 2; }
+@keyframes rl-eklipse { from { filter: brightness(1) saturate(1); } to { filter: brightness(.55) saturate(.6); } }
+/* Deck und Ablage der Gegner: klein rechts unter den Punkten. */
+body[data-modus="roguelike"] #gegner-bereich .gegner > .rl-gegner-stapel { grid-column: 3; grid-row: 3; justify-self: end; align-self: end; display: flex; gap: 10px; margin: 0 6px 4px 0; --karte-b: 34px; --karte-h: 48px; }
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-deck, body[data-modus="roguelike"] #gegner-bereich .rl-gegner-ablage { position: relative; display: grid; justify-items: center; gap: 1px; font: 600 10px/1.1 var(--grotesk, sans-serif); color: var(--schrift-leise); }
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-deck .karte, body[data-modus="roguelike"] #gegner-bereich .rl-gegner-ablage .karte { width: var(--karte-b); height: var(--karte-h); }
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-stapel-zahl { position: absolute; right: -9px; top: -8px; min-width: 18px; padding: 0 4px; text-align: center; font: 700 11px/18px var(--display); color: var(--tinte); background: var(--rl-gold); border: 2px solid var(--tinte); border-radius: 999px; }
+body[data-modus="roguelike"] #gegner-bereich .rl-gegner-ablage .stapel-leer { width: var(--karte-b); height: var(--karte-h); border: 2px dashed rgba(255,255,255,.35); border-radius: 6px; }
+/* Packs, die V2-A2 noch nicht erklärt hat, und gesperrte Sternbilder im Pack */
+.rl-packs.rl-packs-zu { opacity: .8; }
+.rl-packs-schloss { font-weight: 700; }
+.rl-pack-karte.rl-pack-zu { filter: grayscale(1); opacity: .55; }
+.rl-pack-karte.rl-pack-zu .rl-pack-karte-bild { position: relative; }
+.rl-pack-karte.rl-pack-zu .rl-pack-karte-bild::after { content: "gesperrt"; position: absolute; inset: auto 0 6px; text-align: center; font: 700 12px/1 var(--grotesk, sans-serif); color: #fff; text-shadow: 0 1px 2px #000; }
+.rl-pack-zu-text { font-size: 12px; font-weight: 700; color: var(--schrift-leise); }
+/* Der Drache auf der Freischalt-Seite: zwei Reihen Beispielkarten */
+.rl-frei-drache { display: grid; gap: 6px; justify-items: center; margin: 4px 0 8px; --karte-b: 34px; --karte-h: 48px; }
+.rl-frei-drache-reihe { display: flex; gap: 3px; }
+.rl-frei-drache-reihe .karte { width: var(--karte-b); height: var(--karte-h); }
+/* Protokoll: im Raubzug eingeklappt (Überschrift antippen), leichter gesetzt */
+body[data-modus="roguelike"] #protokoll { display: none; font-weight: 400; opacity: .85; }
+body[data-modus="roguelike"][data-protokoll="1"] #protokoll { display: block; }
+body[data-modus="roguelike"] #protokoll-titel { cursor: pointer; }
+body[data-modus="roguelike"] #protokoll-titel::after { content: " (anzeigen)"; font-size: .8em; opacity: .7; }
+body[data-modus="roguelike"][data-protokoll="1"] #protokoll-titel::after { content: " (ausblenden)"; }
+/* Details eines Planeten (Sternkarte): Boss, Eliten, Lakaien als Liste */
+.rl-details-zeilen { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 10px 0 0; font-size: 14px; line-height: 1.35; }
+.rl-details-zeilen dt { font-family: var(--display); letter-spacing: .04em; color: var(--rl-gold, #F2C640); }
+.rl-details-zeilen dd { margin: 0; }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -5064,7 +5116,7 @@ body[data-modus="roguelike"] #tisch #mitte-bereich { padding-top: 18px; }
   <aside id="seitenleiste">
     <h2 class="bereich-titel">Mögliche Züge</h2>
     <ol id="tipps"></ol>
-    <h2 class="bereich-titel">Protokoll</h2>
+    <h2 class="bereich-titel" id="protokoll-titel">Protokoll</h2>
     <div id="protokoll"></div>
   </aside>
 
@@ -5798,6 +5850,9 @@ function generiereAktionen(spiel, spielerIdx) {
   const sicherFuer = (sb, g) => (spiel.istSicherFuer ? spiel.istSicherFuer(sb, g) : istSicher(sb));
   const privilegSicher = (sb, g) => (spiel.istPrivilegSicher ? spiel.istPrivilegSicher(sb, g) : false);
   const imNebel = (g) => spiel.spieler[g].nebelRunde != null && spiel.spieler[g].nebelRunde === spiel.runde;
+  // Roguelike (Spieltest-Runde 9): Verbündete (Gruppen-Gegner wie Zwillinge, Trabanten) sind füreinander nie ein Ziel.
+  const verbuendete = spielRegel(spiel, spielerIdx, 'verbuendete');
+  const verbuendet = (g) => Array.isArray(verbuendete) && verbuendete.includes(g);
 
   /* ---------- Abwerfen (immer erlaubt) ---------- */
   const gesehenAbwurf = new Set();
@@ -5831,7 +5886,10 @@ function generiereAktionen(spiel, spielerIdx) {
   }
 
   /* ---------- Drache zusammensetzen ---------- */
-  for (let i = 0; i < sp.sternbilder.length; i++) {
+  // Roguelike-Lehrlauf (Spieltest-Runde 9): `keinDrache` — dieser Sitz setzt keinen Drachen zusammen und klaut keinen
+  // (Gegner spielen nichts, was V2-A2 dem Spieler noch nicht erklärt hat).
+  const keinDrache = !!spielRegel(spiel, spielerIdx, 'keinDrache');
+  for (let i = 0; !keinDrache && i < sp.sternbilder.length; i++) {
     for (let j = i + 1; j < sp.sternbilder.length; j++) {
       const a = sp.sternbilder[i], b = sp.sternbilder[j];
       if (bildenDrachen(a, b)) {
@@ -5855,7 +5913,7 @@ function generiereAktionen(spiel, spielerIdx) {
   if (spiel.zugKennung && sp.hand.length >= minHandRaub) {
     const kennung = spiel.zugKennung();
     for (let g = 0; g < spiel.spieler.length; g++) {
-      if (g === spielerIdx || imNebel(g)) continue;
+      if (g === spielerIdx || imNebel(g) || verbuendet(g)) continue;
       for (const sb of spiel.spieler[g].sternbilder) {
         if (sb.versiegelt || sb.eklipseZug !== kennung || sb.eklipseVon !== spielerIdx) continue;
         const b = bewerte(sb.karten);
@@ -5879,12 +5937,12 @@ function generiereAktionen(spiel, spielerIdx) {
    * Siegel, eine Ankerkarte im Pfeil und Nebel — Privilegien des Besitzers (sicherAb, unklaubare
    * Typen) nicht (Spieltest-Runde 3; vorher schützten sie wie beim Klauen). Spieltest-Runde 1.
    */
-  if (spielRegel(spiel, spielerIdx, 'drachenKlau') && sp.hand.length >= minHandRaub) {
+  if (!keinDrache && spielRegel(spiel, spielerIdx, 'drachenKlau') && sp.hand.length >= minHandRaub) {
     for (const eigen of sp.sternbilder) {
       const be = bewerte(eigen.karten);
       if (!be.gueltig || be.typ !== 'PFEIL' || be.groesse !== CONFIG.drache.teilLaenge) continue;
       for (let g = 0; g < spiel.spieler.length; g++) {
-        if (g === spielerIdx || imNebel(g)) continue;
+        if (g === spielerIdx || imNebel(g) || verbuendet(g)) continue;
         for (const sb of spiel.spieler[g].sternbilder) {
           // Spieltest-Runde 3: vor dem Drachenklau schützen nur das Siegel, eine Ankerkarte und Nebel — Privilegien des
           // Besitzers ("Sicher ab vier", die unklaubaren Pfeile des Lotsen) nicht. Wer seinen Sechser behalten will, versiegelt ihn.
@@ -5927,7 +5985,7 @@ function generiereAktionen(spiel, spielerIdx) {
     ziele.push({ sb, key: schluesselVonKarten(sb.karten), n: sb.karten.length, punkte: bewerte(sb.karten).punkte, eigen: true, opferIdx: -1 });
   }
   for (let g = 0; g < spiel.spieler.length; g++) {
-    if (g === spielerIdx) continue;
+    if (g === spielerIdx || verbuendet(g)) continue;
     // Nebel: gegen diesen Spieler geht in dieser Runde kein Klauen.
     if (imNebel(g)) continue;
     for (const sb of spiel.spieler[g].sternbilder) {
@@ -5996,7 +6054,7 @@ function generiereAktionen(spiel, spielerIdx) {
    */
   if (CONFIG.zug.jokerKlauErlaubt) {
     for (let g = 0; g < spiel.spieler.length; g++) {
-      if (g === spielerIdx) continue;
+      if (g === spielerIdx || verbuendet(g)) continue;
       if (imNebel(g)) continue;
       for (const sb of spiel.spieler[g].sternbilder) {
         if (sb.versiegelt || !sb.karten.some(istJoker)) continue;
@@ -6057,6 +6115,9 @@ function generiereKosmische(spiel, spielerIdx) {
   const immun = (g) => !!spielRegel(spiel, g, 'immunSchwarzesLoch');
   const sicherFuer = (sb, g) => (spiel.istSicherFuer ? spiel.istSicherFuer(sb, g) : istSicher(sb));
   const imNebel = (g) => spiel.spieler[g].nebelRunde != null && spiel.spieler[g].nebelRunde === spiel.runde;
+  // Roguelike (Spieltest-Runde 9): Verbündete (Gruppen-Gegner wie Zwillinge, Trabanten) sind füreinander nie ein Ziel.
+  const verbuendete = spielRegel(spiel, spielerIdx, 'verbuendete');
+  const verbuendet = (g) => Array.isArray(verbuendete) && verbuendete.includes(g);
 
   for (const k of sp.hand) {
     if (!AKTIONS_KOSMISCH.includes(k.art)) continue;
@@ -6071,7 +6132,7 @@ function generiereKosmische(spiel, spielerIdx) {
 
       case 'SCHWARZES_LOCH': case 'WEISSES_LOCH': case 'KOMET': case 'EKLIPSE': {
         for (let g = 0; g < spiel.spieler.length; g++) {
-          if (g === spielerIdx) continue;
+          if (g === spielerIdx || verbuendet(g)) continue;
           // Schwarzes Loch und Komet prallen an `immunSchwarzesLoch` ab; Eklipse braucht ein Opfer ohne Nebel.
           if ((k.art === 'SCHWARZES_LOCH' || k.art === 'KOMET') && immun(g)) continue;
           if (k.art === 'EKLIPSE' && imNebel(g)) continue;
@@ -6257,6 +6318,8 @@ function spielRegelStandard(name) {
     case 'kosmischeGeschenk': return 0;
     case 'sicherAb': return 0;
     case 'unklaubareTypen': return [];
+    // Roguelike: Sitze, die füreinander nie ein Ziel sind (Gruppen-Gegner). Grundspiel: niemand.
+    case 'verbuendete': return [];
     // Roguelike-Lehrlauf: Liste der Sternbildtypen, die dieser Sitz bauen darf. null = alle (Grundspiel).
     case 'erlaubteTypen': return null;
     default: return false;   // alle booleans
@@ -7144,6 +7207,8 @@ class Spiel {
         if (k) this.ablageVonSpieler(sp).push(k);
         this.stats.abwuerfe++;
         this.log(`${sp.name} wirft ${k ? kartenName(k) : '?'} ab`);
+        // Roguelike (Spieltest-Runde 9): die Oberfläche lässt den Abwurf eines Gegners sichtbar auf seine Ablage fliegen.
+        this.melde({ art: 'ABWURF', idx: spielerIdx, karteId: k ? k.id : null, kartenArt: k ? k.art : null });
         break;
       }
       case 'NOVA_NEHMEN': {
@@ -8327,7 +8392,7 @@ const ART_KURZ = {
   MILCHSTRASSE: `zieh ${CONFIG.kosmisch.milchstrasseKarten} Karten`,
   STERNSCHNUPPE: 'Joker — vertritt jeden Wert',
   NOVA: 'zerstört ein beliebiges Sternbild (auch versiegelte)',
-  KOMET: 'zieht eine Karte aus einem fremden Sternbild auf dessen Ablage',
+  KOMET: 'zieht eine Karte aus einem Sternbild des Gegners auf dessen Ablage',
   GRAVITATION: 'holt eine Zahlenkarte aus der Mitte auf deine Hand',
   STERNENSTAUB: 'gibt einer eigenen Handkarte einen neuen Wert (1–12)',
   FUNKSPRUCH: 'zeigt dir die obersten drei Karten deines Decks',
@@ -8335,14 +8400,14 @@ const ART_KURZ = {
   NEBEL: 'bis Rundenende kann dir niemand etwas klauen',
   ROTE_RIESIN: 'ein eigenes Sternbild zählt diese Runde doppelt',
   AUSRICHTUNG: 'ein Typ deiner Wahl bringt diese Runde +1 je Karte',
-  EKLIPSE: 'ein fremdes Sternbild wird raubbar: Handkarten abwerfen, Sternbild nehmen',
+  EKLIPSE: 'ein Sternbild des Gegners wird raubbar: Handkarten abwerfen, Sternbild nehmen',
   DRACHENATEM: 'dein Drache zählt für den Rest des Kampfes mehr',
 };
 
 const ART_WIRKUNG = {
   SCHWARZES_LOCH: 'Zerstört ein Sternbild eines Gegners. Auch ein fertiges — '
     + 'nur Versiegeltes hält es auf.',
-  WEISSES_LOCH: 'Zieht eine Karte aus einem fremden Sternbild auf deine Hand. '
+  WEISSES_LOCH: 'Zieht eine Karte aus einem Sternbild des Gegners auf deine Hand. '
     + 'Auch aus einem fertigen — nur Versiegeltes hält es auf.',
   URKNALL: 'Alle offenen Sternbilder zerfallen, auch deine. Fertige und '
     + 'versiegelte bleiben stehen.',
@@ -8350,7 +8415,7 @@ const ART_WIRKUNG = {
   STERNSCHNUPPE: 'Joker. Vertritt jeden Wert. Kein Kreuz, kein Drache.',
   NOVA: 'Einmal pro Partie: zerstört ein beliebiges Sternbild (auch versiegelte). '
     + 'Sie aufzunehmen kostet einen ganzen Zug, gezündet wird erst im nächsten.',
-  KOMET: 'Trifft eine einzelne Karte in einem fremden, nicht versiegelten Sternbild. '
+  KOMET: 'Trifft eine einzelne Karte in einem nicht versiegelten Sternbild des Gegners. '
     + 'Sie geht auf die Ablage ihres Besitzers; wird das Sternbild zu klein, zerfällt es.',
   GRAVITATION: 'Zieht eine Zahlenkarte (oder Sternschnuppe) aus der Mitte auf deine Hand.',
   STERNENSTAUB: 'Eine eigene Zahlenkarte auf der Hand bekommt einen Wert deiner Wahl (1–12) — '
@@ -8361,7 +8426,7 @@ const ART_WIRKUNG = {
   ROTE_RIESIN: 'Ein eigenes gültiges Sternbild zählt bei der Wertung dieser Runde doppelt.',
   AUSRICHTUNG: 'Wähle einen Sternbildtyp: Deine Sternbilder dieses Typs bringen diese Runde '
     + 'einen Punkt mehr je Karte.',
-  EKLIPSE: 'Ein fremdes, nicht versiegeltes Sternbild wird in diesem Zug raubbar: Wirf mindestens '
+  EKLIPSE: 'Ein nicht versiegeltes Sternbild des Gegners wird in diesem Zug raubbar: Wirf mindestens '
     + 'so viele Handkarten ab, wie du zum Klauen bräuchtest, und nimm es unverändert zu dir.',
   DRACHENATEM: 'Dein Drache bringt für den Rest des Kampfes zusätzliche Punkte je Wertung.',
 };
@@ -8496,7 +8561,7 @@ ${CONFIG.klauen.entschaedigungProKarte} Punkt pro geklauter Karte.</p>
 
 <h3>Einen Joker herausklauen</h3>
 <p>Etwas anderes als ein Sternbild zu klauen — hier nimmst du nur <b>eine Karte</b>.
-Liegt in einem fremden, nicht versiegelten Sternbild eine Sternschnuppe und du hast die
+Liegt in einem nicht versiegelten Sternbild des Gegners eine Sternschnuppe und du hast die
 Karte auf der Hand, die sie gerade vertritt, darfst du tauschen: deine echte Karte
 hinein, der Joker heraus.</p>
 <p>Zwei Bedingungen: Du musst mit dem Joker <b>im selben Zug ein neues Sternbild
@@ -8528,7 +8593,7 @@ fertige und versiegelte stehen. Und die Nova bricht beides auf.</p>
           Auch ein fertiges — nur versiegelte sind sicher.</td>
       <td>${CONFIG.deck.kosmisch.SCHWARZES_LOCH}×</td></tr>
   <tr><td class="regel-karte-zelle"><span data-karte="WEISSES_LOCH"></span> Weißes Loch</td>
-      <td>Nimm eine Karte deiner Wahl aus einem fremden Sternbild auf die Hand.
+      <td>Nimm eine Karte deiner Wahl aus einem Sternbild des Gegners auf die Hand.
           Auch aus einem fertigen — nur versiegelte sind sicher. Was übrig bleibt,
           wird oft zum Wrack.</td>
       <td>${CONFIG.deck.kosmisch.WEISSES_LOCH}×</td></tr>
@@ -10663,7 +10728,7 @@ const RL_TXT_LEHRE = {
   formEin: { PFEIL: 'ein Pfeil', WAGEN: 'ein Wagen', KREUZ: 'ein Kreuz', KRONE: 'eine Krone', ZWILLING: 'ein Zwilling', DOPPELSTIER: 'ein Doppelstier' },
   pfeil: {
     vor: () => [
-      'Unten deine Hand, in der Mitte Karten für alle. Bau einen Pfeil — drei Zahlen in Folge: Tipp die Karten mit dem weißen Pfeil an, dann unten bestätigen.',
+      'Unten deine Hand, in der Mitte Karten für alle. Ein Pfeil sind Zahlen in Folge — egal, wo sie anfangen: 2·3·4 genauso wie 9·10·11. Tipp die Karten mit dem weißen Pfeil an, dann unten bestätigen.',
     ],
     aufgabe: (k) => `Pfeil bauen: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? `, dann ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}. Danach unten bestätigen.`,
     danach: (k) => [`Dein erster Pfeil — ${k.punkte} Punkte. Gewertet wird am Rundenende, nach ${k.zuege} Zügen (Stand oben links): Wer mehr Punkte hat, gewinnt.`],
@@ -10681,7 +10746,7 @@ const RL_TXT_LEHRE = {
     aufgabe: (k) => `Erweitern: Tipp ${rlTxtWerteListe(k.hand)} in deiner Hand an${k.mitte.length ? ` und ${rlTxtWerteListe(k.mitte)} in der Mitte` : ''}, dann dein Sternbild. Danach unten bestätigen.`,
     danach: (k) => [k.karten >= k.maxKarten
       ? `${k.karten} Karten, ${k.punkte} Punkte — mehr passt an dieses Sternbild nicht.`
-      : `${k.karten} Karten, ${k.punkte} Punkte. Vorsicht: Was offen liegt, kann der Gegner genauso klauen.`],
+      : `${k.karten} Karten, ${k.punkte} Punkte — bis zu ${k.maxKarten} passen in jedes Sternbild. Vorsicht: Was offen liegt, kann der Gegner genauso klauen.`],
   },
   tauschen: {
     vor: () => [
@@ -10692,6 +10757,14 @@ const RL_TXT_LEHRE = {
     danach: () => ['Getauscht — schau, was du gezogen hast. Im nächsten Zug geht wieder etwas.'],
   },
   tauschenTipp: () => ['Wenn einmal gar nichts passt: eine Handkarte antippen, dann unten »Karte tauschen«. Das kostet den Zug, du ziehst aber sofort nach.'],
+  // Spieltest-Runde 9: „Karte tauschen" kommt im ersten Kampf früh — auch wenn etwas anderes ginge (ein Tester suchte den Abwurf).
+  tauschenFrueh: {
+    vor: () => [
+      'Noch ein Zug, den du jederzeit hast: eine Karte tauschen. Eine Karte, die dir nichts bringt, wirfst du ab und ziehst sofort eine neue — das kostet den Zug.',
+      'Tipp die gezeigte Handkarte an, dann unten auf »Karte tauschen«.',
+    ],
+    aufgabe: () => 'Karte tauschen: Tipp die gezeigte Handkarte an, dann unten auf »Karte tauschen«.',
+  },
   versiegeln: {
     vor: (k) => [
       `Dein ${k.typName} ist ${k.punkte} Punkte wert, aber nicht versiegelt — das kann wieder verloren gehen.`,
@@ -10748,12 +10821,12 @@ const RL_TXT_LEHRE = {
     ],
   },
   joker: {
-    vor: () => ['Die Sternschnuppe ist ein Joker: Im Sternbild vertritt sie jede Zahl. Bau sie ein — tipp die gezeigten Karten an und bestätige.'],
+    vor: () => ['Die Sternschnuppe ist ein Joker: Im Sternbild vertritt sie jede Zahl — nur ein Kreuz und den Drachen schließt sie nicht ab. Bau sie ein: Tipp die gezeigten Karten an und bestätige.'],
     aufgabe: () => 'Joker einbauen: die gezeigten Karten antippen, dann unten bestätigen.',
     danach: () => ['Der Joker liegt. Achtung: Wer die echte Zahl auf der Hand hat, kann ihn dir herausklauen — nur das Siegel schützt.'],
   },
   jokerklau: {
-    vor: () => ['Beim Gegner liegt eine Sternschnuppe, und du hast die Zahl, die sie vertritt. Tippst du die Sternschnuppe an, tauschst du deine Karte dagegen und baust mit dem Joker sofort ein neues Sternbild.'],
+    vor: () => ['Beim Gegner liegt eine Sternschnuppe, und du hast die Zahl, die sie vertritt. Tipp die STERNSCHNUPPE selbst an, nicht das Sternbild: Du tauschst deine Karte dagegen und baust mit dem Joker sofort ein neues Sternbild.'],
   },
   drache: {
     vor: (k) => [`Du hast zwei fertige Sechser-Pfeile: 1 bis 6 und 7 bis 12. Zusammen sind sie der Drache — ${k.drache} Punkte! Drück unten auf »Drachen zusammensetzen«.`],
@@ -10794,6 +10867,12 @@ const RL_TXT_LEHRE = {
     hinweis: (k) => `${k.namen.join(' und ')}: ab dem nächsten Kampf dabei. V2-A2 zeigt dir dort, wie es geht.`,
     neuImKampf: (namen) => `Neu in diesem Kampf: ${namen.join(' · ')}`,
     formZu: 'noch gesperrt — V2-A2 schaltet es im Lehrlauf frei',
+    packZu: 'noch gesperrt — kommt später im Lehrlauf',
+    // Nur erklärt, nicht gebaut (Spieltest-Runde 9): der Drache vor der ersten Elite.
+    erklaert: 'Neu erklärt',
+    erklaertName: { DRACHE: 'Der Drache' },
+    erklaertText: { DRACHE: (k) => `Zwei fertige Sechser-Pfeile — 1 bis 6 und 7 bis 12 — werden zusammen zum Drachen: ${k.punkte} Punkte, mehr geht nicht. Liegt beim Gegner ein fertiger Sechser-Pfeil, der deinen ergänzt, holst du ihn dir per Drachenklau: Handkarten abwerfen, sein Pfeil kommt zu dir.` },
+    seiteErklaert: (name) => `${name}: Sobald es so weit ist, zeigt dir V2-A2 den Zug. Manche Gegner jagen ihn — solange ich dich begleite, baut aber keiner einen.`,
   },
   // Die Schirme des Lehrlaufs (Sternkarte, Planetenschirm, Umlaufbahn, Flug) — Schlüssel wie in RlFuehrung.lehrSchritte().
   schirm: {
@@ -10833,9 +10912,15 @@ const RL_TXT_LEHRE = {
     planetenpack: () => ['Das zweite Pack ist das Planetenpack: Karten, die es nur auf diesem Planeten gibt. Jedes Pack geht je Shop einmal auf.'],
     werkstatt: (k) => [`Die Werkstatt macht eine Zahlenkarte zum Riesen: Sie zählt dann in jedem Sternbild ${k.riese} Punkte mehr. Karte antippen, dann »Zum Riesen«.`],
     rest: () => ['»Neu würfeln« tauscht die Angebote gegen Geld. »Deck ansehen« zeigt alle deine Karten, Module und Sternbildstufen — auch mitten im Kampf.'],
-    flugStart: () => ['Der Boss ist besiegt! Im Flug ist der Laden größer: Kartenmarkt, Kosmisches Kabinett und ein Schiffsmodul.'],
+    flugStart: (k = {}) => [k.kabinett === false
+      ? 'Der Boss ist besiegt! Im Flug ist der Laden größer: Kartenmarkt und ein Schiffsmodul — das Kosmische Kabinett füllt sich, sobald du alle kosmischen Grundkarten kennst.'
+      : 'Der Boss ist besiegt! Im Flug ist der Laden größer: Kartenmarkt, Kosmisches Kabinett und ein Schiffsmodul.'],
     flugSchleuse: (k) => [`Neu ist die Luftschleuse: Dort wirfst du bis zu ${k.frei} Karten aus dem Deck — gratis. Ein kleines Deck zieht öfter das Gute.`],
     flugWeiter: () => ['»Weiterfliegen« bringt dich zur Sternkarte. Dort wählst du den nächsten Planeten.'],
+    // Spieltest-Runde 9: Packs und kosmische Karten kommen in den Lehrlauf-Shop erst, wenn V2-A2 sie erklärt hat.
+    packsZu: 'Packs: V2-A2 erklärt sie im nächsten Shop — bis dahin bleiben sie zu.',
+    kabinettZu: 'Das Kabinett füllt sich, sobald du alle kosmischen Grundkarten kennst.',
+    kosmischFrei: () => ['Alle fünf kosmischen Grundkarten liegen jetzt in deinem Deck. Ab jetzt gibt es hier auch kosmische Karten zu kaufen — auch neue, die ich nicht erkläre. Was eine tut, steht unter »Details«.'],
   },
   formenTafel: {
     vor: () => ['Alle Sternbilder mit ihren Punkten findest du jederzeit oben rechts unter »Formen«. Tipp den Knopf jetzt einmal an.'],
@@ -10948,6 +11033,8 @@ const RL_TXT_SCHIRM = {
   stationen: ['Lakai 1', 'Lakai 2', 'Elite', 'Boss'],
   unbekannt: 'noch unbekannt',
   peilsenderHinweis: 'Peilsender: du siehst alle Gegner dieses Planeten.',
+  // Details eines Planeten auf der Sternkarte (Spieltest-Runde 9)
+  detailsBoss: 'Boss', detailsEliten: 'Mögliche Eliten (eine davon wartet dort)', detailsLakaien: 'Lakaien',
   verhalten: 'Verhalten',
   privilegien: 'Privilegien',
   keinePrivilegien: 'keine',
@@ -11122,11 +11209,11 @@ const RL_TXT_SCHIRM = {
 const RL_TXT_ZIEL = {
   SCHWARZES_LOCH: 'Schwarzes Loch: welches Sternbild soll zerfallen?',
   WEISSES_LOCH: 'Weißes Loch: welche Karte willst du herausziehen?',
-  KOMET: 'Komet: welche Karte soll aus einem fremden Sternbild fliegen? Sie geht auf die Ablage ihres Besitzers.',
+  KOMET: 'Komet: welche Karte soll aus einem Sternbild des Gegners fliegen? Sie geht auf die Ablage ihres Besitzers.',
   GRAVITATION: 'Gravitation: welche Karte aus der Mitte willst du auf die Hand ziehen?',
   STERNENSTAUB: 'Sternenstaub: welche Zahlenkarte deiner Hand soll einen neuen Wert bekommen?',
   ROTE_RIESIN: 'Rote Riesin: welches eigene Sternbild zählt diese Runde doppelt?',
-  EKLIPSE: 'Eklipse: welches fremde Sternbild willst du verdunkeln? Danach Handkarten wählen und das Sternbild antippen.',
+  EKLIPSE: 'Eklipse: welches Sternbild des Gegners willst du verdunkeln? Danach Handkarten zum Abwerfen wählen und das Sternbild antippen — dann gehört es dir.',
   AUSRICHTUNG: 'Ausrichtung: welcher Sternbildtyp bringt dir diese Runde einen Punkt mehr je Karte?',
   wertFrage: 'Sternenstaub: welchen Wert soll die Karte bekommen?',
   typFrage: 'Ausrichtung: welcher Typ?',
@@ -11574,6 +11661,7 @@ function rueckseiteEl(opt = {}) {
  */
 function sternbildEl(sb, opt = {}) {
   const e = el('div', 'sternbild');
+  if (sb.eklipse) e.classList.add('verdunkelt');   // Eklipse (Roguelike): in diesem Zug raubbar — sichtbar verdunkelt (Spieltest-Runde 9)
   e.dataset.typ = sb.typ ?? 'WRACK';   // ohne gültige Form: Wrack
   e.dataset.sb = sb.id;
   if (sb.versiegelt) e.classList.add('versiegelt');
@@ -11656,7 +11744,7 @@ function sternbildEl(sb, opt = {}) {
         ? 'Antippen: diese Sternschnuppe gegen deine passende Karte tauschen'
         : undefined,
     });
-    if (jokerHolbar) kk.dataset.sb = sb.id;
+    if (jokerHolbar) { kk.dataset.sb = sb.id; kk.classList.add('joker-holbar'); }   // die Sternschnuppe selbst leuchtet (Spieltest-Runde 9)
     reihe.appendChild(kk);
   }
   e.appendChild(reihe);
@@ -11766,6 +11854,7 @@ function zeichneGegner(dom, s) {
     art.dataset.idx = String(sp.idx);
     art.dataset.sitz = sitze[n++] || 'oben';
     if (sp.idx === s.z.amZug) art.classList.add('aktiv');
+    if (sp.nebel) art.classList.add('im-nebel');   // Nebel (Roguelike): diese Runde nicht klaubar — sichtbar (Spieltest-Runde 9)
 
     const info = infos ? infos[sp.idx] || null : null;
     if (info) {
@@ -11819,6 +11908,28 @@ function zeichneGegner(dom, s) {
       }
       faecher.appendChild(el('span', 'rl-gegner-faecher-zahl', String(sp.handAnzahl)));
       art.appendChild(faecher);
+      // Spieltest-Runde 9: Deck und Ablage des Gegners neben dem Fächer — ein Tester wusste nicht, woher der Bot zieht.
+      const st = rl.gegnerStapel && rl.gegnerStapel[sp.idx];
+      if (st) {
+        const stapel = el('div', 'rl-gegner-stapel');
+        const deck = el('div', 'rl-gegner-deck');
+        deck.title = 'Sein Deck: ' + st.deck + ' Karten';
+        deck.appendChild(rueckseiteEl({ planet: info.ruecken || info.planet }));
+        deck.appendChild(el('span', 'rl-gegner-stapel-zahl', String(st.deck)));
+        deck.appendChild(el('span', 'rl-gegner-stapel-name', 'Deck'));
+        const ablage = el('div', 'rl-gegner-ablage');
+        ablage.title = 'Seine Ablage: ' + st.ablage + ' Karten' + (st.oben ? ', die oberste liegt offen' : '');
+        if (st.oben) {
+          const oben = karteEl(st.oben, 'ablage', { klickbar: false });
+          oben.dataset.id = 'ablage-' + sp.idx;   // keine Tisch-Id: die Bewegung soll sie nicht als gewanderte Karte deuten
+          ablage.appendChild(oben);
+        } else ablage.appendChild(el('div', 'karte stapel-leer'));
+        ablage.appendChild(el('span', 'rl-gegner-stapel-zahl', String(st.ablage)));
+        ablage.appendChild(el('span', 'rl-gegner-stapel-name', 'Ablage'));
+        stapel.appendChild(deck);
+        stapel.appendChild(ablage);
+        art.appendChild(stapel);
+      }
     }
 
     // Gegnerische Sternbilder liegen IMMER offen mit ihren Karten da.
@@ -12038,6 +12149,7 @@ function zeichneIch(dom, s) {
   if (dom.ichBereich) dom.ichBereich.classList.toggle('aktiv', !!s.dranMensch);
   if (dom.handBereich) dom.handBereich.classList.toggle('aktiv', !!s.dranMensch);
   if (dom.dranMarke) dom.dranMarke.hidden = !s.dranMensch;
+  if (dom.ichBereich) dom.ichBereich.classList.toggle('im-nebel', !!ich.nebel);   // Nebel (Roguelike, Spieltest-Runde 9)
 
   leere(dom.meineSternbilder);
   if (ich.sternbilder.length === 0) {
@@ -12269,11 +12381,26 @@ function fliegeUm(vorher, opt = {}) {
   // Karten, die der Zug ganz vom Tisch genommen hat (zerstört, auf die Ablage).
   for (const [id, alt] of vorher) {
     if (jetzt.has(id) || !istSp(alt.ort)) continue;
-    const ziel = ablageZiel(alt.r);
+    // Roguelike (Spieltest-Runde 9): was ein Gegner verliert, fliegt auf SEINE Ablage (sie ist jetzt sichtbar).
+    const g = alt.el && alt.el.closest ? alt.el.closest('.gegner') : null;
+    const eigene = g ? g.querySelector('.rl-gegner-ablage') : null;
+    const er = eigene ? eigene.getBoundingClientRect() : null;
+    const ziel = er && er.width ? { left: er.left, top: er.top, width: alt.r.width, height: alt.r.height } : ablageZiel(alt.r);
     if (ziel) fluege.push({ id, von: alt.r, nach: ziel, art: 'zerstoert', quelle: alt.el, weg: true });
   }
 
-  if (!fluege.length && !opt.trost && !opt.geld && !opt.schaden && !opt.heilung) return Promise.resolve();
+  // Roguelike (Spieltest-Runde 9): Abwürfe der Gegner — die Karte fliegt aus seinem Fächer auf seine Ablage.
+  for (const ab of opt.abwuerfe || []) {
+    const von = document.querySelector('.gegner[data-idx="' + ab.idx + '"] .rl-gegner-faecher');
+    const nach = document.querySelector('.gegner[data-idx="' + ab.idx + '"] .rl-gegner-ablage .karte');
+    if (!von || !nach) continue;
+    const a = von.getBoundingClientRect(), b = nach.getBoundingClientRect();
+    if (!a.width || !b.width) continue;
+    fluege.push({ id: NaN, von: { left: a.left + a.width / 2 - b.width / 2, top: a.top + 6, width: b.width, height: b.height }, nach: { left: b.left, top: b.top, width: b.width, height: b.height }, art: 'abwurf', quelle: nach });
+  }
+  // Kosmische Karten ohne Kartenflug (Nebel, Eklipse, Sternenstaub …) bekommen wenigstens ihr Schild.
+  const kosmischSchild = !!kosmisch && !['SCHWARZES_LOCH', 'NOVA', 'URKNALL', 'WEISSES_LOCH', 'MILCHSTRASSE'].includes(kosmisch) && document.body.dataset.modus === 'roguelike';
+  if (!fluege.length && !opt.trost && !opt.geld && !opt.schaden && !opt.heilung && !kosmischSchild) return Promise.resolve();
 
   /* ---------------- Was für ein Vorgang ist das? ---------------- */
 
@@ -12328,6 +12455,7 @@ function fliegeUm(vorher, opt = {}) {
   buehne.title = 'Antippen: überspringen';
   document.body.appendChild(buehne);
   const versteckt = [];
+  const verstecktEl = [];   // Elemente ohne Tisch-Id (Ablage eines Gegners), die während des Flugs unsichtbar sind
   const zeitgeber = [];
   const teile = [];
 
@@ -12361,6 +12489,7 @@ function fliegeUm(vorher, opt = {}) {
     if (warnZeit && f.art !== 'legen' && f.art !== 'ziehen') klon.classList.add('warnung');
     buehne.appendChild(klon);
     if (echt) { echt.style.visibility = 'hidden'; versteckt.push(f.id); }
+    else if (f.art === 'abwurf' && f.quelle) { f.quelle.style.visibility = 'hidden'; verstecktEl.push(f.quelle); }
     teile.push({ f, klon });
   }
 
@@ -12396,6 +12525,7 @@ function fliegeUm(vorher, opt = {}) {
         const e = document.querySelector('.karte[data-id="' + id + '"]');
         if (e) e.style.visibility = '';
       }
+      for (const e of verstecktEl) e.style.visibility = '';
       fertig();
     };
     // Antippen bricht ab — man sieht diese Bilder oft.
@@ -12412,6 +12542,13 @@ function fliegeUm(vorher, opt = {}) {
         rlSchildEinblenden(buehne, RL_TXT_UI.schild.klau, 'gelb', h.x, h.y - 30);
       } else if (zerstoerte.length) {
         rlSchildEinblenden(buehne, RL_TXT_UI.schild.zerstoert, 'rot', herd.x, herd.y - 30);
+      } else if (kosmischSchild) {
+        // Wo? Eklipse: das verdunkelte Sternbild · Nebel: der eingenebelte Spieler · sonst die Mitte des Tisches.
+        const ziel = kosmisch === 'EKLIPSE' ? document.querySelector('.sternbild.verdunkelt')
+          : kosmisch === 'NEBEL' ? document.querySelector('.im-nebel .sternbilder, #ich-bereich.im-nebel #meine-sternbilder')
+          : document.getElementById('mitte-karten');
+        const r = ziel ? ziel.getBoundingClientRect() : null;
+        rlSchildEinblenden(buehne, (ART_TEXT[kosmisch] || kosmisch).toUpperCase() + '!', kosmisch === 'NEBEL' ? 'blau' : 'gelb', r && r.width ? r.left + r.width / 2 : tischMitte.x, r && r.width ? r.top + 12 : tischMitte.y);
       }
       if (opt.schaden && opt.schaden.betrag > 0) {
         // Bossschaden: die Figur zuckt zusammen und ein BUMM! steht über ihr; ohne Figur das KLIRR an der Leiste.
@@ -14552,6 +14689,8 @@ const RL_KONFIG = {
     werkstatt: { umlaufbahn: 1, imFlug: null },
   },
   schwierigkeit: {
+    // Duo (zweiter Lakai am Tisch): seit Spieltest-Runde 9 AUS (99 = nie). Vorher: ab Platz 3 immer, auf Platz 2 bei der Elite.
+    duo: { abPlatz: 99, eliteAbPlatz: 99 },
     zweitesPrivilegAb: 2,                            // ab dieser Stufe steht im Gegnerplan ein zweites Privileg
     zweitesPrivilegAbPlatz: { 1: 99, 2: 2, 3: 1 },   // … Lakaien tragen es aber erst ab diesem Platz im Lauf (Stufe → Platz)
     // Aussetzer (Spieltest-Runde 1): Wahrscheinlichkeit je Zug, dass ein Lakai nur eine Karte abwirft statt zu spielen —
@@ -14591,6 +14730,8 @@ const RL_KONFIG = {
     // Tutorial zu lang. Den letzten Planeten fliegt man allein: keine Wiederholung mehr, wer dort verliert, strandet wie im echten
     // Raubzug (V2-A2 erklärt es dann, der nächste Lauf beginnt auf diesem Planeten).
     begleitetBisPlatz: 2,
+    packsAbStation: 1,                               // Packs im Shop erst, wenn V2-A2 sie erklärt (ab Station 1 = Shop 2) — vorher bleiben sie zu (Spieltest-Runde 9)
+    tauschenAbZug: 3,                                // „Karte tauschen" kommt im ersten Kampf spätestens ab diesem Zug als Lektion, auch wenn etwas anderes passt
     zuegeJeRunde: { 1: 6, 2: 7, 3: 8 },              // Züge je Runde nach Platz (echter Lauf: 9) — kürzer, damit der Lehrlauf rund 40 Minuten dauert
     // Aussetzer der Lakaien [Lakai 1, Lakai 2, Elite] je Platz — höher als im echten Lauf (dort Stufe 1: 0.45/0.35/0.25 …)
     // Gemessen mit einem ANFÄNGER auf dem Menschensitz (einfacher Bot, kauft nichts): Ziel ≥ 90 % Siege im ersten Anlauf.
@@ -14599,7 +14740,7 @@ const RL_KONFIG = {
     bossLebenFaktor: { 1: 0.55, 2: 0.55, 3: 0.65 },  // Bossleben je Platz (kürzere Runden, weniger Formen → weniger Punkte)
     // Nachhilfe: jeder verlorene Anlauf macht DIESEN Kampf leichter (mehr Aussetzer, weniger Bossleben) — niemand bleibt hängen.
     nachhilfe: { aussetzer: 0.15, bossLeben: 0.12, max: 4 },
-    duoAbPlatz: 3,                                   // zwei Gegner am Tisch erst auf dem letzten Planeten
+    duoAbPlatz: 99,                                  // kein zweiter Lakai am Tisch (Spieltest-Runde 9; echte Gruppen-Gegner bleiben)
     // Überspringen (Spieltest-Runde 7): erst auf dem letzten Planeten — auf Planet 1 und 2 hängt an jedem Kampf eine Freischaltung —
     // und je Planet nur einmal (der Tester übersprang zwei Kämpfe in Folge und stand ohne Geld und Lektionen vor der Elite).
     ueberspringenAbPlatz: 3,
@@ -15757,8 +15898,9 @@ class RlFuehrung {
     if (pflicht && typeof document !== 'undefined') document.body.dataset.rlRedet = '1';
     // Spieltest-Runde 7: V2-A2 redet nicht mehr in eine Bewegung hinein. Seine Blase kam 100 ms nach dem Zug und legte sich
     // über das Schwarze Loch oder den Bossschaden — jetzt wartet er, bis die Bühne leer ist (der Tisch ist solange schon gesperrt).
+    const sextantNr = this.sextant.nr;   // Spieltest-Runde 9: wurde V2-A2 inzwischen weggeschickt (Freischalt-Seite), fällt die Rede aus
     return rlTutorialBisRuhe().then(() => {
-      if (nr !== this.redeNr) return false;   // inzwischen hat eine neuere Rede übernommen
+      if (nr !== this.redeNr || this.sextant.nr !== sextantNr) return false;   // inzwischen hat eine neuere Rede übernommen
       return this.sextant.erzaehle(saetze, { ...opt, pflicht });
     }).then((ok) => {
       if (nr === this.redeNr && typeof document !== 'undefined') delete document.body.dataset.rlRedet;
@@ -16061,12 +16203,14 @@ class RlFuehrung {
         { key: 'shop:planetenpack', art: 'reden', wenn: () => station >= 1, saetze: () => T.planetenpack(), frei: nurLesen, ziel: '.rl-pack[data-pack="planet"]', seite: 'rechts' },
         { key: 'shop:werkstatt', art: 'reden', wenn: () => station >= 2, saetze: () => T.werkstatt({ riese: RL_KONFIG.karten.riese }), frei: nurLesen, ziel: '.rl-aufwertung', seite: 'rechts' },
         { key: 'shop:rest', art: 'reden', wenn: () => station >= 2, saetze: () => T.rest(), frei: nurLesen, ziel: '[data-rl="deck"], [data-rl="reroll"]', seite: 'rechts' },
+        // Spieltest-Runde 9: kosmische Karten liegen im Lehrlauf-Shop erst, wenn alle Grundkarten geschenkt sind — dann sagt V2-A2 es.
+        { key: 'shop:kosmischFrei', art: 'reden', wenn: () => lauf.lehrShopVoll(), saetze: () => T.kosmischFrei(), frei: nurLesen, ziel: '.rl-shop-kacheln', seite: 'rechts' },
       ];
     }
     if (ansicht === 'imflug') {
       const frei = ((shop().luftschleuse || {}).frei) ?? RL_KONFIG.shop.imFlug.luftschleuse;
       return [
-        { key: 'flug:start', art: 'reden', saetze: () => T.flugStart(), frei: nichts, pose: 'freut', seite: 'rechts' },
+        { key: 'flug:start', art: 'reden', saetze: () => T.flugStart({ kabinett: lauf.lehrShopVoll() }), frei: nichts, pose: 'freut', seite: 'rechts' },
         { key: 'flug:schleuse', art: 'reden', saetze: () => T.flugSchleuse({ frei }), frei: nurLesen, ziel: '.rl-luftschleuse', seite: 'rechts' },
         { key: 'flug:weiter', art: 'reden', saetze: () => T.flugWeiter(), frei: nurLesen, ziel: '[data-rl="weiter"]', seite: 'rechts' },
       ];
@@ -16475,7 +16619,7 @@ const RL_LEHRPLAN = {
   stationen: [
     { formen: ['PFEIL'], geschenk: [], wunsch: 'PFEIL', klauBuehne: true },        // Planet 1, Lakai 1 — dazu die Klau-Bühne (s. rlLehrStellen)
     { formen: ['WAGEN'], geschenk: ['MILCHSTRASSE'], wunsch: 'WAGEN' },            // Planet 1, Lakai 2
-    { formen: ['KREUZ'], geschenk: ['SCHWARZES_LOCH'], wunsch: 'KREUZ' },          // Planet 1, Elite
+    { formen: ['KREUZ'], geschenk: ['SCHWARZES_LOCH'], wunsch: 'KREUZ', erklaert: ['DRACHE'] },   // Planet 1, Elite — dazu erklärt V2-A2 den Drachen (manche Eliten jagen ihn)
     { formen: ['KRONE'], geschenk: [], wunsch: 'KRONE' },                          // Planet 1, Boss
     { formen: ['ZWILLING'], geschenk: ['STERNSCHNUPPE'], wunsch: 'ZWILLING' },     // Planet 2, Lakai 1
     { formen: ['DOPPELSTIER'], geschenk: ['WEISSES_LOCH'], wunsch: 'DOPPELSTIER' }, // Planet 2, Lakai 2
@@ -16548,13 +16692,14 @@ function rlLehrFrei(nr) {
 
 /** Was zwischen `freiBis` (ausschließlich) und `nr` (einschließlich) neu dazukommt: `{formen, kosmische}`. */
 function rlLehrNeuAn(freiBis, nr) {
-  const formen = [], kosmische = [];
+  const formen = [], kosmische = [], erklaert = [];
   const S = RL_LEHRPLAN.stationen;
   for (let i = Math.max(0, freiBis + 1); i < S.length && i <= nr; i++) {
     formen.push(...S[i].formen);
     kosmische.push(...S[i].geschenk);
+    erklaert.push(...(S[i].erklaert ?? []));   // nur erklärt, nicht gebaut (Drache, Spieltest-Runde 9)
   }
-  return { formen, kosmische };
+  return { formen, kosmische, erklaert };
 }
 
 /** Sitzregeln des Lehrlaufs an Station `nr` (für ALLE Sitze): `{erlaubteTypen}` — leer, sobald alles frei ist. */
@@ -16644,6 +16789,14 @@ function rlLehrFaellig(k) {
       if (!lektion.dringend && k.letzterLehrZug > 0 && k.zugNr - k.letzterLehrZug <= abstand) continue;
     }
     if (rlLehrAusgeloest(lektion, k.spiel, k.idx, k.optionen)) return lektion;
+  }
+  // Spieltest-Runde 9: „Karte tauschen" kommt im ersten Kampf spätestens ab `tauschenAbZug` — auch wenn etwas anderes passt.
+  // Ein Tester wollte früh abwerfen und wusste nicht, wie; vorher kam die Lektion nur, wenn gar nichts ging (45 % der Läufe).
+  const frueh = RL_KONFIG.lehrlauf.tauschenAbZug ?? 0;
+  if (frueh > 0 && k.stationNr === 0 && k.zugNr >= frueh && !gelernt.tauschen && !k.zugLektion
+      && (k.optionen.aktionen ?? []).some((a) => a.art === 'ABWERFEN')) {
+    const l = RL_LEKTIONEN.find((x) => x.key === 'tauschen');
+    if (l) return { ...l, frueh: true };
   }
   return null;
 }
@@ -17105,6 +17258,434 @@ class RlLehrgang {
   }
 }
 
+/* ===== app\roguelike\rl-details.js ===== */
+/**
+ * Roguelike-Modus — Details-Fenster (Spieltest-Runde 2): die lange Erklärung eines Angebots, einer
+ * Pack-Karte, einer Planetenkarte, eines Packs oder einer Sternbildstufe, mit großer Vorschau und Beispiel.
+ * Anton: „bei manchen weiß man doch gar nicht direkt, was sie machen" — hier steht es.
+ *
+ * Vertrag für die Aufrufer (rl-shop-ui.js):
+ *   rlDetailsKnopf(schluessel, opt)            → button.rl-knopf.klein.rl-details-knopf[data-rl="details"][data-key]
+ *   rlDetailsZeigen(wurzel, schluessel, opt)   → Ebene (.rl-ebene[data-ebene="details"]) in `wurzel`, Rückgabe das Element
+ *   rlDetailsEintrag(schluessel, opt)          → { name, sorte, groesse, preis, spec, kurz, lang, beispiel, planet, typ }
+ * Schlüssel: Katalogschlüssel (RL_KATALOG: 'zahl-7', 'spiegel-3', 'leucht-5', 'anker-9', 'sternschnuppe',
+ *   'schwarzes-loch' …, Module, Vorrat, 'riese', 'ueberriese', 'sternwarte', Planetenkarten 'frost-eiszapfen' …),
+ *   'stufe:PFEIL' … (Sternbildstufe eines Typs), 'pack:sternbilder', 'pack:planet' (mit opt.planet).
+ *   `opt.spec` (KartenSpec) oder `opt.angebot` überlagern den Katalogeintrag (Preis, Größenklasse, Spec);
+ *   `opt.stufe` ist die aktuelle Stufe des Typs (für 'stufe:…').
+ * Texte: RL_TXT_DETAILS hier (Ausnahme von „alle Texte in rl-texte.js": die Texte gehören zum Fenster).
+ *   Jeder Eintrag `{ lang, beispiel }` ist ein Satz oder eine Funktion des Kontexts
+ *   `{ w, g, K, P, bonus, max, wahl, stufe }` — alle Spielzahlen kommen aus RL_KONFIG bzw. CONFIG.
+ *
+ * Top-Level-Namen dieser Datei: RL_TXT_DETAILS, RL_DETAILS_FORM_WERTE, RL_DETAILS_SORTE, rlDetailsKontext,
+ *   rlDetailsText, rlDetailsEintrag, rlDetailsKnopf, rlDetailsKarte, rlDetailsVorschauEl, rlDetailsMarkenEl, rlDetailsZeigen.
+ */
+
+/** Beispielwerte je Sternbildtyp für die Vorschau einer Sternbildstufe (wie die Formentafel). */
+const RL_DETAILS_FORM_WERTE = {
+  PFEIL: [4, 5, 6, 7], WAGEN: [2, 5, 8, 11], KRONE: [6, 6, 6, 2, 2],
+  KREUZ: [9, 9, 9, 9], ZWILLING: [4, 4, 8, 8, 11, 11], DOPPELSTIER: [3, 3, 3, 9, 9, 9],
+};
+
+/** Anzeigenamen der Sorten in der Kopfzeile des Fensters. */
+const RL_DETAILS_SORTE = {
+  zahl: 'Karte', kosmisch: 'Kosmische Karte', modul: 'Schiffsmodul', vorrat: 'Vorrat', aufwertung: 'Aufwertung',
+  sternwarte: 'Sternwarte', planet: 'Planetenkarte', stufe: 'Sternbildstufe', pack: 'Pack', welt: 'Planet',
+};
+
+/**
+ * Lange Texte und Beispiele. Gruppen 'zahl' / 'spiegel' / 'leucht' / 'anker' gelten für alle Werte
+ * (der Wert steht im Kontext als `w`, die Spiegelseite als `g`).
+ */
+const RL_TXT_DETAILS = {
+  /* ---------- Zahlenkarten ---------- */
+  zahl: {
+    lang: (c) => `Eine gewöhnliche ${c.w} für dein Deck. Mehr Kopien eines Werts machen Sternbilder mit gleichen Werten leichter: Krone, Kreuz, Zwilling und Doppelstier brauchen Paare, Drillinge oder Vierlinge. Für Pfeile und Wagen füllt sie Lücken in deiner Folge.`,
+    beispiel: (c) => `Mit drei Karten ${c.w} im Deck ziehst du öfter zwei davon auf die Hand, die Grundlage für einen Zwilling oder eine Krone.`,
+  },
+  spiegel: {
+    lang: (c) => `Eine Spiegelkarte zeigt ${c.w} oder ${c.g}. Du drehst sie auf der Hand, so oft du willst, und das kostet keinen Zug. Liegt sie in einem Sternbild, bleibt der Wert, mit dem du sie gelegt hast.`,
+    beispiel: (c) => `Dir fehlt die ${c.g} für einen Pfeil: Spiegelkarte antippen, „Spiegelkarte drehen", und aus der ${c.w} wird die ${c.g}.`,
+  },
+  leucht: {
+    lang: (c) => `Eine ${c.w}, die leuchtet. Liegt sie bei der Wertung in einem gültigen Sternbild, bringt sie +${c.K.karten.leucht} Punkt, und zwar in jeder Runde wieder. Im Bosskampf ist das zusätzlicher Schaden.`,
+    beispiel: (c) => `Ein Pfeil aus drei Karten bringt ${c.P.PFEIL[3]} Punkte. Mit der Leuchtkarte darin sind es ${c.P.PFEIL[3] + c.K.karten.leucht}, bei jeder Wertung.`,
+  },
+  anker: {
+    lang: (c) => `Eine ${c.w} mit Anker. Das Sternbild, in dem sie liegt, kann dir niemand klauen, egal wie klein es ist. Gegen Schwarzes Loch, Urknall und Komet hilft der Anker nicht, davor schützt nur das Siegel.`,
+    beispiel: () => 'Dein Dreier-Pfeil wäre leichte Beute für einen Dieb. Mit der Ankerkarte darin bleibt er liegen, und du baust ihn in Ruhe aus.',
+  },
+  sternschnuppe: {
+    lang: () => 'Der Joker. Im Sternbild vertritt er jeden Wert, den du gerade brauchst. Kreuz und Drache lassen sich mit ihm nicht abschließen, und ein Gegner mit der echten Karte auf der Hand kann ihn herausklauen.',
+    beispiel: () => 'Du hast 4, 5 und 7 auf der Hand: Die Sternschnuppe spielt die 6, und der Pfeil 4-5-6-7 steht.',
+  },
+
+  /* ---------- Kosmische Karten (kosten keinen Zug, eine je Zug) ---------- */
+  'schwarzes-loch': {
+    lang: () => 'Zerstört ein ganzes Sternbild eines Gegners, auch ein fertiges. Nur versiegelte Sternbilder hält es nicht auf. Die Karten gehen auf die Ablagen ihrer Besitzer. Wie jede kosmische Karte kostet es keinen Zug.',
+    beispiel: () => 'Der Boss hat einen Sechser-Pfeil liegen, an dem er sich heilt: Schwarzes Loch darauf, danach spielst du deinen normalen Zug.',
+  },
+  'weisses-loch': {
+    lang: () => 'Zieht eine Karte deiner Wahl aus einem unversiegelten Sternbild des Gegners auf deine Hand. Was übrig bleibt, ist oft kein gültiges Sternbild mehr: ein Wrack mit 0 Punkten, das sich leicht klauen lässt.',
+    beispiel: () => 'Aus der Krone 6-6-6-2-2 des Gegners ziehst du eine 6. Er hat ein Wrack, du hast die 6 für dein eigenes Sternbild.',
+  },
+  urknall: {
+    lang: () => 'Alle offenen Sternbilder am Tisch zerfallen, auch deine eigenen. Fertige Sternbilder (Kreuz, sechs Karten, Drache) und versiegelte bleiben liegen.',
+    beispiel: () => 'Du hast nur Versiegeltes ausliegen, der Gegner vier offene Sternbilder: Urknall, und nur er verliert.',
+  },
+  milchstrasse: {
+    lang: () => `Du ziehst sofort ${CONFIG.kosmisch.milchstrasseKarten} Karten aus deinem Deck. Mehr Handkarten heißt mehr Möglichkeiten in diesem Zug, am Zugende füllst du nur bis zur normalen Handgröße auf.`,
+    beispiel: () => 'Mit vier Handkarten geht nur ein Dreier. Nach der Milchstraße hast du sechs auf der Hand und legst gleich einen Fünfer.',
+  },
+  komet: {
+    lang: () => 'Schießt eine Karte deiner Wahl aus einem unversiegelten Sternbild des Gegners. Sie geht auf die Ablage ihres Besitzers, nicht zu dir. Gegner mit „Immun gegen das Loch" trifft er nicht.',
+    beispiel: () => 'Der Gegner hat einen Fünfer-Pfeil. Der Komet nimmt die mittlere Karte heraus: kein Pfeil mehr, 0 Punkte, und du kannst das Wrack klauen.',
+  },
+  gravitation: {
+    lang: () => 'Holt eine Zahlenkarte oder Sternschnuppe aus der Mitte auf deine Hand. Danach darfst du beim Bauen trotzdem noch Karten aus der Mitte nehmen.',
+    beispiel: () => 'In der Mitte liegen 8, 9 und 10, du darfst beim Bauen aber nur zwei nehmen. Gravitation holt die 8 vorab, 9 und 10 nimmst du beim Bauen dazu.',
+  },
+  sternenstaub: {
+    lang: () => 'Eine Zahlenkarte auf deiner Hand bekommt einen neuen Wert von 1 bis 12. Der neue Wert bleibt für den Rest des Kampfes.',
+    beispiel: (c) => `Du hast 7, 7, 7 und eine 2. Sternenstaub macht aus der 2 eine 7, und das Kreuz 7-7-7-7 bringt ${c.P.KREUZ} Punkte.`,
+  },
+  funkspruch: {
+    lang: () => 'Zeigt dir die obersten drei Karten deines Decks. Sie stehen in der Leiste, bis du das nächste Mal ziehst.',
+    beispiel: () => 'Du siehst, dass als Nächstes die 9 kommt, und legst deinen Pfeil 6-7-8 so, dass sie im nächsten Zug passt.',
+  },
+  'weisser-zwerg': {
+    lang: () => 'Du ziehst drei Karten und wirfst danach zwei Handkarten deiner Wahl ab. So tauschst du schlechte Karten gegen bessere.',
+    beispiel: () => 'Auf der Hand liegen 1 und 12, die zu nichts passen. Drei neue Karten ziehen, dann 1 und 12 abwerfen.',
+  },
+  nebel: {
+    lang: () => 'Bis zum Ende dieser Runde kann dir niemand etwas klauen, auch kein Raub und kein Drachenklau. Schwarzes Loch und Komet treffen dich weiter.',
+    beispiel: () => 'Gegen einen Dieb: Nebel gleich zu Rundenbeginn, und deine offenen Sternbilder wachsen in Ruhe bis zur Wertung.',
+  },
+  'rote-riesin': {
+    lang: () => 'Ein eigenes gültiges Sternbild zählt bei der Wertung dieser Runde doppelt, mit allen Zuschlägen. Gegen den Boss ist das doppelter Schaden.',
+    beispiel: (c) => `Dein Sechser-Pfeil bringt ${c.P.PFEIL[6]} Punkte. Mit der Roten Riesin sind es ${2 * c.P.PFEIL[6]} in dieser Runde.`,
+  },
+  ausrichtung: {
+    lang: () => 'Du wählst einen Sternbildtyp. Jedes deiner Sternbilder dieses Typs bringt in dieser Runde einen Punkt mehr je Karte.',
+    beispiel: () => 'Du hast zwei Pfeile mit fünf und vier Karten liegen. Ausrichtung auf Pfeil bringt +9 Punkte in dieser Runde.',
+  },
+  eklipse: {
+    lang: () => 'Verdunkelt ein Sternbild des Gegners, das sonst sicher wäre: fertig oder durch ein Privileg geschützt, aber nicht versiegelt. Im selben Zug darfst du es rauben, also Handkarten abwerfen und das Sternbild unverändert nehmen.',
+    beispiel: (c) => `Der Gegner hat ein Kreuz (${c.P.KREUZ} Punkte) liegen. Eklipse darauf, zwei Handkarten abwerfen: Das Kreuz gehört dir, dazu gibt es Geld für vier geklaute Karten.`,
+  },
+  drachenatem: {
+    lang: (c) => `Für den Rest des Kampfes zählt dein Drache +${c.K.karten.drachenatem} Punkte bei jeder Wertung. Ohne Drachen bringt die Karte nichts, sie lohnt sich in Pfeil-Decks.`,
+    beispiel: (c) => `Drache ${c.P.DRACHE} + Drachenatem ${c.K.karten.drachenatem} = ${c.P.DRACHE + c.K.karten.drachenatem} Punkte je Runde.`,
+  },
+
+  /* ---------- Aufwertungen und Sternwarte ---------- */
+  riese: {
+    lang: (c) => `Eine Zahlenkarte deines Decks wird zum Riesen. Sie bringt +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt. Die Karte wählst du nach dem Kauf.`,
+    beispiel: () => 'Mach die Karte zum Riesen, die du fast immer legst, zum Beispiel eine 6 oder 7 in einem Pfeil-Deck.',
+  },
+  ueberriese: {
+    lang: (c) => `Ein Riese wird zum Überriesen: +${c.K.karten.ueberriese} statt +${c.K.karten.riese} Punkte je Wertung. Das geht nur auf eine Karte, die schon ein Riese ist.`,
+    beispiel: (c) => `Ein Dreier-Pfeil mit einem Überriesen bringt ${c.P.PFEIL[3]} + ${c.K.karten.ueberriese} = ${c.P.PFEIL[3] + c.K.karten.ueberriese} Punkte je Runde.`,
+  },
+  sternwarte: {
+    lang: (c) => `Deckt ${c.K.shop.sternwarte.aufdecken} zufällige Karten auf, drei Zahlen und zwei kosmische. Bis zu ${c.K.shop.sternwarte.nehmen} davon nimmst du ins Deck, der Rest verfällt.`,
+    beispiel: () => 'Du suchst noch eine 9 und eine Milchstraße. Die Sternwarte zeigt fünf Karten auf einmal, mit etwas Glück ist beides dabei.',
+  },
+
+  /* ---------- Schiffsmodule (dauerhaft für den ganzen Lauf) ---------- */
+  sichtluke: { lang: () => 'Die oberste Karte deines Decks liegt offen. Du weißt immer, was du als Nächstes ziehst.', beispiel: () => 'Oben liegt die 8: Du hebst dir 6 und 7 auf, statt sie abzuwerfen.' },
+  peilsender: { lang: () => 'Du siehst auf dem Planetenschirm schon alle Gegner dieses Planeten, nicht nur den nächsten.', beispiel: () => 'Du siehst, dass die Elite ein Dieb ist, und kaufst vorher eine Ankerkarte.' },
+  werkbank: { lang: () => 'Aufwertungen zum Riesen und Überriesen kosten zwei Geld weniger.', beispiel: (c) => `Der Riese kostet ${Math.max(0, c.K.shop.preise.riese - 2)} statt ${c.K.shop.preise.riese} Geld.` },
+  magnetnetz: { lang: () => 'Zu Beginn jedes Zuges holst du die oberste Zahlenkarte deiner Ablage zurück auf die Hand.', beispiel: () => 'Du wirfst eine 5 ab, die gerade nicht passt. Im nächsten Zug liegt sie wieder auf deiner Hand.' },
+  bergungsrecht: { lang: () => 'Wird dir ein Sternbild geklaut, bekommst du doppelte Trostpunkte.', beispiel: () => 'Ein geklauter Vierer-Pfeil bringt dir 8 statt 4 Trostpunkte.' },
+  zinsmodul: { lang: () => 'Nach jedem Kampf bekommst du ein Geld je volle zehn Geld an Bord, höchstens drei.', beispiel: () => 'Mit 24 Geld an Bord gibt es nach dem Kampf +2.' },
+  ladeluke: { lang: () => 'Beim Einsammeln am Rundenende bleibt deine wertvollste Handkarte liegen. Du startest die nächste Runde mit ihr.', beispiel: () => 'Die 12 auf deiner Hand bleibt, und du ziehst nur drei neue Karten dazu.' },
+  frachtraum: { lang: () => 'Du hältst dauerhaft fünf statt vier Handkarten.', beispiel: () => 'Mit fünf Handkarten gelingen Vierer und Fünfer deutlich öfter aus einer Hand.' },
+  greifarm: { lang: () => 'Beim Bauen darfst du drei statt zwei Karten aus der Mitte nehmen.', beispiel: () => 'Aus der Hand 4 und 5, aus der Mitte 6, 7 und 8: ein Fünfer-Pfeil in einem Zug.' },
+  schild: { lang: () => 'Versiegeln kostet dich keinen Zug mehr, es bleibt bei höchstens zwei Siegeln je Runde.', beispiel: () => 'Du baust einen Sechser-Pfeil und versiegelst ihn im selben Zug.' },
+  kompass: { lang: () => 'Ab Runde 2 bist du immer Startspieler.', beispiel: () => 'Du legst zuerst und nimmst dir die besten Karten aus der frischen Mitte.' },
+  enterhaken: { lang: () => 'Du brauchst nur eine statt zwei Handkarten, um zu klauen.', beispiel: () => 'Der Gegner hat 3-4-5 liegen. Mit einer einzigen 6 klaust du den Pfeil.' },
+  kaperbrief: { lang: () => 'Wem du klaust, der bekommt keine Trostpunkte.', beispiel: () => 'Du klaust einen Fünfer: Der Gegner verliert ihn und bekommt dafür nichts.' },
+  reaktor: { lang: () => 'Am Ende jeder Runde hast du einen Zug zusätzlich.', beispiel: () => 'Der Gegner ist fertig, du legst noch ein Sternbild vor der Wertung.' },
+
+  /* ---------- Vorrat (einmalig) ---------- */
+  notruf: { lang: (c) => `Überspringt einen Lakaien, ohne dass der Boss stärker wird. Sonst kostet Überspringen +${c.K.boss.schuldProUebersprungenem} Bossleben.`, beispiel: () => 'Die Elite sieht zu stark aus: Notruf einsetzen und direkt zum Boss.' },
+  sprungantrieb: { lang: () => 'Ein kostenloser Reroll im Shop. Er wird verbraucht, sobald du neu würfelst.', beispiel: () => 'Die vier Angebote passen nicht: einsetzen und gratis neu würfeln.' },
+  beobachtung: { lang: () => 'Öffnet sofort eine Sternwarte: fünf Karten aufdecken, bis zu zwei nehmen.', beispiel: () => 'Im Flug eingesetzt, holst du dir zwei Karten, ohne dafür zu bezahlen.' },
+  kartenskizze: { lang: () => 'Zeigt auf der Sternkarte die Lakaien der erreichbaren Planeten, bevor du den Kurs setzt.', beispiel: () => 'Du siehst, dass auf der Kronwelt zwei Sammler warten, und fliegst dorthin.' },
+
+  /* ---------- Sternbildstufen ---------- */
+  'stufe:PFEIL': {
+    lang: (c) => `Der Pfeil: drei bis sechs Werte in Folge, ${c.P.PFEIL[3]} / ${c.P.PFEIL[4]} / ${c.P.PFEIL[5]} / ${c.P.PFEIL[6]} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung, für jeden Pfeil, den du ausliegen hast. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Auf Stufe 2 bringt dein Dreier-Pfeil ${c.P.PFEIL[3]} + ${2 * c.bonus} = ${c.P.PFEIL[3] + 2 * c.bonus} Punkte je Runde.`,
+  },
+  'stufe:WAGEN': {
+    lang: (c) => `Der Wagen: drei bis sechs Werte mit gleichem Abstand ab ${CONFIG.wagen.minSchrittweite}, ${c.P.WAGEN[3]} / ${c.P.WAGEN[4]} / ${c.P.WAGEN[5]} / ${c.P.WAGEN[6]} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Wagen. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Wagen 2-5-8-11 auf Stufe 1: ${c.P.WAGEN[4]} + ${c.bonus} = ${c.P.WAGEN[4] + c.bonus} Punkte je Runde.`,
+  },
+  'stufe:KRONE': {
+    lang: (c) => `Die Krone: drei gleiche Werte plus zwei gleiche, ${c.P.KRONE} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Krone. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Krone 6-6-6-2-2 auf Stufe 3: ${c.P.KRONE} + ${3 * c.bonus} = ${c.P.KRONE + 3 * c.bonus} Punkte je Runde.`,
+  },
+  'stufe:KREUZ': {
+    lang: (c) => `Das Kreuz: vier gleiche Werte, ${c.P.KREUZ} Punkte und sofort sicher vor dem Klauen. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Kreuz. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Kreuz 9-9-9-9 auf Stufe 2: ${c.P.KREUZ} + ${2 * c.bonus} = ${c.P.KREUZ + 2 * c.bonus} Punkte je Runde.`,
+  },
+  'stufe:ZWILLING': {
+    lang: (c) => `Der Zwilling: drei Paare, ${c.P.ZWILLING} Punkte, mit sechs Karten sofort fertig. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Zwilling. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Zwilling 4-4-8-8-11-11 auf Stufe 1: ${c.P.ZWILLING} + ${c.bonus} = ${c.P.ZWILLING + c.bonus} Punkte je Runde.`,
+  },
+  'stufe:DOPPELSTIER': {
+    lang: (c) => `Der Doppelstier: zwei Drillinge, ${c.P.DOPPELSTIER} Punkte, mit sechs Karten sofort fertig. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Doppelstier. Höchstens Stufe ${c.max}.`,
+    beispiel: (c) => `Doppelstier 3-3-3-9-9-9 auf Stufe 2: ${c.P.DOPPELSTIER} + ${2 * c.bonus} = ${c.P.DOPPELSTIER + 2 * c.bonus} Punkte je Runde.`,
+  },
+
+  /* ---------- Packs ---------- */
+  'pack:sternbilder': {
+    lang: (c) => `Beim Öffnen werden ${c.wahl} Sternbildtypen aufgedeckt, die noch nicht auf der Höchststufe sind. Einen davon wählst du, er steigt eine Stufe. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung dieses Typs. In jedem Shop liegt ein Pack, das nächste gibt es im nächsten Shop.`,
+    beispiel: () => 'Du baust vor allem Pfeile und Kronen. Aufgedeckt werden Pfeil, Kreuz und Zwilling: Du nimmst den Pfeil.',
+  },
+  'pack:planet': {
+    lang: (c) => `Beim Öffnen werden ${c.wahl} Karten aufgedeckt, die es nur auf diesem Planeten gibt. Eine davon kommt in dein Deck. Planetenzahlen tragen oft einen Typ-Bonus: Punkte extra, wenn sie in einem bestimmten Sternbildtyp liegen. In jedem Shop liegt ein Pack, das nächste gibt es im nächsten Shop.`,
+    beispiel: () => 'Auf dem Frostpfad zählen Pfeile mehr, und das Pack bringt Karten wie den Eiszapfen, der in einem Pfeil noch einmal +2 Punkte gibt.',
+  },
+
+  /* ---------- Planetenkarten ---------- */
+  'frost-eiszapfen': { lang: () => 'Eine 3 vom Frostpfad. Liegt sie bei der Wertung in einem Pfeil, bringt sie +2 Punkte. In jedem anderen Sternbild zählt sie wie eine normale 3.', beispiel: (c) => `Pfeil 2-3-4 mit dem Eiszapfen: ${c.P.PFEIL[3]} + 2 Punkte je Wertung.` },
+  'frost-nordlicht': { lang: (c) => `Eine 5, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung in jedem gültigen Sternbild, in einem Pfeil noch +1 dazu.`, beispiel: () => 'Im Pfeil 4-5-6 bringt das Nordlicht zusammen +2 Punkte je Wertung.' },
+  'frost-gletscher': { lang: () => 'Eine 7 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Gegen den Lotsen, der Pfeile jagt, schützt sie deinen Pfeil in der Mitte.', beispiel: () => 'Pfeil 6-7-8 mit dem Gletscherbrocken: Kein Dieb kommt heran, du baust ihn bis zur 11 aus.' },
+  'frost-polarstern': { lang: () => 'Eine Sternschnuppe vom Frostpfad, also ein Joker. Er vertritt jeden Wert. Kreuz und Drache lassen sich mit ihm nicht abschließen.', beispiel: () => 'Dir fehlt die 9 im Pfeil 7-8-_-10: Der Polarstern füllt die Lücke.' },
+  'doppel-zwillingsstern': { lang: () => 'Eine 5 vom Doppelstern. In einem Zwilling oder Doppelstier bringt sie +3 Punkte je Wertung.', beispiel: (c) => `Zwilling 5-5-8-8-11-11 mit dem Zwillingsstern: ${c.P.ZWILLING} + 3 Punkte je Wertung.` },
+  'doppel-doppelgaenger': { lang: () => 'Eine Spiegelkarte 4/9. Auf der Hand drehst du sie beliebig oft, das kostet keinen Zug.', beispiel: () => 'Du hast zwei Neunen: Der Doppelgänger wird zur dritten 9 für den Doppelstier.' },
+  'doppel-partner': { lang: (c) => `Eine 8, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung in jedem gültigen Sternbild, in einem Zwilling noch +1 dazu.`, beispiel: () => 'Im Zwilling 4-4-8-8-11-11 bringt die Partnerkarte zusammen +2 Punkte je Wertung.' },
+  'doppel-sternenstaub': { lang: () => 'Die kosmische Karte Sternenstaub: Eine Zahlenkarte auf deiner Hand bekommt einen neuen Wert von 1 bis 12, für den Rest des Kampfes. Auf dem Doppelstern macht sie aus einer einzelnen Karte das fehlende Paar.', beispiel: () => 'Du hast 4, 4, 8, 8, 11 und eine 2: Sternenstaub macht aus der 2 eine 11, der Zwilling steht.' },
+  'schrott-schrottteil': { lang: () => 'Eine 6 vom Schrottring. In einem Wagen bringt sie +2 Punkte je Wertung.', beispiel: (c) => `Wagen 2-4-6 mit dem Schrottteil: ${c.P.WAGEN[3]} + 2 Punkte je Wertung.` },
+  'schrott-magnetsplitter': { lang: () => 'Eine 10 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Gegen den Aasfresser, der frisch Gebautes klaut, ist das Gold wert.', beispiel: () => 'Dein neuer Pfeil 9-10-11 bleibt liegen, obwohl der Aasfresser passende Karten hätte.' },
+  'schrott-ersatzteil': { lang: (c) => `Eine 2, die schon ein Riese ist: +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt.`, beispiel: (c) => `Pfeil 1-2-3 mit dem Ersatzteil: ${c.P.PFEIL[3]} + ${c.K.karten.riese} Punkte je Wertung.` },
+  'schrott-gravitation': { lang: () => 'Die kosmische Karte Gravitation: eine Karte aus der Mitte auf die Hand holen, zusätzlich zu den Karten, die du beim Bauen nimmst. Auf dem Schrottring liegt die Mitte besonders voll.', beispiel: () => 'Zwölf Karten in der Mitte: Gravitation holt die eine, die deinem Pfeil noch fehlt.' },
+  'nebel-nebelkern': { lang: (c) => `Eine 7, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung, wenn sie in einem gültigen Sternbild liegt.`, beispiel: () => 'Die 7 passt in fast jeden Pfeil und viele Wagen, der Bonus kommt fast jede Runde.' },
+  'nebel-komet': { lang: () => 'Die kosmische Karte Komet: schießt eine Karte aus einem unversiegelten Sternbild des Gegners auf die Ablage ihres Besitzers. Gegen die Nova, die selbst viel zerstört, schlägst du so zurück.', beispiel: () => 'Aus dem Fünfer-Pfeil der Nova fliegt die mittlere Karte: 0 Punkte für sie.' },
+  'nebel-weisser-zwerg': { lang: () => 'Die kosmische Karte Weißer Zwerg: drei Karten ziehen, danach zwei Handkarten abwerfen.', beispiel: () => 'Du wirfst zwei kosmische Karten ab, die gerade kein Ziel haben, und behältst die Zahlen.' },
+  'nebel-nebel': { lang: () => 'Die kosmische Karte Nebel: Bis zum Rundenende kann dir niemand etwas klauen. Auf der Nebelwelt tragen alle Decks doppelt so viele kosmische Karten, Schutz ist hier viel wert.', beispiel: () => 'Nebel zu Rundenbeginn, und deine offenen Sternbilder stehen bis zur Wertung.' },
+  'kron-juwel': { lang: () => 'Eine 9 von der Kronwelt. In einer Krone bringt sie +2, in einem Kreuz +3 Punkte je Wertung.', beispiel: (c) => `Kreuz 9-9-9-9 mit dem Juwel: ${c.P.KREUZ} + 3 Punkte je Wertung.` },
+  'kron-zepter': { lang: (c) => `Eine 11, die schon ein Riese ist: +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt.`, beispiel: (c) => `Krone 11-11-11-3-3 mit dem Zepter: ${c.P.KRONE} + ${c.K.karten.riese} Punkte je Wertung.` },
+  'kron-siegelring': { lang: () => 'Eine 5 mit Anker, in einer Krone noch +1 Punkt je Wertung. Das Sternbild, in dem sie liegt, ist nicht klaubar.', beispiel: () => 'Deine halbfertige Krone 5-5-5-7 bleibt liegen, bis die zweite 7 kommt.' },
+  'kron-rote-riesin': { lang: () => 'Die kosmische Karte Rote Riesin: Ein eigenes Sternbild zählt diese Runde doppelt. Auf der Kronwelt bringen Kreuz und Doppelstier ohnehin mehr, doppelt lohnt es sich besonders.', beispiel: () => 'Kreuz auf der Kronwelt: 14 Punkte, mit der Roten Riesin 28 in dieser Runde.' },
+  'nest-beute': { lang: (c) => `Eine 12, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung, wenn sie in einem gültigen Sternbild liegt.`, beispiel: () => 'Die 12 schließt lange Pfeile ab, und der Bonus kommt jede Runde dazu.' },
+  'nest-dietrich': { lang: () => 'Eine 1 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Im Nest sitzen nur Diebe.', beispiel: () => 'Pfeil 1-2-3 mit dem Dietrich: Die Elster schaut zu und kann nichts tun.' },
+  'nest-hehlerware': { lang: () => 'Eine 6 aus dem Nest. In einem Wagen oder Pfeil bringt sie +1 Punkt je Wertung.', beispiel: () => 'Die 6 liegt in der Mitte der Zahlenreihe und passt in fast jeden Pfeil.' },
+  'nest-eklipse': { lang: () => 'Die kosmische Karte Eklipse: Ein sicheres, unversiegeltes Sternbild des Gegners wird für diesen Zug raubbar. Du wirfst Handkarten ab und nimmst es unverändert.', beispiel: (c) => `Die Elster hat ein Kreuz liegen: Eklipse, zwei Handkarten abwerfen, ${c.P.KREUZ} Punkte wechseln die Seite.` },
+};
+
+/** Der Kontext für die Textfunktionen: Wert und Spiegelseite, Konfigurationen, Stufenbonus, Packwahl. */
+function rlDetailsKontext(wert, opt = {}) {
+  const K = RL_KONFIG;
+  return {
+    w: wert ?? 0,
+    g: wert != null ? CONFIG.deck.zahlenMin + CONFIG.deck.zahlenMax - wert : 0,
+    K, P: CONFIG.punkte,
+    bonus: K.stufen.bonusProStufe,
+    max: K.stufen.max ?? K.stufen.schwellen.length,
+    wahl: opt.wahl ?? 3,
+    stufe: opt.stufe ?? 0,
+  };
+}
+
+/** Einen Text auflösen (Satz oder Funktion des Kontexts). */
+function rlDetailsText(t, kontext) {
+  if (typeof t === 'function') return t(kontext);
+  return t || '';
+}
+
+/** Der Eintrag zu einem Schlüssel: Katalog, Sternbildstufe oder Pack, mit Überlagerung aus `opt`. */
+function rlDetailsEintrag(schluessel, opt = {}) {
+  const key = String(schluessel || '');
+  let e, textKey = key, wert = null, wahl = 3;
+  if (key.startsWith('stufe:')) {
+    const typ = key.slice(6);
+    e = { name: typText(typ), sorte: 'stufe', groesse: 0, preis: null, spec: null, kurz: '', planet: null, typ };
+  } else if (key.startsWith('pack:')) {
+    const art = key.slice(5).split(':')[0];
+    const planet = opt.planet ?? key.split(':')[2] ?? null;
+    const P = (RL_KONFIG.shop.packs || {})[art] || {};
+    wahl = P.wahl ?? 3;
+    textKey = 'pack:' + art;
+    e = {
+      name: art === 'planet' ? RL_TXT_SCHIRM.packPlanet(rlText(RL_TXT_PLANET, planet)) : RL_TXT_SCHIRM.packSternbilder,
+      sorte: 'pack', groesse: 0, preis: opt.preis ?? P.preis ?? null, spec: null, kurz: '', planet, pack: art,
+    };
+  } else if (key.startsWith('planet:')) {
+    // Sternkarte (Spieltest-Runde 9): Himmelseffekt, Boss und mögliche Eliten eines Planeten — vor dem Kurs nachlesbar.
+    const planet = key.slice(7);
+    const P = RL_PLANETEN[planet];
+    e = { name: rlText(RL_TXT_PLANET, planet), sorte: 'welt', groesse: 0, preis: null, spec: null, kurz: rlText(RL_TXT_PLANET, planet, 'effektLang'), planet, zeilen: [] };
+    if (P) {
+      e.zeilen.push([RL_TXT_SCHIRM.detailsBoss, rlText(RL_TXT_BOSS, P.boss) + ' — ' + rlText(RL_TXT_BOSS, P.boss, 'text')]);
+      e.zeilen.push([RL_TXT_SCHIRM.detailsEliten, (P.elites || []).map((k) => rlText(RL_TXT_ELITE, k) + ': ' + rlText(RL_TXT_ELITE, k, 'text')).join(' · ')]);
+      e.zeilen.push([RL_TXT_SCHIRM.detailsLakaien, [...new Set(P.verhalten || [])].map((v) => rlText(RL_TXT_VERHALTEN, v)).join(', ')]);
+    }
+  } else {
+    const k = RL_KATALOG[key];
+    e = k ? { name: k.name, sorte: k.sorte, groesse: k.groesse, preis: k.preis || null, spec: k.spec ? { ...k.spec } : null, kurz: k.text, planet: k.planet ?? null }
+      : { name: key, sorte: '', groesse: 0, preis: null, spec: null, kurz: '', planet: null };
+    const m = /^(zahl|spiegel|leucht|anker)-(\d+)$/.exec(key);
+    if (m) { textKey = m[1]; wert = Number(m[2]); }
+  }
+  if (opt.angebot) {
+    e.preis = opt.angebot.preis ?? e.preis;
+    e.groesse = opt.angebot.groesse ?? e.groesse;
+    if (opt.angebot.spec) e.spec = { ...opt.angebot.spec };
+    if (opt.angebot.name) e.name = opt.angebot.name;
+    if (opt.angebot.text) e.kurz = opt.angebot.text;
+  }
+  if (opt.spec) e.spec = { ...opt.spec };
+  if (opt.preis != null && e.preis == null) e.preis = opt.preis;
+  if (wert == null && e.spec && e.spec.art === 'ZAHL') wert = e.spec.wert ?? null;
+  e.schluessel = key;
+  e.stufe = opt.stufe ?? null;
+  const t = RL_TXT_DETAILS[textKey] || {};
+  const kontext = rlDetailsKontext(wert, { wahl, stufe: opt.stufe });
+  e.lang = rlDetailsText(t.lang, kontext) || e.kurz || '';
+  e.beispiel = rlDetailsText(t.beispiel, kontext);
+  return e;
+}
+
+/** Der Details-Knopf: die Delegation des Schirms ruft `details` mit `data-key` (und `data-planet`, `data-preis`). */
+function rlDetailsKnopf(schluessel, opt = {}) {
+  const daten = { rl: 'details', key: schluessel };
+  if (opt.planet) daten.planet = opt.planet;
+  if (opt.preis != null) daten.preis = opt.preis;
+  return rlSchirmKnopf(RL_TXT_SCHIRM.details, 'klein rl-details-knopf', daten);
+}
+
+/** Kartenobjekt für karteEl aus einer KartenSpec (eigene Ids, damit nichts mit dem Tisch kollidiert). */
+function rlDetailsKarte(spec, nr = 0) {
+  const k = { id: 700000 + nr, art: spec.art, wert: spec.art === 'ZAHL' ? (spec.wert ?? null) : null };
+  if (spec.stufe) k.stufe = spec.stufe;
+  if (spec.spiegel) k.spiegel = true;
+  if (spec.leucht) k.leucht = true;
+  if (spec.anker) k.anker = true;
+  if (spec.typBonus) k.typBonus = { ...spec.typBonus };
+  if (spec.planet) k.planet = spec.planet;
+  if (spec.name) k.name = spec.name;
+  return k;
+}
+
+/** Die große Vorschau: Karte, Modulbild, Beispiel-Sternbild (Stufen) oder Pack. */
+function rlDetailsVorschauEl(e) {
+  const v = rlSchirmEl('div', 'rl-details-vorschau');
+  if (e.sorte === 'stufe') {
+    const reihe = rlSchirmEl('div', 'rl-details-form');
+    (RL_DETAILS_FORM_WERTE[e.typ] || []).forEach((w, i) => reihe.appendChild(karteEl({ id: 710000 + i, art: 'ZAHL', wert: w }, 'sb', { klickbar: false })));
+    v.appendChild(reihe);
+  } else if (e.sorte === 'welt') {
+    v.innerHTML = rlPlanetSvg(e.planet, 150);
+  } else if (e.sorte === 'pack') {
+    v.innerHTML = rlPackSvg(e.pack, e.planet, 190);
+  } else if (e.sorte === 'modul' || e.sorte === 'vorrat') {
+    v.innerHTML = rlModulSvg(e.schluessel, 130);
+  } else if (e.sorte === 'aufwertung') {
+    v.appendChild(karteEl(rlDetailsKarte({ art: 'ZAHL', wert: 7, stufe: e.schluessel === 'ueberriese' ? 2 : 1 }), 'hand', { klickbar: false }));
+  } else if (e.spec) {
+    v.appendChild(karteEl(rlDetailsKarte(e.spec), 'hand', { klickbar: false }));
+  } else {
+    v.hidden = true;
+  }
+  return v;
+}
+
+/** Liste der Marken einer Zahlenkarte (Riese, Leucht, Anker, Spiegel, Typ-Bonus) — null, wenn sie keine trägt. */
+function rlDetailsMarkenEl(spec) {
+  if (!spec || spec.art !== 'ZAHL') return null;
+  const K = RL_KONFIG.karten;
+  const zeilen = [];
+  if (spec.stufe === 1) zeilen.push(['Riese', `+${K.riese} Punkte je Wertung`]);
+  if (spec.stufe === 2) zeilen.push(['Überriese', `+${K.ueberriese} Punkte je Wertung`]);
+  if (spec.leucht) zeilen.push(['Leucht', `+${K.leucht} Punkt je Wertung im gültigen Sternbild`]);
+  if (spec.anker) zeilen.push(['Anker', 'das Sternbild ist nicht klaubar']);
+  if (spec.spiegel) zeilen.push(['Spiegel', `zeigt ${spec.wert} oder ${CONFIG.deck.zahlenMin + CONFIG.deck.zahlenMax - spec.wert}`]);
+  for (const [typ, b] of Object.entries(spec.typBonus || {})) zeilen.push(['Typ-Bonus', `+${b} Punkte je Wertung in einem ${typText(typ)}`]);
+  if (!zeilen.length) return null;
+  const ul = rlSchirmEl('ul', 'rl-details-marken');
+  for (const [name, text] of zeilen) {
+    const li = rlSchirmEl('li', '');
+    li.appendChild(rlSchirmEl('b', '', name + ': '));
+    li.appendChild(document.createTextNode(text));
+    ul.appendChild(li);
+  }
+  return ul;
+}
+
+/** Das Fenster: Vorschau links, rechts Kopfzeile mit Chips, lange Erklärung, Beispiel, Marken; Schließen auch mit Escape. */
+function rlDetailsZeigen(wurzel, schluessel, opt = {}) {
+  const e = rlDetailsEintrag(schluessel, opt);
+  const alt = wurzel.querySelector(':scope > .rl-ebene[data-ebene="details"]');
+  if (alt) alt.remove();
+  const ebene = rlSchirmEl('div', 'rl-ebene rl-details');
+  ebene.dataset.ebene = 'details';
+  ebene.dataset.key = e.schluessel;
+  ebene.setAttribute('role', 'dialog');
+  ebene.setAttribute('aria-modal', 'true');
+  const kasten = rlSchirmEl('div', 'rl-ebene-kasten rl-details-kasten');
+  kasten.appendChild(rlSchirmEl('h3', 'rl-ueberschrift', e.name));
+  kasten.appendChild(rlDetailsVorschauEl(e));
+
+  const text = rlSchirmEl('div', 'rl-details-text');
+  const zeile = rlSchirmEl('p', 'rl-details-zeile');
+  if (RL_DETAILS_SORTE[e.sorte]) zeile.appendChild(rlSchirmEl('span', '', RL_DETAILS_SORTE[e.sorte]));
+  if (e.groesse > 0) {
+    const chip = rlSchirmEl('span', 'rl-details-chip');
+    chip.dataset.groesse = String(e.groesse);
+    chip.innerHTML = rlGroesseSvg(e.groesse, 16);
+    chip.appendChild(document.createTextNode(RL_TXT_GROESSE[e.groesse]));
+    zeile.appendChild(chip);
+  }
+  if (e.planet) zeile.appendChild(rlSchirmEl('span', 'rl-details-chip', rlText(RL_TXT_PLANET, e.planet)));
+  if (e.sorte === 'stufe' && e.stufe != null) {
+    const max = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
+    zeile.appendChild(rlSchirmEl('span', 'rl-details-chip', RL_TXT_STUFE.packStufe(e.stufe, max)));
+  }
+  if (e.preis != null && e.preis > 0) {
+    const preis = rlSchirmEl('span', 'rl-details-chip preis', String(e.preis));
+    preis.insertAdjacentHTML('beforeend', rlMuenzeSvg(14));
+    zeile.appendChild(preis);
+  }
+  if (zeile.childNodes.length) text.appendChild(zeile);
+  if (e.lang) text.appendChild(rlSchirmEl('p', 'rl-details-lang', e.lang));
+  if (e.beispiel) {
+    const b = rlSchirmEl('p', 'rl-details-beispiel');
+    b.appendChild(rlSchirmEl('b', '', 'Beispiel'));
+    b.appendChild(document.createTextNode(e.beispiel));
+    text.appendChild(b);
+  }
+  const marken = rlDetailsMarkenEl(e.spec);
+  if (marken) text.appendChild(marken);
+  if (e.zeilen && e.zeilen.length) {
+    const dl = rlSchirmEl('dl', 'rl-details-zeilen');
+    for (const [k, v] of e.zeilen) { dl.appendChild(rlSchirmEl('dt', '', k)); dl.appendChild(rlSchirmEl('dd', '', v)); }
+    text.appendChild(dl);
+  }
+  kasten.appendChild(text);
+
+  const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
+  knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.schliessen, 'haupt', { rl: 'details-zu' }));
+  kasten.appendChild(knoepfe);
+  ebene.appendChild(kasten);
+
+  const zu = () => { document.removeEventListener('keydown', taste); ebene.remove(); };
+  const taste = (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); zu(); } };
+  document.addEventListener('keydown', taste);
+  ebene.addEventListener('click', (ev) => {
+    const ziel = ev.target.closest('[data-rl="details-zu"]');
+    if (!ziel && ev.target !== ebene) return;
+    ev.stopPropagation();
+    ev.preventDefault();
+    zu();
+  });
+  wurzel.appendChild(ebene);
+  return ebene;
+}
+
 /* ===== app\roguelike\rl-karte.js ===== */
 /**
  * Roguelike-Modus — Sternkarte, Planetenschirm und Lauf-Ende (Spezifikation §5.3, §5.4).
@@ -17450,6 +18031,7 @@ function rlKarteZeigen(wurzel, lauf, profil, rueckrufe = {}) {
     frage.appendChild(rlSchirmEl('span', 'rl-frage-text', RL_TXT_SCHIRM.kursFrage(name)));
     frage.appendChild(rlSchirmKnopf(RL_TXT_UI.kursSetzen, 'haupt', { rl: 'kurs', planet: key }));
     frage.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.abbrechen, 'klein', { rl: 'abbrechen' }));
+    frage.appendChild(rlDetailsKnopf('planet:' + key));   // Himmelseffekt, Boss, Eliten (Spieltest-Runde 9)
     for (const p of karte.querySelectorAll('.rl-karte-punkt')) p.classList.toggle('gewaehlt', p.dataset.planet === key);
   };
   if (platz1) {
@@ -17458,6 +18040,7 @@ function rlKarteZeigen(wurzel, lauf, profil, rueckrufe = {}) {
     frage.hidden = false;
     frage.appendChild(rlSchirmEl('span', 'rl-frage-text', rlText(RL_TXT_PLANET, hier) + ' — ' + rlText(RL_TXT_PLANET, hier, 'effekt')));
     frage.appendChild(rlSchirmKnopf(RL_TXT_UI.landen, 'haupt gross', { rl: 'landen' }));
+    frage.appendChild(rlDetailsKnopf('planet:' + hier));
   } else if (ziele.length) {
     hinweis.textContent = RL_TXT_SCHIRM.waehleHinweis;
     frage.hidden = true;
@@ -17490,6 +18073,7 @@ function rlKarteZeigen(wurzel, lauf, profil, rueckrufe = {}) {
   rlSchirmKlick(wurzel, {
     planet: (dat) => zeigeFrage(dat.planet),
     abbrechen: () => zeigeFrage(null),
+    details: (dat) => rlDetailsZeigen(wurzel, dat.key),
     kurs: (dat) => { if (rueckrufe.waehle) rlKarteSprung(wurzel, dat.planet, () => rueckrufe.waehle(dat.planet)); },
     landen: () => { if (rueckrufe.landen) rueckrufe.landen(); },
   });
@@ -17919,12 +18503,21 @@ function rlPoolKosmisch(lauf) {
   const d = lauf.daten;
   const faktor = lauf.deckSchwaeche().kabinettFaktor ?? 1;
   const out = [];
+  // Lehrlauf (Spieltest-Runde 9): keine kosmischen Karten im Shop, bis V2-A2 alle Grundkarten geschenkt hat — ein Tester kaufte
+  // das Weiße Loch, lange bevor es erklärt wurde.
+  if (typeof lauf.lehrShopVoll === 'function' && !lauf.lehrShopVoll()) return out;
   for (const e of Object.values(RL_KATALOG)) {
     if (e.sorte !== 'kosmisch') continue;
     if (e.maxProLauf && d.deck.filter((k) => k.art === e.spec.art).length >= e.maxProLauf) continue;
     out.push({ eintrag: e, klasse: e.groesse, preis: e.preis * faktor });
   }
   return out;
+}
+
+/** Lehrlauf: solange keine kosmischen Karten im Shop liegen dürfen, kommt an ihrer Stelle eine Zahl. */
+function rlPoolKosmischOderZahl(lauf) {
+  const k = rlPoolKosmisch(lauf);
+  return k.length ? k : rlPoolZahl(lauf);
 }
 
 /** Pool des dritten Platzes: Module (nicht an Bord), Vorrat (nicht an Bord), Sternwarte, Aufwertungen. */
@@ -17991,10 +18584,10 @@ function rlUmlaufbahnFuellen(lauf, shop, rng) {
   const n = Math.max(3, RL_KONFIG.shop.umlaufbahn.angebote ?? 3);
   const angebote = [
     rlZieheAusPool(rng, lauf, rlPoolZahl(lauf), rlNeueId(shop), ausser),
-    rlZieheAusPool(rng, lauf, rlPoolKosmisch(lauf), rlNeueId(shop), ausser),
+    rlZieheAusPool(rng, lauf, rlPoolKosmischOderZahl(lauf), rlNeueId(shop), ausser),
   ];
   for (let i = 2; i < n - 1; i++) {
-    const pool = rng() < 0.5 ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
+    const pool = rng() < 0.5 ? rlPoolZahl(lauf) : rlPoolKosmischOderZahl(lauf);
     angebote.push(rlZieheAusPool(rng, lauf, pool, rlNeueId(shop), ausser));
   }
   // Überspring-Prämie „gutes Modul": der letzte Platz ist sicher ein Modul 3. Größe oder besser (solange es eines gibt).
@@ -18079,7 +18672,9 @@ function rlPackKandidaten(lauf, pack) {
     const max = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
     return Object.entries(d.stufen).filter(([, st]) => (st.stufe ?? 0) < max).map(([typ, st]) => ({ typ, stufe: st.stufe ?? 0 }));
   }
-  return rlPlanetKarten(pack.planet).map((e) => ({ katalogKey: e.key, name: e.name, text: e.text, groesse: e.groesse, planet: e.planet, spec: { ...e.spec } }));
+  // Lehrlauf: bis der Shop vollständig ist, deckt das Planetenpack nur Zahlenkarten auf (Spieltest-Runde 9).
+  const nurZahlen = typeof lauf.lehrShopVoll === 'function' && !lauf.lehrShopVoll();
+  return rlPlanetKarten(pack.planet).filter((e) => !nurZahlen || (e.spec && e.spec.art === 'ZAHL')).map((e) => ({ katalogKey: e.key, name: e.name, text: e.text, groesse: e.groesse, planet: e.planet, spec: { ...e.spec } }));
 }
 
 /** Die Packs eines Shops (ältere Speicherstände bekommen sie nachgezogen). */
@@ -18099,13 +18694,23 @@ function rlPackOeffnen(lauf, shop, art, rng = null) {
   const pack = rlShopPacks(lauf, shop)[art];
   if (!pack) throw new Error('Unbekanntes Pack: ' + art);
   if (pack.zustand !== 'zu') throw new Error('Das Pack ist schon geöffnet');
+  if (typeof lauf.lehrPacksFrei === 'function' && !lauf.lehrPacksFrei()) throw new Error('Die Packs erklärt V2-A2 im nächsten Shop');
   const kandidaten = rlPackKandidaten(lauf, pack);
   if (!kandidaten.length) throw new Error(art === 'sternbilder' ? 'Alle Sternbilder haben die Höchststufe' : 'Keine Karten für dieses Pack');
   if (art === 'planet' && d.deck.length >= RL_KONFIG.deck.maxGroesse) throw new Error('Das Deck ist voll');
   lauf.bezahle(pack.preis);
   const r = rng ?? rlShopRng(lauf, 'pack-' + art, 0);
-  const gemischt = r.shuffle([...kandidaten]);
-  pack.karten = gemischt.slice(0, pack.wahl).map((k, i) => ({ ...k, id: 'p' + (i + 1) }));
+  let gemischt = r.shuffle([...kandidaten]);
+  // Lehrlauf (Spieltest-Runde 9): Sternbilder, die V2-A2 noch nicht freigeschaltet hat, liegen mit Schloss im Pack — nicht
+  // wählbar; ein freies liegt vorn (ein Tester sah im ersten Pack nur Unbekanntes).
+  let gesperrt = () => false;
+  if (art === 'sternbilder' && typeof lauf.istLehrlauf === 'function' && lauf.istLehrlauf()) {
+    const frei = rlLehrFrei(d.lehre.freiBis ?? -1).formen;
+    gesperrt = (k) => !frei.includes(k.typ);
+    const erstesFreie = gemischt.find((k) => !gesperrt(k));
+    if (erstesFreie) gemischt = [erstesFreie, ...gemischt.filter((k) => k !== erstesFreie)];
+  }
+  pack.karten = gemischt.slice(0, pack.wahl).map((k, i) => ({ ...k, id: 'p' + (i + 1), ...(gesperrt(k) ? { gesperrt: true } : {}) }));
   pack.zustand = 'offen';
   d.statistik.gekauft++;
   return pack;
@@ -18117,6 +18722,7 @@ function rlPackWaehlen(lauf, shop, art, id) {
   if (!pack || pack.zustand !== 'offen') throw new Error('Kein offenes Pack');
   const k = pack.karten.find((x) => x.id === id);
   if (!k) throw new Error('Karte nicht im Pack: ' + id);
+  if (k.gesperrt) throw new Error('Dieses Sternbild ist im Lehrlauf noch gesperrt');
   const ergebnis = art === 'sternbilder' ? lauf.stufeGeben(k.typ) : lauf.deckHinzu(k.spec, k.katalogKey);
   pack.gewaehlt = id;
   pack.zustand = 'fertig';
@@ -18288,7 +18894,7 @@ function rlSternwarte(lauf, rng = null) {
   const ausser = new Set();
   const zahlen = Math.min(3, S.aufdecken);
   for (let i = 0; i < S.aufdecken; i++) {
-    const pool = i < zahlen ? rlPoolZahl(lauf) : rlPoolKosmisch(lauf);
+    const pool = i < zahlen ? rlPoolZahl(lauf) : rlPoolKosmischOderZahl(lauf);
     const a = rlZieheAusPool(r, lauf, pool, 's' + (i + 1), ausser);
     if (a) karten.push({ id: a.id, katalogKey: a.katalogKey, name: a.name, text: a.text, groesse: a.groesse, spec: a.spec, genommen: false });
   }
@@ -18324,417 +18930,6 @@ function rlLuftschleuse(lauf, shop, uid) {
   L.frei--;
   L.entfernt.push(k);
   return k;
-}
-
-/* ===== app\roguelike\rl-details.js ===== */
-/**
- * Roguelike-Modus — Details-Fenster (Spieltest-Runde 2): die lange Erklärung eines Angebots, einer
- * Pack-Karte, einer Planetenkarte, eines Packs oder einer Sternbildstufe, mit großer Vorschau und Beispiel.
- * Anton: „bei manchen weiß man doch gar nicht direkt, was sie machen" — hier steht es.
- *
- * Vertrag für die Aufrufer (rl-shop-ui.js):
- *   rlDetailsKnopf(schluessel, opt)            → button.rl-knopf.klein.rl-details-knopf[data-rl="details"][data-key]
- *   rlDetailsZeigen(wurzel, schluessel, opt)   → Ebene (.rl-ebene[data-ebene="details"]) in `wurzel`, Rückgabe das Element
- *   rlDetailsEintrag(schluessel, opt)          → { name, sorte, groesse, preis, spec, kurz, lang, beispiel, planet, typ }
- * Schlüssel: Katalogschlüssel (RL_KATALOG: 'zahl-7', 'spiegel-3', 'leucht-5', 'anker-9', 'sternschnuppe',
- *   'schwarzes-loch' …, Module, Vorrat, 'riese', 'ueberriese', 'sternwarte', Planetenkarten 'frost-eiszapfen' …),
- *   'stufe:PFEIL' … (Sternbildstufe eines Typs), 'pack:sternbilder', 'pack:planet' (mit opt.planet).
- *   `opt.spec` (KartenSpec) oder `opt.angebot` überlagern den Katalogeintrag (Preis, Größenklasse, Spec);
- *   `opt.stufe` ist die aktuelle Stufe des Typs (für 'stufe:…').
- * Texte: RL_TXT_DETAILS hier (Ausnahme von „alle Texte in rl-texte.js": die Texte gehören zum Fenster).
- *   Jeder Eintrag `{ lang, beispiel }` ist ein Satz oder eine Funktion des Kontexts
- *   `{ w, g, K, P, bonus, max, wahl, stufe }` — alle Spielzahlen kommen aus RL_KONFIG bzw. CONFIG.
- *
- * Top-Level-Namen dieser Datei: RL_TXT_DETAILS, RL_DETAILS_FORM_WERTE, RL_DETAILS_SORTE, rlDetailsKontext,
- *   rlDetailsText, rlDetailsEintrag, rlDetailsKnopf, rlDetailsKarte, rlDetailsVorschauEl, rlDetailsMarkenEl, rlDetailsZeigen.
- */
-
-/** Beispielwerte je Sternbildtyp für die Vorschau einer Sternbildstufe (wie die Formentafel). */
-const RL_DETAILS_FORM_WERTE = {
-  PFEIL: [4, 5, 6, 7], WAGEN: [2, 5, 8, 11], KRONE: [6, 6, 6, 2, 2],
-  KREUZ: [9, 9, 9, 9], ZWILLING: [4, 4, 8, 8, 11, 11], DOPPELSTIER: [3, 3, 3, 9, 9, 9],
-};
-
-/** Anzeigenamen der Sorten in der Kopfzeile des Fensters. */
-const RL_DETAILS_SORTE = {
-  zahl: 'Karte', kosmisch: 'Kosmische Karte', modul: 'Schiffsmodul', vorrat: 'Vorrat', aufwertung: 'Aufwertung',
-  sternwarte: 'Sternwarte', planet: 'Planetenkarte', stufe: 'Sternbildstufe', pack: 'Pack',
-};
-
-/**
- * Lange Texte und Beispiele. Gruppen 'zahl' / 'spiegel' / 'leucht' / 'anker' gelten für alle Werte
- * (der Wert steht im Kontext als `w`, die Spiegelseite als `g`).
- */
-const RL_TXT_DETAILS = {
-  /* ---------- Zahlenkarten ---------- */
-  zahl: {
-    lang: (c) => `Eine gewöhnliche ${c.w} für dein Deck. Mehr Kopien eines Werts machen Sternbilder mit gleichen Werten leichter: Krone, Kreuz, Zwilling und Doppelstier brauchen Paare, Drillinge oder Vierlinge. Für Pfeile und Wagen füllt sie Lücken in deiner Folge.`,
-    beispiel: (c) => `Mit drei Karten ${c.w} im Deck ziehst du öfter zwei davon auf die Hand, die Grundlage für einen Zwilling oder eine Krone.`,
-  },
-  spiegel: {
-    lang: (c) => `Eine Spiegelkarte zeigt ${c.w} oder ${c.g}. Du drehst sie auf der Hand, so oft du willst, und das kostet keinen Zug. Liegt sie in einem Sternbild, bleibt der Wert, mit dem du sie gelegt hast.`,
-    beispiel: (c) => `Dir fehlt die ${c.g} für einen Pfeil: Spiegelkarte antippen, „Spiegelkarte drehen", und aus der ${c.w} wird die ${c.g}.`,
-  },
-  leucht: {
-    lang: (c) => `Eine ${c.w}, die leuchtet. Liegt sie bei der Wertung in einem gültigen Sternbild, bringt sie +${c.K.karten.leucht} Punkt, und zwar in jeder Runde wieder. Im Bosskampf ist das zusätzlicher Schaden.`,
-    beispiel: (c) => `Ein Pfeil aus drei Karten bringt ${c.P.PFEIL[3]} Punkte. Mit der Leuchtkarte darin sind es ${c.P.PFEIL[3] + c.K.karten.leucht}, bei jeder Wertung.`,
-  },
-  anker: {
-    lang: (c) => `Eine ${c.w} mit Anker. Das Sternbild, in dem sie liegt, kann dir niemand klauen, egal wie klein es ist. Gegen Schwarzes Loch, Urknall und Komet hilft der Anker nicht, davor schützt nur das Siegel.`,
-    beispiel: () => 'Dein Dreier-Pfeil wäre leichte Beute für einen Dieb. Mit der Ankerkarte darin bleibt er liegen, und du baust ihn in Ruhe aus.',
-  },
-  sternschnuppe: {
-    lang: () => 'Der Joker. Im Sternbild vertritt er jeden Wert, den du gerade brauchst. Kreuz und Drache lassen sich mit ihm nicht abschließen, und ein Gegner mit der echten Karte auf der Hand kann ihn herausklauen.',
-    beispiel: () => 'Du hast 4, 5 und 7 auf der Hand: Die Sternschnuppe spielt die 6, und der Pfeil 4-5-6-7 steht.',
-  },
-
-  /* ---------- Kosmische Karten (kosten keinen Zug, eine je Zug) ---------- */
-  'schwarzes-loch': {
-    lang: () => 'Zerstört ein ganzes Sternbild eines Gegners, auch ein fertiges. Nur versiegelte Sternbilder hält es nicht auf. Die Karten gehen auf die Ablagen ihrer Besitzer. Wie jede kosmische Karte kostet es keinen Zug.',
-    beispiel: () => 'Der Boss hat einen Sechser-Pfeil liegen, an dem er sich heilt: Schwarzes Loch darauf, danach spielst du deinen normalen Zug.',
-  },
-  'weisses-loch': {
-    lang: () => 'Zieht eine Karte deiner Wahl aus einem fremden, unversiegelten Sternbild auf deine Hand. Was übrig bleibt, ist oft kein gültiges Sternbild mehr: ein Wrack mit 0 Punkten, das sich leicht klauen lässt.',
-    beispiel: () => 'Aus der Krone 6-6-6-2-2 des Gegners ziehst du eine 6. Er hat ein Wrack, du hast die 6 für dein eigenes Sternbild.',
-  },
-  urknall: {
-    lang: () => 'Alle offenen Sternbilder am Tisch zerfallen, auch deine eigenen. Fertige Sternbilder (Kreuz, sechs Karten, Drache) und versiegelte bleiben liegen.',
-    beispiel: () => 'Du hast nur Versiegeltes ausliegen, der Gegner vier offene Sternbilder: Urknall, und nur er verliert.',
-  },
-  milchstrasse: {
-    lang: () => `Du ziehst sofort ${CONFIG.kosmisch.milchstrasseKarten} Karten aus deinem Deck. Mehr Handkarten heißt mehr Möglichkeiten in diesem Zug, am Zugende füllst du nur bis zur normalen Handgröße auf.`,
-    beispiel: () => 'Mit vier Handkarten geht nur ein Dreier. Nach der Milchstraße hast du sechs auf der Hand und legst gleich einen Fünfer.',
-  },
-  komet: {
-    lang: () => 'Schießt eine Karte deiner Wahl aus einem fremden, unversiegelten Sternbild. Sie geht auf die Ablage ihres Besitzers, nicht zu dir. Gegner mit „Immun gegen das Loch" trifft er nicht.',
-    beispiel: () => 'Der Gegner hat einen Fünfer-Pfeil. Der Komet nimmt die mittlere Karte heraus: kein Pfeil mehr, 0 Punkte, und du kannst das Wrack klauen.',
-  },
-  gravitation: {
-    lang: () => 'Holt eine Zahlenkarte oder Sternschnuppe aus der Mitte auf deine Hand. Danach darfst du beim Bauen trotzdem noch Karten aus der Mitte nehmen.',
-    beispiel: () => 'In der Mitte liegen 8, 9 und 10, du darfst beim Bauen aber nur zwei nehmen. Gravitation holt die 8 vorab, 9 und 10 nimmst du beim Bauen dazu.',
-  },
-  sternenstaub: {
-    lang: () => 'Eine Zahlenkarte auf deiner Hand bekommt einen neuen Wert von 1 bis 12. Der neue Wert bleibt für den Rest des Kampfes.',
-    beispiel: (c) => `Du hast 7, 7, 7 und eine 2. Sternenstaub macht aus der 2 eine 7, und das Kreuz 7-7-7-7 bringt ${c.P.KREUZ} Punkte.`,
-  },
-  funkspruch: {
-    lang: () => 'Zeigt dir die obersten drei Karten deines Decks. Sie stehen in der Leiste, bis du das nächste Mal ziehst.',
-    beispiel: () => 'Du siehst, dass als Nächstes die 9 kommt, und legst deinen Pfeil 6-7-8 so, dass sie im nächsten Zug passt.',
-  },
-  'weisser-zwerg': {
-    lang: () => 'Du ziehst drei Karten und wirfst danach zwei Handkarten deiner Wahl ab. So tauschst du schlechte Karten gegen bessere.',
-    beispiel: () => 'Auf der Hand liegen 1 und 12, die zu nichts passen. Drei neue Karten ziehen, dann 1 und 12 abwerfen.',
-  },
-  nebel: {
-    lang: () => 'Bis zum Ende dieser Runde kann dir niemand etwas klauen, auch kein Raub und kein Drachenklau. Schwarzes Loch und Komet treffen dich weiter.',
-    beispiel: () => 'Gegen einen Dieb: Nebel gleich zu Rundenbeginn, und deine offenen Sternbilder wachsen in Ruhe bis zur Wertung.',
-  },
-  'rote-riesin': {
-    lang: () => 'Ein eigenes gültiges Sternbild zählt bei der Wertung dieser Runde doppelt, mit allen Zuschlägen. Gegen den Boss ist das doppelter Schaden.',
-    beispiel: (c) => `Dein Sechser-Pfeil bringt ${c.P.PFEIL[6]} Punkte. Mit der Roten Riesin sind es ${2 * c.P.PFEIL[6]} in dieser Runde.`,
-  },
-  ausrichtung: {
-    lang: () => 'Du wählst einen Sternbildtyp. Jedes deiner Sternbilder dieses Typs bringt in dieser Runde einen Punkt mehr je Karte.',
-    beispiel: () => 'Du hast zwei Pfeile mit fünf und vier Karten liegen. Ausrichtung auf Pfeil bringt +9 Punkte in dieser Runde.',
-  },
-  eklipse: {
-    lang: () => 'Verdunkelt ein fremdes Sternbild, das sonst sicher wäre: fertig oder durch ein Privileg geschützt, aber nicht versiegelt. Im selben Zug darfst du es rauben, also Handkarten abwerfen und das Sternbild unverändert nehmen.',
-    beispiel: (c) => `Der Gegner hat ein Kreuz (${c.P.KREUZ} Punkte) liegen. Eklipse darauf, zwei Handkarten abwerfen: Das Kreuz gehört dir, dazu gibt es Geld für vier geklaute Karten.`,
-  },
-  drachenatem: {
-    lang: (c) => `Für den Rest des Kampfes zählt dein Drache +${c.K.karten.drachenatem} Punkte bei jeder Wertung. Ohne Drachen bringt die Karte nichts, sie lohnt sich in Pfeil-Decks.`,
-    beispiel: (c) => `Drache ${c.P.DRACHE} + Drachenatem ${c.K.karten.drachenatem} = ${c.P.DRACHE + c.K.karten.drachenatem} Punkte je Runde.`,
-  },
-
-  /* ---------- Aufwertungen und Sternwarte ---------- */
-  riese: {
-    lang: (c) => `Eine Zahlenkarte deines Decks wird zum Riesen. Sie bringt +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt. Die Karte wählst du nach dem Kauf.`,
-    beispiel: () => 'Mach die Karte zum Riesen, die du fast immer legst, zum Beispiel eine 6 oder 7 in einem Pfeil-Deck.',
-  },
-  ueberriese: {
-    lang: (c) => `Ein Riese wird zum Überriesen: +${c.K.karten.ueberriese} statt +${c.K.karten.riese} Punkte je Wertung. Das geht nur auf eine Karte, die schon ein Riese ist.`,
-    beispiel: (c) => `Ein Dreier-Pfeil mit einem Überriesen bringt ${c.P.PFEIL[3]} + ${c.K.karten.ueberriese} = ${c.P.PFEIL[3] + c.K.karten.ueberriese} Punkte je Runde.`,
-  },
-  sternwarte: {
-    lang: (c) => `Deckt ${c.K.shop.sternwarte.aufdecken} zufällige Karten auf, drei Zahlen und zwei kosmische. Bis zu ${c.K.shop.sternwarte.nehmen} davon nimmst du ins Deck, der Rest verfällt.`,
-    beispiel: () => 'Du suchst noch eine 9 und eine Milchstraße. Die Sternwarte zeigt fünf Karten auf einmal, mit etwas Glück ist beides dabei.',
-  },
-
-  /* ---------- Schiffsmodule (dauerhaft für den ganzen Lauf) ---------- */
-  sichtluke: { lang: () => 'Die oberste Karte deines Decks liegt offen. Du weißt immer, was du als Nächstes ziehst.', beispiel: () => 'Oben liegt die 8: Du hebst dir 6 und 7 auf, statt sie abzuwerfen.' },
-  peilsender: { lang: () => 'Du siehst auf dem Planetenschirm schon alle Gegner dieses Planeten, nicht nur den nächsten.', beispiel: () => 'Du siehst, dass die Elite ein Dieb ist, und kaufst vorher eine Ankerkarte.' },
-  werkbank: { lang: () => 'Aufwertungen zum Riesen und Überriesen kosten zwei Geld weniger.', beispiel: (c) => `Der Riese kostet ${Math.max(0, c.K.shop.preise.riese - 2)} statt ${c.K.shop.preise.riese} Geld.` },
-  magnetnetz: { lang: () => 'Zu Beginn jedes Zuges holst du die oberste Zahlenkarte deiner Ablage zurück auf die Hand.', beispiel: () => 'Du wirfst eine 5 ab, die gerade nicht passt. Im nächsten Zug liegt sie wieder auf deiner Hand.' },
-  bergungsrecht: { lang: () => 'Wird dir ein Sternbild geklaut, bekommst du doppelte Trostpunkte.', beispiel: () => 'Ein geklauter Vierer-Pfeil bringt dir 8 statt 4 Trostpunkte.' },
-  zinsmodul: { lang: () => 'Nach jedem Kampf bekommst du ein Geld je volle zehn Geld an Bord, höchstens drei.', beispiel: () => 'Mit 24 Geld an Bord gibt es nach dem Kampf +2.' },
-  ladeluke: { lang: () => 'Beim Einsammeln am Rundenende bleibt deine wertvollste Handkarte liegen. Du startest die nächste Runde mit ihr.', beispiel: () => 'Die 12 auf deiner Hand bleibt, und du ziehst nur drei neue Karten dazu.' },
-  frachtraum: { lang: () => 'Du hältst dauerhaft fünf statt vier Handkarten.', beispiel: () => 'Mit fünf Handkarten gelingen Vierer und Fünfer deutlich öfter aus einer Hand.' },
-  greifarm: { lang: () => 'Beim Bauen darfst du drei statt zwei Karten aus der Mitte nehmen.', beispiel: () => 'Aus der Hand 4 und 5, aus der Mitte 6, 7 und 8: ein Fünfer-Pfeil in einem Zug.' },
-  schild: { lang: () => 'Versiegeln kostet dich keinen Zug mehr, es bleibt bei höchstens zwei Siegeln je Runde.', beispiel: () => 'Du baust einen Sechser-Pfeil und versiegelst ihn im selben Zug.' },
-  kompass: { lang: () => 'Ab Runde 2 bist du immer Startspieler.', beispiel: () => 'Du legst zuerst und nimmst dir die besten Karten aus der frischen Mitte.' },
-  enterhaken: { lang: () => 'Du brauchst nur eine statt zwei Handkarten, um zu klauen.', beispiel: () => 'Der Gegner hat 3-4-5 liegen. Mit einer einzigen 6 klaust du den Pfeil.' },
-  kaperbrief: { lang: () => 'Wem du klaust, der bekommt keine Trostpunkte.', beispiel: () => 'Du klaust einen Fünfer: Der Gegner verliert ihn und bekommt dafür nichts.' },
-  reaktor: { lang: () => 'Am Ende jeder Runde hast du einen Zug zusätzlich.', beispiel: () => 'Der Gegner ist fertig, du legst noch ein Sternbild vor der Wertung.' },
-
-  /* ---------- Vorrat (einmalig) ---------- */
-  notruf: { lang: (c) => `Überspringt einen Lakaien, ohne dass der Boss stärker wird. Sonst kostet Überspringen +${c.K.boss.schuldProUebersprungenem} Bossleben.`, beispiel: () => 'Die Elite sieht zu stark aus: Notruf einsetzen und direkt zum Boss.' },
-  sprungantrieb: { lang: () => 'Ein kostenloser Reroll im Shop. Er wird verbraucht, sobald du neu würfelst.', beispiel: () => 'Die vier Angebote passen nicht: einsetzen und gratis neu würfeln.' },
-  beobachtung: { lang: () => 'Öffnet sofort eine Sternwarte: fünf Karten aufdecken, bis zu zwei nehmen.', beispiel: () => 'Im Flug eingesetzt, holst du dir zwei Karten, ohne dafür zu bezahlen.' },
-  kartenskizze: { lang: () => 'Zeigt auf der Sternkarte die Lakaien der erreichbaren Planeten, bevor du den Kurs setzt.', beispiel: () => 'Du siehst, dass auf der Kronwelt zwei Sammler warten, und fliegst dorthin.' },
-
-  /* ---------- Sternbildstufen ---------- */
-  'stufe:PFEIL': {
-    lang: (c) => `Der Pfeil: drei bis sechs Werte in Folge, ${c.P.PFEIL[3]} / ${c.P.PFEIL[4]} / ${c.P.PFEIL[5]} / ${c.P.PFEIL[6]} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung, für jeden Pfeil, den du ausliegen hast. Höchstens Stufe ${c.max}.`,
-    beispiel: (c) => `Auf Stufe 2 bringt dein Dreier-Pfeil ${c.P.PFEIL[3]} + ${2 * c.bonus} = ${c.P.PFEIL[3] + 2 * c.bonus} Punkte je Runde.`,
-  },
-  'stufe:WAGEN': {
-    lang: (c) => `Der Wagen: drei bis sechs Werte mit gleichem Abstand ab ${CONFIG.wagen.minSchrittweite}, ${c.P.WAGEN[3]} / ${c.P.WAGEN[4]} / ${c.P.WAGEN[5]} / ${c.P.WAGEN[6]} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Wagen. Höchstens Stufe ${c.max}.`,
-    beispiel: (c) => `Wagen 2-5-8-11 auf Stufe 1: ${c.P.WAGEN[4]} + ${c.bonus} = ${c.P.WAGEN[4] + c.bonus} Punkte je Runde.`,
-  },
-  'stufe:KRONE': {
-    lang: (c) => `Die Krone: drei gleiche Werte plus zwei gleiche, ${c.P.KRONE} Punkte. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Krone. Höchstens Stufe ${c.max}.`,
-    beispiel: (c) => `Krone 6-6-6-2-2 auf Stufe 3: ${c.P.KRONE} + ${3 * c.bonus} = ${c.P.KRONE + 3 * c.bonus} Punkte je Runde.`,
-  },
-  'stufe:KREUZ': {
-    lang: (c) => `Das Kreuz: vier gleiche Werte, ${c.P.KREUZ} Punkte und sofort sicher vor dem Klauen. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Kreuz. Höchstens Stufe ${c.max}.`,
-    beispiel: (c) => `Kreuz 9-9-9-9 auf Stufe 2: ${c.P.KREUZ} + ${2 * c.bonus} = ${c.P.KREUZ + 2 * c.bonus} Punkte je Runde.`,
-  },
-  'stufe:ZWILLING': {
-    lang: (c) => `Der Zwilling: drei Paare, ${c.P.ZWILLING} Punkte, mit sechs Karten sofort fertig. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Zwilling. Höchstens Stufe ${c.max}.`,
-    beispiel: (c) => `Zwilling 4-4-8-8-11-11 auf Stufe 1: ${c.P.ZWILLING} + ${c.bonus} = ${c.P.ZWILLING + c.bonus} Punkte je Runde.`,
-  },
-  'stufe:DOPPELSTIER': {
-    lang: (c) => `Der Doppelstier: zwei Drillinge, ${c.P.DOPPELSTIER} Punkte, mit sechs Karten sofort fertig. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung je Doppelstier. Höchstens Stufe ${c.max}.`,
-    beispiel: (c) => `Doppelstier 3-3-3-9-9-9 auf Stufe 2: ${c.P.DOPPELSTIER} + ${2 * c.bonus} = ${c.P.DOPPELSTIER + 2 * c.bonus} Punkte je Runde.`,
-  },
-
-  /* ---------- Packs ---------- */
-  'pack:sternbilder': {
-    lang: (c) => `Beim Öffnen werden ${c.wahl} Sternbildtypen aufgedeckt, die noch nicht auf der Höchststufe sind. Einen davon wählst du, er steigt eine Stufe. Jede Stufe bringt +${c.bonus} Punkte bei jeder Wertung dieses Typs. In jedem Shop liegt ein Pack, das nächste gibt es im nächsten Shop.`,
-    beispiel: () => 'Du baust vor allem Pfeile und Kronen. Aufgedeckt werden Pfeil, Kreuz und Zwilling: Du nimmst den Pfeil.',
-  },
-  'pack:planet': {
-    lang: (c) => `Beim Öffnen werden ${c.wahl} Karten aufgedeckt, die es nur auf diesem Planeten gibt. Eine davon kommt in dein Deck. Planetenzahlen tragen oft einen Typ-Bonus: Punkte extra, wenn sie in einem bestimmten Sternbildtyp liegen. In jedem Shop liegt ein Pack, das nächste gibt es im nächsten Shop.`,
-    beispiel: () => 'Auf dem Frostpfad zählen Pfeile mehr, und das Pack bringt Karten wie den Eiszapfen, der in einem Pfeil noch einmal +2 Punkte gibt.',
-  },
-
-  /* ---------- Planetenkarten ---------- */
-  'frost-eiszapfen': { lang: () => 'Eine 3 vom Frostpfad. Liegt sie bei der Wertung in einem Pfeil, bringt sie +2 Punkte. In jedem anderen Sternbild zählt sie wie eine normale 3.', beispiel: (c) => `Pfeil 2-3-4 mit dem Eiszapfen: ${c.P.PFEIL[3]} + 2 Punkte je Wertung.` },
-  'frost-nordlicht': { lang: (c) => `Eine 5, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung in jedem gültigen Sternbild, in einem Pfeil noch +1 dazu.`, beispiel: () => 'Im Pfeil 4-5-6 bringt das Nordlicht zusammen +2 Punkte je Wertung.' },
-  'frost-gletscher': { lang: () => 'Eine 7 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Gegen den Lotsen, der Pfeile jagt, schützt sie deinen Pfeil in der Mitte.', beispiel: () => 'Pfeil 6-7-8 mit dem Gletscherbrocken: Kein Dieb kommt heran, du baust ihn bis zur 11 aus.' },
-  'frost-polarstern': { lang: () => 'Eine Sternschnuppe vom Frostpfad, also ein Joker. Er vertritt jeden Wert. Kreuz und Drache lassen sich mit ihm nicht abschließen.', beispiel: () => 'Dir fehlt die 9 im Pfeil 7-8-_-10: Der Polarstern füllt die Lücke.' },
-  'doppel-zwillingsstern': { lang: () => 'Eine 5 vom Doppelstern. In einem Zwilling oder Doppelstier bringt sie +3 Punkte je Wertung.', beispiel: (c) => `Zwilling 5-5-8-8-11-11 mit dem Zwillingsstern: ${c.P.ZWILLING} + 3 Punkte je Wertung.` },
-  'doppel-doppelgaenger': { lang: () => 'Eine Spiegelkarte 4/9. Auf der Hand drehst du sie beliebig oft, das kostet keinen Zug.', beispiel: () => 'Du hast zwei Neunen: Der Doppelgänger wird zur dritten 9 für den Doppelstier.' },
-  'doppel-partner': { lang: (c) => `Eine 8, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung in jedem gültigen Sternbild, in einem Zwilling noch +1 dazu.`, beispiel: () => 'Im Zwilling 4-4-8-8-11-11 bringt die Partnerkarte zusammen +2 Punkte je Wertung.' },
-  'doppel-sternenstaub': { lang: () => 'Die kosmische Karte Sternenstaub: Eine Zahlenkarte auf deiner Hand bekommt einen neuen Wert von 1 bis 12, für den Rest des Kampfes. Auf dem Doppelstern macht sie aus einer einzelnen Karte das fehlende Paar.', beispiel: () => 'Du hast 4, 4, 8, 8, 11 und eine 2: Sternenstaub macht aus der 2 eine 11, der Zwilling steht.' },
-  'schrott-schrottteil': { lang: () => 'Eine 6 vom Schrottring. In einem Wagen bringt sie +2 Punkte je Wertung.', beispiel: (c) => `Wagen 2-4-6 mit dem Schrottteil: ${c.P.WAGEN[3]} + 2 Punkte je Wertung.` },
-  'schrott-magnetsplitter': { lang: () => 'Eine 10 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Gegen den Aasfresser, der frisch Gebautes klaut, ist das Gold wert.', beispiel: () => 'Dein neuer Pfeil 9-10-11 bleibt liegen, obwohl der Aasfresser passende Karten hätte.' },
-  'schrott-ersatzteil': { lang: (c) => `Eine 2, die schon ein Riese ist: +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt.`, beispiel: (c) => `Pfeil 1-2-3 mit dem Ersatzteil: ${c.P.PFEIL[3]} + ${c.K.karten.riese} Punkte je Wertung.` },
-  'schrott-gravitation': { lang: () => 'Die kosmische Karte Gravitation: eine Karte aus der Mitte auf die Hand holen, zusätzlich zu den Karten, die du beim Bauen nimmst. Auf dem Schrottring liegt die Mitte besonders voll.', beispiel: () => 'Zwölf Karten in der Mitte: Gravitation holt die eine, die deinem Pfeil noch fehlt.' },
-  'nebel-nebelkern': { lang: (c) => `Eine 7, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung, wenn sie in einem gültigen Sternbild liegt.`, beispiel: () => 'Die 7 passt in fast jeden Pfeil und viele Wagen, der Bonus kommt fast jede Runde.' },
-  'nebel-komet': { lang: () => 'Die kosmische Karte Komet: schießt eine Karte aus einem fremden, unversiegelten Sternbild auf die Ablage ihres Besitzers. Gegen die Nova, die selbst viel zerstört, schlägst du so zurück.', beispiel: () => 'Aus dem Fünfer-Pfeil der Nova fliegt die mittlere Karte: 0 Punkte für sie.' },
-  'nebel-weisser-zwerg': { lang: () => 'Die kosmische Karte Weißer Zwerg: drei Karten ziehen, danach zwei Handkarten abwerfen.', beispiel: () => 'Du wirfst zwei kosmische Karten ab, die gerade kein Ziel haben, und behältst die Zahlen.' },
-  'nebel-nebel': { lang: () => 'Die kosmische Karte Nebel: Bis zum Rundenende kann dir niemand etwas klauen. Auf der Nebelwelt tragen alle Decks doppelt so viele kosmische Karten, Schutz ist hier viel wert.', beispiel: () => 'Nebel zu Rundenbeginn, und deine offenen Sternbilder stehen bis zur Wertung.' },
-  'kron-juwel': { lang: () => 'Eine 9 von der Kronwelt. In einer Krone bringt sie +2, in einem Kreuz +3 Punkte je Wertung.', beispiel: (c) => `Kreuz 9-9-9-9 mit dem Juwel: ${c.P.KREUZ} + 3 Punkte je Wertung.` },
-  'kron-zepter': { lang: (c) => `Eine 11, die schon ein Riese ist: +${c.K.karten.riese} Punkte bei jeder Wertung, in der sie in einem gültigen Sternbild liegt.`, beispiel: (c) => `Krone 11-11-11-3-3 mit dem Zepter: ${c.P.KRONE} + ${c.K.karten.riese} Punkte je Wertung.` },
-  'kron-siegelring': { lang: () => 'Eine 5 mit Anker, in einer Krone noch +1 Punkt je Wertung. Das Sternbild, in dem sie liegt, ist nicht klaubar.', beispiel: () => 'Deine halbfertige Krone 5-5-5-7 bleibt liegen, bis die zweite 7 kommt.' },
-  'kron-rote-riesin': { lang: () => 'Die kosmische Karte Rote Riesin: Ein eigenes Sternbild zählt diese Runde doppelt. Auf der Kronwelt bringen Kreuz und Doppelstier ohnehin mehr, doppelt lohnt es sich besonders.', beispiel: () => 'Kreuz auf der Kronwelt: 14 Punkte, mit der Roten Riesin 28 in dieser Runde.' },
-  'nest-beute': { lang: (c) => `Eine 12, die leuchtet: +${c.K.karten.leucht} Punkt je Wertung, wenn sie in einem gültigen Sternbild liegt.`, beispiel: () => 'Die 12 schließt lange Pfeile ab, und der Bonus kommt jede Runde dazu.' },
-  'nest-dietrich': { lang: () => 'Eine 1 mit Anker. Das Sternbild, in dem sie liegt, ist nicht klaubar. Im Nest sitzen nur Diebe.', beispiel: () => 'Pfeil 1-2-3 mit dem Dietrich: Die Elster schaut zu und kann nichts tun.' },
-  'nest-hehlerware': { lang: () => 'Eine 6 aus dem Nest. In einem Wagen oder Pfeil bringt sie +1 Punkt je Wertung.', beispiel: () => 'Die 6 liegt in der Mitte der Zahlenreihe und passt in fast jeden Pfeil.' },
-  'nest-eklipse': { lang: () => 'Die kosmische Karte Eklipse: Ein sicheres, unversiegeltes fremdes Sternbild wird für diesen Zug raubbar. Du wirfst Handkarten ab und nimmst es unverändert.', beispiel: (c) => `Die Elster hat ein Kreuz liegen: Eklipse, zwei Handkarten abwerfen, ${c.P.KREUZ} Punkte wechseln die Seite.` },
-};
-
-/** Der Kontext für die Textfunktionen: Wert und Spiegelseite, Konfigurationen, Stufenbonus, Packwahl. */
-function rlDetailsKontext(wert, opt = {}) {
-  const K = RL_KONFIG;
-  return {
-    w: wert ?? 0,
-    g: wert != null ? CONFIG.deck.zahlenMin + CONFIG.deck.zahlenMax - wert : 0,
-    K, P: CONFIG.punkte,
-    bonus: K.stufen.bonusProStufe,
-    max: K.stufen.max ?? K.stufen.schwellen.length,
-    wahl: opt.wahl ?? 3,
-    stufe: opt.stufe ?? 0,
-  };
-}
-
-/** Einen Text auflösen (Satz oder Funktion des Kontexts). */
-function rlDetailsText(t, kontext) {
-  if (typeof t === 'function') return t(kontext);
-  return t || '';
-}
-
-/** Der Eintrag zu einem Schlüssel: Katalog, Sternbildstufe oder Pack, mit Überlagerung aus `opt`. */
-function rlDetailsEintrag(schluessel, opt = {}) {
-  const key = String(schluessel || '');
-  let e, textKey = key, wert = null, wahl = 3;
-  if (key.startsWith('stufe:')) {
-    const typ = key.slice(6);
-    e = { name: typText(typ), sorte: 'stufe', groesse: 0, preis: null, spec: null, kurz: '', planet: null, typ };
-  } else if (key.startsWith('pack:')) {
-    const art = key.slice(5).split(':')[0];
-    const planet = opt.planet ?? key.split(':')[2] ?? null;
-    const P = (RL_KONFIG.shop.packs || {})[art] || {};
-    wahl = P.wahl ?? 3;
-    textKey = 'pack:' + art;
-    e = {
-      name: art === 'planet' ? RL_TXT_SCHIRM.packPlanet(rlText(RL_TXT_PLANET, planet)) : RL_TXT_SCHIRM.packSternbilder,
-      sorte: 'pack', groesse: 0, preis: opt.preis ?? P.preis ?? null, spec: null, kurz: '', planet, pack: art,
-    };
-  } else {
-    const k = RL_KATALOG[key];
-    e = k ? { name: k.name, sorte: k.sorte, groesse: k.groesse, preis: k.preis || null, spec: k.spec ? { ...k.spec } : null, kurz: k.text, planet: k.planet ?? null }
-      : { name: key, sorte: '', groesse: 0, preis: null, spec: null, kurz: '', planet: null };
-    const m = /^(zahl|spiegel|leucht|anker)-(\d+)$/.exec(key);
-    if (m) { textKey = m[1]; wert = Number(m[2]); }
-  }
-  if (opt.angebot) {
-    e.preis = opt.angebot.preis ?? e.preis;
-    e.groesse = opt.angebot.groesse ?? e.groesse;
-    if (opt.angebot.spec) e.spec = { ...opt.angebot.spec };
-    if (opt.angebot.name) e.name = opt.angebot.name;
-    if (opt.angebot.text) e.kurz = opt.angebot.text;
-  }
-  if (opt.spec) e.spec = { ...opt.spec };
-  if (opt.preis != null && e.preis == null) e.preis = opt.preis;
-  if (wert == null && e.spec && e.spec.art === 'ZAHL') wert = e.spec.wert ?? null;
-  e.schluessel = key;
-  e.stufe = opt.stufe ?? null;
-  const t = RL_TXT_DETAILS[textKey] || {};
-  const kontext = rlDetailsKontext(wert, { wahl, stufe: opt.stufe });
-  e.lang = rlDetailsText(t.lang, kontext) || e.kurz || '';
-  e.beispiel = rlDetailsText(t.beispiel, kontext);
-  return e;
-}
-
-/** Der Details-Knopf: die Delegation des Schirms ruft `details` mit `data-key` (und `data-planet`, `data-preis`). */
-function rlDetailsKnopf(schluessel, opt = {}) {
-  const daten = { rl: 'details', key: schluessel };
-  if (opt.planet) daten.planet = opt.planet;
-  if (opt.preis != null) daten.preis = opt.preis;
-  return rlSchirmKnopf(RL_TXT_SCHIRM.details, 'klein rl-details-knopf', daten);
-}
-
-/** Kartenobjekt für karteEl aus einer KartenSpec (eigene Ids, damit nichts mit dem Tisch kollidiert). */
-function rlDetailsKarte(spec, nr = 0) {
-  const k = { id: 700000 + nr, art: spec.art, wert: spec.art === 'ZAHL' ? (spec.wert ?? null) : null };
-  if (spec.stufe) k.stufe = spec.stufe;
-  if (spec.spiegel) k.spiegel = true;
-  if (spec.leucht) k.leucht = true;
-  if (spec.anker) k.anker = true;
-  if (spec.typBonus) k.typBonus = { ...spec.typBonus };
-  if (spec.planet) k.planet = spec.planet;
-  if (spec.name) k.name = spec.name;
-  return k;
-}
-
-/** Die große Vorschau: Karte, Modulbild, Beispiel-Sternbild (Stufen) oder Pack. */
-function rlDetailsVorschauEl(e) {
-  const v = rlSchirmEl('div', 'rl-details-vorschau');
-  if (e.sorte === 'stufe') {
-    const reihe = rlSchirmEl('div', 'rl-details-form');
-    (RL_DETAILS_FORM_WERTE[e.typ] || []).forEach((w, i) => reihe.appendChild(karteEl({ id: 710000 + i, art: 'ZAHL', wert: w }, 'sb', { klickbar: false })));
-    v.appendChild(reihe);
-  } else if (e.sorte === 'pack') {
-    v.innerHTML = rlPackSvg(e.pack, e.planet, 190);
-  } else if (e.sorte === 'modul' || e.sorte === 'vorrat') {
-    v.innerHTML = rlModulSvg(e.schluessel, 130);
-  } else if (e.sorte === 'aufwertung') {
-    v.appendChild(karteEl(rlDetailsKarte({ art: 'ZAHL', wert: 7, stufe: e.schluessel === 'ueberriese' ? 2 : 1 }), 'hand', { klickbar: false }));
-  } else if (e.spec) {
-    v.appendChild(karteEl(rlDetailsKarte(e.spec), 'hand', { klickbar: false }));
-  } else {
-    v.hidden = true;
-  }
-  return v;
-}
-
-/** Liste der Marken einer Zahlenkarte (Riese, Leucht, Anker, Spiegel, Typ-Bonus) — null, wenn sie keine trägt. */
-function rlDetailsMarkenEl(spec) {
-  if (!spec || spec.art !== 'ZAHL') return null;
-  const K = RL_KONFIG.karten;
-  const zeilen = [];
-  if (spec.stufe === 1) zeilen.push(['Riese', `+${K.riese} Punkte je Wertung`]);
-  if (spec.stufe === 2) zeilen.push(['Überriese', `+${K.ueberriese} Punkte je Wertung`]);
-  if (spec.leucht) zeilen.push(['Leucht', `+${K.leucht} Punkt je Wertung im gültigen Sternbild`]);
-  if (spec.anker) zeilen.push(['Anker', 'das Sternbild ist nicht klaubar']);
-  if (spec.spiegel) zeilen.push(['Spiegel', `zeigt ${spec.wert} oder ${CONFIG.deck.zahlenMin + CONFIG.deck.zahlenMax - spec.wert}`]);
-  for (const [typ, b] of Object.entries(spec.typBonus || {})) zeilen.push(['Typ-Bonus', `+${b} Punkte je Wertung in einem ${typText(typ)}`]);
-  if (!zeilen.length) return null;
-  const ul = rlSchirmEl('ul', 'rl-details-marken');
-  for (const [name, text] of zeilen) {
-    const li = rlSchirmEl('li', '');
-    li.appendChild(rlSchirmEl('b', '', name + ': '));
-    li.appendChild(document.createTextNode(text));
-    ul.appendChild(li);
-  }
-  return ul;
-}
-
-/** Das Fenster: Vorschau links, rechts Kopfzeile mit Chips, lange Erklärung, Beispiel, Marken; Schließen auch mit Escape. */
-function rlDetailsZeigen(wurzel, schluessel, opt = {}) {
-  const e = rlDetailsEintrag(schluessel, opt);
-  const alt = wurzel.querySelector(':scope > .rl-ebene[data-ebene="details"]');
-  if (alt) alt.remove();
-  const ebene = rlSchirmEl('div', 'rl-ebene rl-details');
-  ebene.dataset.ebene = 'details';
-  ebene.dataset.key = e.schluessel;
-  ebene.setAttribute('role', 'dialog');
-  ebene.setAttribute('aria-modal', 'true');
-  const kasten = rlSchirmEl('div', 'rl-ebene-kasten rl-details-kasten');
-  kasten.appendChild(rlSchirmEl('h3', 'rl-ueberschrift', e.name));
-  kasten.appendChild(rlDetailsVorschauEl(e));
-
-  const text = rlSchirmEl('div', 'rl-details-text');
-  const zeile = rlSchirmEl('p', 'rl-details-zeile');
-  if (RL_DETAILS_SORTE[e.sorte]) zeile.appendChild(rlSchirmEl('span', '', RL_DETAILS_SORTE[e.sorte]));
-  if (e.groesse > 0) {
-    const chip = rlSchirmEl('span', 'rl-details-chip');
-    chip.dataset.groesse = String(e.groesse);
-    chip.innerHTML = rlGroesseSvg(e.groesse, 16);
-    chip.appendChild(document.createTextNode(RL_TXT_GROESSE[e.groesse]));
-    zeile.appendChild(chip);
-  }
-  if (e.planet) zeile.appendChild(rlSchirmEl('span', 'rl-details-chip', rlText(RL_TXT_PLANET, e.planet)));
-  if (e.sorte === 'stufe' && e.stufe != null) {
-    const max = RL_KONFIG.stufen.max ?? RL_KONFIG.stufen.schwellen.length;
-    zeile.appendChild(rlSchirmEl('span', 'rl-details-chip', RL_TXT_STUFE.packStufe(e.stufe, max)));
-  }
-  if (e.preis != null && e.preis > 0) {
-    const preis = rlSchirmEl('span', 'rl-details-chip preis', String(e.preis));
-    preis.insertAdjacentHTML('beforeend', rlMuenzeSvg(14));
-    zeile.appendChild(preis);
-  }
-  if (zeile.childNodes.length) text.appendChild(zeile);
-  if (e.lang) text.appendChild(rlSchirmEl('p', 'rl-details-lang', e.lang));
-  if (e.beispiel) {
-    const b = rlSchirmEl('p', 'rl-details-beispiel');
-    b.appendChild(rlSchirmEl('b', '', 'Beispiel'));
-    b.appendChild(document.createTextNode(e.beispiel));
-    text.appendChild(b);
-  }
-  const marken = rlDetailsMarkenEl(e.spec);
-  if (marken) text.appendChild(marken);
-  kasten.appendChild(text);
-
-  const knoepfe = rlSchirmEl('div', 'rl-ende-knoepfe');
-  knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.schliessen, 'haupt', { rl: 'details-zu' }));
-  kasten.appendChild(knoepfe);
-  ebene.appendChild(kasten);
-
-  const zu = () => { document.removeEventListener('keydown', taste); ebene.remove(); };
-  const taste = (ev) => { if (ev.key === 'Escape') { ev.stopPropagation(); zu(); } };
-  document.addEventListener('keydown', taste);
-  ebene.addEventListener('click', (ev) => {
-    const ziel = ev.target.closest('[data-rl="details-zu"]');
-    if (!ziel && ev.target !== ebene) return;
-    ev.stopPropagation();
-    ev.preventDefault();
-    zu();
-  });
-  wurzel.appendChild(ebene);
-  return ebene;
 }
 
 /* ===== app\roguelike\rl-shop-ui.js ===== */
@@ -19080,6 +19275,7 @@ function rlShopPackKarteEl(lauf, pack, k, nr) {
     name = typText(k.typ);
     schluessel = 'stufe:' + k.typ;
     e.dataset.typ = k.typ;
+    if (k.gesperrt) e.classList.add('rl-pack-zu');   // Lehrlauf: noch nicht freigeschaltet (Spieltest-Runde 9)
     const bild = rlSchirmEl('span', 'rl-pack-karte-bild rl-pack-typkarte');
     bild.innerHTML = rlShopTypSymbolSvg(k.typ, 64);
     rlShopFormTipAn(bild, k.typ, k.stufe ?? 0);      // überfahren / antippen: so baut man diese Form
@@ -19106,7 +19302,8 @@ function rlShopPackKarteEl(lauf, pack, k, nr) {
   }
   const knoepfe = rlSchirmEl('div', 'rl-pack-karte-knoepfe');
   if (pack.zustand === 'offen') {
-    knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.packNehmen, 'klein haupt', { rl: 'pack-nehmen', pack: pack.art, id: k.id }));
+    if (k.gesperrt) knoepfe.appendChild(rlSchirmEl('span', 'rl-pack-zu-text', RL_TXT_LEHRE.frei.packZu));
+    else knoepfe.appendChild(rlSchirmKnopf(RL_TXT_SCHIRM.packNehmen, 'klein haupt', { rl: 'pack-nehmen', pack: pack.art, id: k.id }));
   } else if (pack.gewaehlt === k.id) {
     e.classList.add('gewaehlt');
     e.appendChild(rlSchirmEl('span', 'rl-stempel gruen rl-pack-genommen', RL_TXT_SCHIRM.packGenommen(name)));
@@ -19190,6 +19387,13 @@ function rlShopPacksEl(lauf, shop) {
   sec.appendChild(rlSchirmEl('h4', '', RL_TXT_SCHIRM.packsTitel));
   sec.appendChild(rlSchirmEl('span', 'rl-stempel', RL_TXT_UI.nichtRerollbar));
   sec.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_SCHIRM.packsHinweis));
+  // Lehrlauf (Spieltest-Runde 9): bis V2-A2 die Packs erklärt (Shop 2), bleiben sie zu — ein Tester öffnete im ersten Shop ein
+  // Sternbilderpack und sah nur Sternbilder, die er noch nicht kannte.
+  if (typeof lauf.lehrPacksFrei === 'function' && !lauf.lehrPacksFrei()) {
+    sec.classList.add('rl-packs-zu');
+    sec.appendChild(rlSchirmEl('p', 'rl-hinweis rl-packs-schloss', RL_TXT_LEHRE.schirm.packsZu));
+    return sec;
+  }
   const reihe = rlSchirmEl('div', 'rl-packs-reihe');
   for (const art of ['sternbilder', 'planet']) if (packs[art]) reihe.appendChild(rlShopPackEl(lauf, packs[art]));
   sec.appendChild(reihe);
@@ -19485,6 +19689,8 @@ function rlImFlugZeigen(wurzel, lauf, shop, rueckrufe = {}) {
   // Kabinett
   const kab = bereich(RL_TXT_SCHIRM.kabinett, 'rl-kabinett');
   kab.appendChild(angebotsReihe(shop.kabinett, 'kabinett'));
+  // Lehrlauf (Spieltest-Runde 9): das Kabinett bleibt leer, bis alle kosmischen Grundkarten geschenkt sind — der Hinweis sagt es.
+  if (!(shop.kabinett || []).length && typeof lauf.lehrShopVoll === 'function' && !lauf.lehrShopVoll()) kab.appendChild(rlSchirmEl('p', 'rl-hinweis', RL_TXT_LEHRE.schirm.kabinettZu));
   raster.appendChild(kab);
 
   // Schiffsmodul
@@ -20201,7 +20407,7 @@ class RlLauf {
 
   /** Was an der Station neu dazukäme und noch nicht freigeschaltet ist: `{formen, kosmische}` (leer außerhalb des Lehrlaufs). */
   lehrNeu(stationNr = this.lehrStation()) {
-    if (!this.istLehrlauf()) return { formen: [], kosmische: [] };
+    if (!this.istLehrlauf()) return { formen: [], kosmische: [], erklaert: [] };
     return rlLehrNeuAn(this.d.lehre.freiBis ?? -1, stationNr);
   }
 
@@ -20283,7 +20489,11 @@ class RlLauf {
     // Lehrlauf: auf den ersten Plätzen spielen alle Lakaien einfach, und zwei Gegner gibt es erst spät.
     const L = RL_KONFIG.lehrlauf ?? {};
     if (this.istLehrlauf() && d.platz <= (L.einfacheGegnerBisPlatz ?? 0)) haupt.gewichte = 'einfach';
-    const duo = this.istLehrlauf() ? d.platz >= (L.duoAbPlatz ?? 99) : (d.platz >= 3 || (d.platz === 2 && i === 2));
+    // Spieltest-Runde 9: der zweite Lakai am Tisch („Duo") ist abgeschaltet — Anton und sein Tester hielten ihn für einen Fehler
+    // (drei Sitze, die gegeneinander spielen). Mehrere Gegner gibt es nur noch als echte Gruppe (Zwillinge, Trabanten, Schwarm).
+    // Stellschraube: RL_KONFIG.schwierigkeit.duo = { abPlatz, eliteAbPlatz } (99 = nie).
+    const D = RL_KONFIG.schwierigkeit.duo ?? {};
+    const duo = this.istLehrlauf() ? d.platz >= (L.duoAbPlatz ?? 99) : (d.platz >= (D.abPlatz ?? 99) || (i === 2 && d.platz >= (D.eliteAbPlatz ?? 99)));
     if (!duo) return haupt;
     return [haupt, mitAussetzer(rlLakaiFuerPlatz(rlDeckKopie(plan.partner[i]), d.platz, d.schwierigkeit))];
   }
@@ -20445,6 +20655,18 @@ class RlLauf {
   /** Lehrlauf, Alleinflug: die Planeten nach dem begleiteten Teil — echte Regeln, wer verliert, strandet. */
   lehrAllein() {
     return this.istLehrlauf() && !this.lehrBegleitet();
+  }
+
+  /** Lehrlauf (Spieltest-Runde 9): erst wenn alle kosmischen Grundkarten freigeschaltet sind, liegen im Shop kosmische Karten. */
+  lehrShopVoll() {
+    if (!this.istLehrlauf()) return true;
+    return rlLehrFrei(this.d.lehre.freiBis ?? -1).alles;
+  }
+
+  /** Lehrlauf: sind die Packs im Shop schon frei? (V2-A2 erklärt sie ab `lehrlauf.packsAbStation`; vorher bleiben sie zu.) */
+  lehrPacksFrei() {
+    if (!this.istLehrlauf()) return true;
+    return this.lehrStation() >= ((RL_KONFIG.lehrlauf ?? {}).packsAbStation ?? 0);
   }
 
   /**
@@ -20983,21 +21205,23 @@ function rlKampfUiSchild(text, farbe, platz) {
  * @returns {Promise<void>} löst auf, wenn die Folge durch ist — danach zeigt start.js das Rundenende-Fenster
  */
 function rlKampfUiWertung(kampf) {
-  const faktor = bewegungsFaktor();
-  if (!faktor || typeof document === 'undefined') return Promise.resolve();
-  const m = kampf.menschIdx;
   const spiel = kampf.spiel;
+  // Spieltest-Runde 9: erst wenn der Angriff durch ist, zeigt die Leiste den neuen Stand (sichtErweitern liest die Marke).
+  const fertigMarke = () => { kampf.wertungGezeigtRunde = spiel.runde; };
+  const faktor = bewegungsFaktor();
+  if (!faktor || typeof document === 'undefined') { fertigMarke(); return Promise.resolve(); }
+  const m = kampf.menschIdx;
   const treffer = spiel.spieler[m].sternbilder
     .map((sb) => ({ sb, punkte: spiel.punkteVon(sb, m), el: document.querySelector('#meine-sternbilder .sternbild[data-sb="' + sb.id + '"]') }))
     .filter((t) => t.punkte > 0 && t.el);
-  if (!treffer.length) return Promise.resolve();
+  if (!treffer.length) { fertigMarke(); return Promise.resolve(); }
 
   const bz = kampf.boss;
   const leiste = bz ? document.querySelector('#gegner-bereich .gegner-leben') : null;
   const figur = bz ? document.querySelector('#gegner-bereich .gegner[data-boss] .gegner-figur') : null;
   const chip = document.querySelector('#kopf-punkte .spieler-chip.mensch .chip-punkte');
   const ziel = bz ? (figur || leiste) : chip;
-  if (!ziel) return Promise.resolve();
+  if (!ziel) { fertigMarke(); return Promise.resolve(); }
   const warte = (ms) => new Promise((fertig) => setTimeout(fertig, ms));
   const dauer = Math.round((treffer.length > 4 ? 300 : 430) * faktor);
 
@@ -21066,7 +21290,8 @@ function rlKampfUiWertung(kampf) {
     }
     if (figur) figur.classList.remove('getroffen');
     if (chip) { chip.textContent = String(spiel.spieler[m].punkte); chip.classList.remove('rl-wertung-plus'); }
-  })().catch(() => {});
+    fertigMarke();
+  })().catch(() => { fertigMarke(); });
 }
 
 /**
@@ -21130,6 +21355,9 @@ function rlKampfUiFaehigkeitText(e, name) {
 function rlModusFuer(kampf, lauf, kontext = {}) {
   const m = kampf.menschIdx;
   const zaehler = { ereignisNr: 0, rundenGezeigt: 0, endeGemeldet: false };
+  // Spieltest-Runde 9: Abwürfe der Gegner (Engine-Ereignis ABWURF) fliegen sichtbar auf ihre Ablage — fliegeUm bekommt sie über bildDaten.
+  const abwuerfe = [];
+  const abmeldenAbwurf = kampf.spiel.beiEreignis((e) => { if (e && e.art === 'ABWURF' && e.idx !== m) abwuerfe.push({ idx: e.idx, karteId: e.karteId }); });
   const bossName = () => (kampf.boss ? kampf.boss.name : '');
   const f = kontext.fuehrung || null;          // Pflicht-Tutorial: Haken des Übungskampfes
 
@@ -21190,6 +21418,18 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
       const z = s.z;
       const ich = z.spieler[m];
       const rl = kampf.sichtErweiterung();
+      // Spieltest-Runde 9: am Rundenende zeigt die Lebensleiste den Schaden erst NACH dem Wertungs-Angriff — vorher stand der
+      // neue Stand schon da, bevor die Punkte geflogen sind.
+      const ab = kampf.ablauf;
+      if (rl.boss && rl.boss.lebenVorWertung != null && (ab.phase === 'RUNDENENDE' || ab.beendet) && kampf.wertungGezeigtRunde !== ab.runde) {
+        rl.boss = { ...rl.boss, leben: rl.boss.lebenVorWertung, tot: false };
+      }
+      // Deck und Ablage der Gegner (Spieltest-Runde 9): man sieht, woher der Bot zieht und was er abwirft.
+      rl.gegnerStapel = {};
+      for (const i of kampf.sitzVonGegner) {
+        const sp = kampf.spiel.spieler[i];
+        if (sp) rl.gegnerStapel[i] = { deck: sp.deck.length, ablage: sp.ablage.length, oben: sp.ablage.length ? sp.ablage[sp.ablage.length - 1] : null };
+      }
       // Die drei Stapel: eigenes Deck (Sichtluke zeigt die oberste Karte), eigene Ablage, Himmel.
       rl.deck = {
         anzahl: ich.deckAnzahl ?? 0,
@@ -21318,11 +21558,13 @@ function rlModusFuer(kampf, lauf, kontext = {}) {
         }
       }
       if (geld > 0) opt.geld = { idx: m, betrag: geld };
+      if (abwuerfe.length) opt.abwuerfe = abwuerfe.splice(0);
       return opt;
     },
 
     verlassen() {
       rlKampfUiZugBanner({ phase: 'weg' });
+      abmeldenAbwurf();
       kampf.beenden();
     },
 
@@ -21860,6 +22102,13 @@ class RlKampf {
         // Lehrlauf: kosmische Grundkarten, die der Spieler noch nicht kennt, stecken in keinem Gegnerdeck.
         if (this.lehrlauf) deckSpec = rlLehrDeckOhneFremdes(deckSpec, this.lehrStation);
         const teile = [modusRegeln, spec.regeln ?? {}];
+        // Spieltest-Runde 9: alle Gegner-Sitze spielen ZUSAMMEN gegen den Menschen — sie klauen einander nichts und richten
+        // keine kosmische Karte gegeneinander (Zwillinge, Trabanten, Schwarm; vorher spielte jeder Sitz gegen jeden).
+        const andere = [];
+        for (let j = 0; j < n; j++) if (j !== m && j !== i) andere.push(j);
+        if (andere.length) teile.push({ verbuendete: andere });
+        // Lehrlauf, begleiteter Teil: Gegner setzen keinen Drachen zusammen und klauen keinen — V2-A2 zeigt ihn dem Spieler zuerst.
+        if (this.lehrlauf && typeof lauf.lehrBegleitet === 'function' && lauf.lehrBegleitet()) teile.push({ keinDrache: true });
         const boni = [];
         for (const p of spec.privilegien ?? []) {
           const pr = RL_PRIVILEGIEN[p];
@@ -22636,7 +22885,8 @@ function rlLehrmeisterHaken(opt) {
     lehrgang.beginne(lektion);
     if (lektion.key === 'tauschen') st.tausch = rlLehrNachTausch(spiel, m);
     st.ziel = lehrgang.aktiv ? zielJetzt() : null;
-    const eintrag = T[lektion.key];
+    // Spieltest-Runde 9: „Karte tauschen" kommt früh, auch wenn etwas anderes passt — dann mit eigenem Text.
+    const eintrag = (lektion.frueh && T.tauschenFrueh) || T[lektion.key];
     const saetze = eintrag && eintrag.vor ? eintrag.vor(kontext(lektion, st.ziel, false)) : [];
     return rede(lektion.key, saetze, { pflicht: pflichtLesen, schluss: lektion.pflicht ? RL_TXT_UI.weiter : RL_TXT_UI.allesKlar });
   }
@@ -22906,7 +23156,8 @@ const RL_LEHRMEISTER_LESEZEIT = { jeZeichen: 36, min: 1800, max: 6500 };
 function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
   const formen = (neu && neu.formen) || [];
   const kosmische = (neu && neu.kosmische) || [];
-  if (!wurzel || (!formen.length && !kosmische.length)) { if (opt.dann) opt.dann(); return null; }
+  const erklaert = (neu && neu.erklaert) || [];   // nur erklärt, nicht gebaut: der Drache (Spieltest-Runde 9)
+  if (!wurzel || (!formen.length && !kosmische.length && !erklaert.length)) { if (opt.dann) opt.dann(); return null; }
   const T = RL_TXT_LEHRE.frei;
   const alt = wurzel.querySelector(':scope > .rl-ebene[data-ebene="freischaltung"]');
   if (alt) alt.remove();
@@ -22940,6 +23191,7 @@ function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
     if (zeile) seiten.push({ sorte: 'form', typ, zeile, name: RL_TXT_LEHRE.formName[typ] || typ });
   }
   for (const art of kosmische) seiten.push({ sorte: 'kosmisch', art, name: ART_TEXT[art] || art });
+  for (const art of erklaert) seiten.push({ sorte: 'erklaert', art, name: (T.erklaertName || {})[art] || art });
   if (!seiten.length) { ebene.remove(); if (opt.dann) opt.dann(); return null; }
 
   const faktor = bewegungsFaktor();
@@ -22963,6 +23215,23 @@ function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
       karte.dataset.typ = seite.typ;
       karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.sternbild));
       karte.appendChild(seite.zeile);
+    } else if (seite.sorte === 'erklaert') {
+      // Der Drache: zwei Reihen Beispielkarten (1–6 und 7–12), darunter Name und Regel.
+      karte.classList.add('erklaert');
+      karte.dataset.art = seite.art;
+      karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.erklaert));
+      if (seite.art === 'DRACHE') {
+        const bild = rlSchirmEl('div', 'rl-frei-drache');
+        for (const [von, bis] of [[1, 6], [7, 12]]) {
+          const reihe = rlSchirmEl('div', 'kartenreihe rl-frei-drache-reihe');
+          for (let w = von; w <= bis; w++) reihe.appendChild(karteEl({ id: -1, art: 'ZAHL', wert: w }, 'schau', { klickbar: false }));
+          bild.appendChild(reihe);
+        }
+        karte.appendChild(bild);
+      }
+      karte.appendChild(rlSchirmEl('b', 'rl-frei-name', seite.name));
+      const erkl = (T.erklaertText || {})[seite.art];
+      karte.appendChild(rlSchirmEl('span', 'rl-frei-text', erkl ? erkl({ punkte: CONFIG.punkte.DRACHE }) : ''));
     } else {
       karte.dataset.art = seite.art;
       karte.appendChild(rlSchirmEl('span', 'rl-frei-art', T.kosmisch));
@@ -22976,7 +23245,7 @@ function rlLehrFreischaltungZeigen(wurzel, neu, opt = {}) {
     schloss.innerHTML = rlLehrmeisterSchlossSvg();
     karte.appendChild(schloss);
     reihe.appendChild(karte);
-    const text = seite.sorte === 'form' ? T.seiteForm(seite.name) : T.seiteKosmisch(seite.name);
+    const text = seite.sorte === 'form' ? T.seiteForm(seite.name) : seite.sorte === 'erklaert' ? T.seiteErklaert(seite.name) : T.seiteKosmisch(seite.name);
     hinweis.textContent = text;
     weiter.textContent = i + 1 < seiten.length ? T.weiterNaechstes : T.weiter;
     // Pflicht-Lesen: erst das Schloss, dann füllt sich der Knopf über die Lesezeit (Karte + Text).
@@ -23341,7 +23610,7 @@ function rlStartZeigeUmlaufbahn() {
     }),
   });
   if (d.sternwarte) rlStartZeigeSternwarte();
-  rlStartFuehrung().schirm('umlaufbahn');
+  if (!rlS.freiOffen) rlStartFuehrung().schirm('umlaufbahn');   // Freischalt-Seiten zuerst (Spieltest-Runde 9)
 }
 
 function rlStartZeigeImFlug() {
@@ -23364,8 +23633,7 @@ function rlStartZeigeImFlug() {
     weiter: () => rlStartTu(() => { rlSternwarteSchliessen(lauf); lauf.shopFertig(); }),
   });
   if (d.sternwarte) rlStartZeigeSternwarte();
-  rlStartFuehrung().schirm('imflug');
-  rlStartHaken().sag('imflug');
+  if (!rlS.freiOffen) { rlStartFuehrung().schirm('imflug'); rlStartHaken().sag('imflug'); }   // Freischalt-Seiten zuerst
 }
 
 function rlStartZeigeEnde() {
@@ -23523,8 +23791,19 @@ function rlStartKampfBeendet(kampf) {
 function rlStartNachKampf() {
   rlS.api.tischVerlassen();
   rlS.modus = null;
+  rlS.freiOffen = rlStartLehrFreiSteht();   // erst die Freischalt-Seiten lesen, dann redet V2-A2 (Spieltest-Runde 9)
   rlStartZeigeAktuell();
   rlStartLehrFreischaltung();
+}
+
+/** Steht nach diesem Kampf eine Freischaltung an? Solange ihre Seiten offen sind, schweigt die Schirm-Führung. */
+function rlStartLehrFreiSteht() {
+  const lauf = rlS.lauf;
+  if (!lauf || !lauf.istLehrlauf()) return false;
+  const phase = lauf.daten.phase;
+  if (phase !== 'UMLAUFBAHN' && phase !== 'IMFLUG') return false;
+  const neu = lauf.lehrNeu(lauf.lehrNaechsteStation());
+  return !!(neu.formen.length || neu.kosmische.length || (neu.erklaert || []).length);
 }
 
 /**
@@ -23538,11 +23817,14 @@ function rlStartLehrFreischaltung() {
   if (phase !== 'UMLAUFBAHN' && phase !== 'IMFLUG') return;
   const station = lauf.lehrNaechsteStation();
   const neu = lauf.lehrNeu(station);
-  if (!neu.formen.length && !neu.kosmische.length) return;
+  if (!neu.formen.length && !neu.kosmische.length && !(neu.erklaert || []).length) { rlS.freiOffen = false; return; }
   lauf.lehrFreischalten(station);
   rlStartSpeichern();
   rlStartSextantWeg();
-  rlLehrFreischaltungZeigen(rlS.schirm, neu, { dann: () => rlStartZeigeAktuell() });
+  // Spieltest-Runde 9: solange die Seiten offen sind, schweigt die Schirm-Führung (rlS.freiOffen) — ein Tester sah V2-A2 über der
+  // Freischaltung reden, und »Weiter« blieb dunkel.
+  rlS.freiOffen = true;
+  rlLehrFreischaltungZeigen(rlS.schirm, neu, { dann: () => { rlS.freiOffen = false; rlStartZeigeAktuell(); } });
 }
 
 /* ------------------------------------------------------------------ */
@@ -23664,6 +23946,7 @@ function rlStartFortsetzen() {
   rlS.uebung = null;
   rlS.abgeschlossen = null;
   rlStartHakenNeu(rlS.lauf);
+  rlS.freiOffen = rlStartLehrFreiSteht();
   rlStartZeigeAktuell();
   rlStartLehrFreischaltung();   // Lehrlauf: wurde das Spiel auf dem Sieg-Fenster verlassen, springt das Schloss jetzt auf
   return true;
@@ -23901,7 +24184,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '20.09.2026 22:08';
+const BAU_STAND = '26.09.2026 09:46';
 
 /**
  * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
@@ -24552,6 +24835,25 @@ function pruefeJoker(z, ich) {
 }
 
 /**
+ * Warum eine Auswahl mit Sternschnuppe scheitert, obwohl die Zahlen passen würden: Kreuz und Drache lassen sich nach den
+ * Regeln nicht mit dem Joker abschließen (CONFIG.kosmisch.kreuzMitJokerErlaubt, CONFIG.drache.mitJokerErlaubt). Spieltest-Runde 9:
+ * ein Tester hielt „vier Sechsen, eine davon die Sternschnuppe" für einen Fehler — der Grund stand nirgends.
+ */
+function jokerRegelGrund(karten) {
+  if (!karten.some((k) => k.art === 'STERNSCHNUPPE')) return '';
+  for (let wert = 1; wert <= 12; wert++) {
+    const b = bewerte(karten.map((k) => (k.art === 'STERNSCHNUPPE' ? { ...k, art: 'ZAHL', wert } : k)));
+    if (!b.gueltig) continue;
+    if (b.typ === 'KREUZ' && !CONFIG.kosmisch.kreuzMitJokerErlaubt) {
+      return 'Ein Kreuz braucht vier ECHTE gleiche Zahlen — die Sternschnuppe darf jede Zahl vertreten, aber kein Kreuz abschließen (Regel). '
+        + 'Bau mit ihr Pfeil, Wagen, Krone, Zwilling oder Doppelstier.';
+    }
+    if (b.typ === 'DRACHE' && !CONFIG.drache.mitJokerErlaubt) return 'Der Drache lässt sich nicht mit einer Sternschnuppe abschließen (Regel).';
+  }
+  return '';
+}
+
+/**
  * Nimmt die vom Spieler gewählten Karten und das gewählte Zielsternbild und
  * sagt, ob daraus ein legaler Zug wird.
  *
@@ -24658,6 +24960,9 @@ function pruefeAuswahl() {
   if (ziel) karten.push(...ziel.karten);
   for (const k of ich.hand || []) if (S.auswahlHand.has(k.id)) karten.push(k);
   for (const k of z.mitte) if (S.auswahlMitte.has(k.id)) karten.push(k);
+  // Eine kosmische Karte in der Auswahl (Raubzug: zum Tauschen angewählt) gehört in kein Sternbild — sagen statt „keine gültige Form".
+  const kosmischDabei = karten.find((k) => k.art !== 'ZAHL' && k.art !== 'STERNSCHNUPPE' && S.auswahlHand.has(k.id));
+  if (kosmischDabei) return { grund: `${ART_TEXT[kosmischDabei.art] ?? kosmischDabei.art} gehört in kein Sternbild — unten »Karte tauschen« wirft sie ab.` };
 
   if (karten.length < CONFIG.sternbild.minKarten) {
     return { grund: klauKopf + `Ein Sternbild braucht mindestens ${CONFIG.sternbild.minKarten} Karten. ` +
@@ -24670,6 +24975,8 @@ function pruefeAuswahl() {
 
   const b = bewerte(karten);
   if (!b.gueltig) {
+    const jokerGrund = jokerRegelGrund(karten);
+    if (jokerGrund) return { grund: klauKopf + jokerGrund };
     const werte = karten.filter((k) => k.art === 'ZAHL').map((k) => k.wert).sort((x, y) => x - y);
     return { grund: klauKopf + `Aus ${werte.join('-')} wird keine gültige Form. ` +
       'Pfeil braucht Werte in Folge, Wagen gleiche Abstände, dazu Krone, Kreuz, ' +
@@ -24960,8 +25267,13 @@ function baueZielModus(s) {
         ? 'Schwarzes Loch: welches Sternbild soll zerfallen?'
         : `${ART_TEXT[m.art] ?? m.art}: Ziel antippen.`);
   }
-  s.knoepfe = [{ text: 'Abbrechen', klasse: '', }];
+  s.knoepfe = [{ text: 'Abbrechen', klasse: 'abbruch' }];
   S.knopfTun = [() => { S.zielModus = null; zeichne(); }];
+  // Raubzug (Spieltest-Runde 9): die Karte lieber tauschen als spielen — auch wenn sie ein Ziel hätte.
+  if (S.modus && m && m.kartenId != null && m.art !== 'NOVA') {
+    s.knoepfe.push({ text: 'Stattdessen tauschen (abwerfen)', klasse: 'tausch', titel: 'Die kosmische Karte geht auf die Ablage, du ziehst nach. Kostet den Zug.' });
+    S.knopfTun.push(() => { const id = m.kartenId; S.zielModus = null; fuehreAus({ art: 'ABWERFEN', handIds: [id], gewinn: 0, punkteNachher: 0 }); });
+  }
   return s;
 }
 
@@ -25241,6 +25553,7 @@ function baueKnoepfe(s) {
     // vier Handkarten aufgefüllt — man tauscht die Karte also.
     knoepfe.push({
       text: 'Karte tauschen (abwerfen und nachziehen)',
+      klasse: 'tausch',
       titel: mit
         ? 'Nur die Handkarte wandert auf die Ablage; die Mittelkarten bleiben liegen. '
           + 'Am Zugende ziehst du wieder auf ' + meineRegel('handkarten') + ' Karten auf.'
@@ -25564,9 +25877,19 @@ function kosmischWahlen(art, kartenId, filter) {
 }
 
 function kosmischGeklickt(karte) {
-  if (S.kosmischGespielt) { blinken('Nur eine kosmische Karte pro Zug.'); return; }
+  // Raubzug (Spieltest-Runde 9): eine kosmische Karte ohne Ziel (oder nach der einen je Zug) lässt sich wie eine Zahl tauschen —
+  // ein Tester saß mit drei unbrauchbaren kosmischen Karten fest. Antippen wählt sie an, unten steht dann »Karte tauschen«.
+  const zumTausch = (grund) => {
+    if (!S.modus) { blinken(grund); return; }
+    if (S.auswahlHand.has(karte.id)) { S.auswahlHand.delete(karte.id); zeichne(); return; }
+    auswahlLeeren();
+    S.auswahlHand.add(karte.id);
+    zeichne();
+    blinken(grund + ' Unten »Karte tauschen« wirft sie ab, du ziehst nach.');
+  };
+  if (S.kosmischGespielt) { zumTausch('Nur eine kosmische Karte pro Zug.'); return; }
   const passend = kosmischWahlen(karte.art, karte.id);
-  if (!passend.length) { blinken(`${ART_TEXT[karte.art]} hat gerade kein Ziel.`); return; }
+  if (!passend.length) { zumTausch(`${ART_TEXT[karte.art]} hat gerade kein Ziel.`); return; }
   if (karte.art === 'MILCHSTRASSE') { spieleKosmisch(passend[0]); return; }
   if (karte.art === 'URKNALL') { fragUrknall(passend[0]); return; }
 
@@ -26086,6 +26409,29 @@ function verdrahte() {
   // Einstellungen in der laufenden Partie (Spieltest-Runde 7): Geschwindigkeit, Bewegung, Ton — ohne den Tisch zu verlassen.
   const btnSpielEin = document.getElementById('btn-spiel-ein');
   if (btnSpielEin) btnSpielEin.addEventListener('click', zeigeSpielEinstellungen);
+  // Nur PC (Spieltest-Runde 9): Enter drückt im Raubzug den nächsten Schritt — V2-A2s »Weiter«, die Freischalt-Seite, das Fenster.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (document.body.dataset.modus !== 'roguelike') return;
+    const t = e.target;
+    if (t && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(t.tagName)) return;   // Knöpfe und Felder reagieren selbst
+    const frei = (b) => !!b && !b.disabled && !b.hidden && !b.closest('[hidden]');
+    const b = [
+      document.querySelector('#rl-figur .rl-blase-weiter'),
+      document.querySelector('#rl-schirm .rl-ebene[data-ebene="freischaltung"] [data-rl="frei-weiter"]'),
+      document.querySelector('#modal .modal-knoepfe .knopf.haupt'),
+    ].find(frei);
+    if (!b) return;
+    if (b.closest('#modal') && document.body.dataset.rlRedet === '1') return;   // solange V2-A2 erklärt, bleibt das Fenster zu
+    e.preventDefault();
+    b.click();
+  });
+  // Protokoll (Spieltest-Runde 9): im Raubzug eingeklappt — die Überschrift klappt es auf und zu.
+  const protTitel = document.getElementById('protokoll-titel');
+  if (protTitel) protTitel.addEventListener('click', () => {
+    if (document.body.dataset.modus !== 'roguelike') return;
+    document.body.dataset.protokoll = document.body.dataset.protokoll === '1' ? '' : '1';
+  });
   dom.erzEnde.addEventListener('click', beendeTutorial);
   verdrahteSchweber();
   /** Pflichtfenster (Start, Rundenende, Spielende) lassen sich nicht wegklicken. */
