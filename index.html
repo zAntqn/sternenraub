@@ -4265,6 +4265,21 @@ body[data-modus="roguelike"][data-protokoll="1"] #protokoll-titel::after { conte
 #rl-schirm[data-fuehrung] .rl-ebene [data-rl][disabled] { filter: none; }
 #rl-schirm[data-fuehrung] .rl-ebene [data-rl].liest { opacity: .85; cursor: wait; }
 
+/* ---------- 35. Schwierigkeit je Deck (26.9.2026): Stufenpunkte unter der Deckkachel, wie Balatros Stakes ---------- */
+/* DOM-Vertrag: startschirm.js baut je freier Kachel `.rl-deck-stufen` mit `.rl-deck-punkt` (frei | zu, gewaehlt) und `.rl-deck-stufe-text`. */
+.rl-deck-stufen { display: inline-flex; gap: 8px; margin-top: 6px; padding: 3px 0; }
+.rl-deck-punkt {
+  width: 14px; height: 14px; border-radius: 50%; box-sizing: border-box;
+  border: 2px solid var(--tinte); background: transparent;
+  cursor: pointer;
+}
+.rl-deck-punkt.frei { background: var(--planet); }
+.rl-deck-punkt.frei:hover { scale: 1.2; }
+.rl-deck-punkt.zu { border-style: dashed; opacity: .45; cursor: not-allowed; }
+.rl-deck-punkt.gewaehlt { background: var(--rl-gold, #F2C640); box-shadow: 0 0 0 2px var(--papier), 0 0 0 4px var(--tinte); }
+.rl-deck-stufe-text { font-family: var(--display); font-size: 12px; letter-spacing: .06em; color: #4B4839; min-height: 1.2em; }
+.rl-kachel.gewaehlt .rl-deck-stufe-text { color: var(--tinte); }
+
 </style>
 <style>
 /* Roguelike-Modus — Gegnerfiguren (Spieltest-Runde 1). Wird vom Einpacker wie rl-stil.css eingebettet.
@@ -4967,14 +4982,7 @@ body[data-modus="roguelike"] #tisch #mitte-bereich { padding-top: 18px; }
       <div id="rl-start-wahl">
       <h3 class="rl-start-abschnitt">Dein Deck</h3>
       <div class="rl-deckwahl" id="rl-deckwahl"></div>
-      <div class="rl-start-zeile">
-        <h3 class="rl-start-abschnitt">Schwierigkeit</h3>
-        <div class="rl-stufen" role="group" aria-label="Schwierigkeit">
-          <button class="rl-knopf klein gewaehlt" data-rl-stufe="1" type="button">1 · leicht</button>
-          <button class="rl-knopf klein" data-rl-stufe="2" type="button">2 · normal</button>
-          <button class="rl-knopf klein" data-rl-stufe="3" type="button">3 · schwer</button>
-        </div>
-      </div>
+      <!-- Schwierigkeit je Deck (26.9.2026): die Stufenpunkte sitzen unter jeder Deckkachel (startschirm.js) — keine Wahl mehr für alle Decks. -->
       <p class="rl-startort">Startort: <b id="rl-startort">Frostpfad</b></p>
       </div>
       <div class="rl-start-fuss">
@@ -11012,6 +11020,9 @@ const RL_TXT_UI = {
   schild: { klau: 'ZACK!', zerstoert: 'WUMM!', schaden: 'KLIRR', krach: 'KRACH!', treffer: 'BUMM!' },
   sternbilderpack: 'Sternbilderpack',
   stufe: { 1: 'leicht', 2: 'normal', 3: 'schwer' },
+  // Schwierigkeit je Deck (26.9.2026): Stufenpunkte unter jeder Deckkachel statt einer Wahl für alle Decks
+  deckStufe: (nr, name) => `Schwierigkeit ${nr} · ${name}`,
+  deckStufeZu: (vorher) => `Noch zu — gewinne mit diesem Deck einen Raubzug auf Schwierigkeit ${vorher}, dann geht sie auf.`,
 };
 
 /**
@@ -11150,6 +11161,7 @@ const RL_TXT_SCHIRM = {
   planetenReihe: 'Reise',
   freischaltung: 'Freigeschaltet',
   deckFrei: (name) => `${name} ist ab jetzt wählbar.`,
+  stufeFrei: (deck, nr, name) => `${deck}: Schwierigkeit ${nr} · ${name} ist ab jetzt wählbar.`,
   naechsterStart: (name) => `Der nächste Lauf beginnt auf ${name}.`,
   siegText: 'Drei Bosse, drei Planeten, ein Deck. Der Raubzug ist gelungen.',
   niederlageText: 'Ein Leben, ein Lauf. Der nächste beginnt hier.',
@@ -11384,9 +11396,10 @@ const RL_TXT_REGELN = {
       kämpfst; ab Platz 2 kämpfst du auch gegen zwei zugleich. Die ersten Lakaien eines Laufs <b>zögern</b> ab und zu und werfen nur
       eine Karte ab — je weiter der Lauf und je höher die Schwierigkeit, desto seltener.</p>` },
     { titel: 'Freischaltungen', html:
-      `<p>Ein besiegter Boss hinterlässt sein <b>Deck</b> — beim nächsten Lauf wählbar. Ein gelungener Raubzug schaltet den nächsten
-      <b>Planeten</b> und die nächste <b>Schwierigkeit</b> frei (bis ${k.stufenMax}). Verlierst du, wandert dein Startort auf den Planeten,
-      auf dem du gestrandet bist.</p>` },
+      `<p>Ein besiegter Boss hinterlässt sein <b>Deck</b> — beim nächsten Lauf wählbar, zunächst auf Schwierigkeit 1. Ein gelungener Raubzug
+      schaltet den nächsten <b>Planeten</b> frei und für das <b>gespielte Deck</b> die nächste <b>Schwierigkeit</b> (bis ${k.stufenMax}): Jedes Deck
+      steigt für sich, die Punkte unter der Deckkachel zeigen den Stand. Verlierst du, wandert dein Startort auf den Planeten, auf dem du
+      gestrandet bist.</p>` },
     { titel: 'Speichern', html:
       `<p>Der Lauf wird nach jedem Kampf und jedem Shop gespeichert. Ein Reload mitten im Kampf <b>startet den Kampf neu</b>
       — gleicher Gegner, gleiche Karten.</p>` },
@@ -12744,8 +12757,8 @@ const merkeName = (name) => schreib(SPEICHER_NAME, name);
  * @param {object} rueckrufe { spielen({bots,stufe,name}), freunde(), tutorial(), regeln(), …
  *   optional für den Roguelike-Modus „Raubzug":
  *   roguelike: { fortsetzen(), neu({deck, stufe}), tutorial() }, roguelikeRegeln() (optional, Regeltext des Modus),
- *   roguelikeStand() → { laufVorhanden, decks:[{key,name,text,frei,staerke?,schwaeche?}],
- *                        stufen:[1,2,3] (freigeschaltete), startortName, bestwerteHtml,
+ *   roguelikeStand() → { laufVorhanden, decks:[{key,name,text,frei,staerke?,schwaeche?, stufe, stufen:[{nr,name,frei,text,hinweis}]}],
+ *                        startortName, bestwerteHtml,   (Schwierigkeit je Deck, 26.9.2026: die Stufenpunkte sitzen in der Kachel)
  *                        pflicht?, pflichtKnopf?, pflichtHinweis?, tutorialKnopf? }
  *     pflicht = das Pflicht-Tutorial steht noch aus: der Knopf „Neuer Lauf" heißt dann `pflichtKnopf`
  *     und startet den geführten Lauf, Deck-, Stufen- und Startortwahl bleiben versteckt.
@@ -12807,20 +12820,48 @@ function baueStartschirm(rueckrufe) {
   /* ================================================================= */
 
   let rlDeck = 'standard';
-  let rlStufe = 1;
+  const rlStufeWahl = {};   // Schwierigkeit je Deck (26.9.2026): gewählte Stufe je Deck in dieser Sitzung — Vorgabe ist die höchste freie des Decks
   const rlKnopf = document.getElementById('btn-roguelike');
   const rlAn = !!(rueckrufe.roguelike && rlBereich);
   if (rlKnopf) rlKnopf.hidden = !rlAn;
 
   /** Was start.js über Profil und Lauf weiß — mit Ersatz, falls der Rückruf fehlt. */
   function rlStand() {
-    const leer = { laufVorhanden: false, decks: [{ key: 'standard', name: 'Standard', text: '', frei: true }],
-      stufen: [1], startortName: '', bestwerteHtml: '' };
+    const leer = { laufVorhanden: false, decks: [{ key: 'standard', name: 'Standard', text: '', frei: true, stufe: 1, stufen: [] }],
+      startortName: '', bestwerteHtml: '' };
     try { return Object.assign(leer, rueckrufe.roguelikeStand ? rueckrufe.roguelikeStand() : null); }
     catch { return leer; }
   }
 
-  /** Die Ebene beim Öffnen aus dem Stand aufbauen: Deckkacheln, Stufen, Startort, Bestwerte. */
+  /** Stufenpunkte einer Kachel: gewählt ist die gemerkte Stufe des Decks, sonst die höchste freie. */
+  function rlKachelStufe(k) {
+    const frei = [...k.querySelectorAll('.rl-deck-punkt.frei')].map((p) => Number(p.dataset.rlStufe));
+    if (!frei.length) return 1;
+    const w = rlStufeWahl[k.dataset.rlDeck];
+    return frei.includes(w) ? w : frei[frei.length - 1];
+  }
+  /** Gewählte Kachel und ihre Stufenpunkte markieren (ohne Neuaufbau). */
+  function rlDeckMarkieren() {
+    for (const k of rlBereich.querySelectorAll('[data-rl-deck]')) {
+      k.classList.toggle('gewaehlt', k.dataset.rlDeck === rlDeck);
+      const nr = rlKachelStufe(k);
+      let text = '';
+      for (const p of k.querySelectorAll('.rl-deck-punkt')) {
+        const dran = Number(p.dataset.rlStufe) === nr;
+        p.classList.toggle('gewaehlt', dran);
+        if (dran) text = p.title || '';
+      }
+      const t = k.querySelector('.rl-deck-stufe-text');
+      if (t) t.textContent = text;
+    }
+  }
+  /** Schwierigkeit, mit der „Neuer Lauf" startet: die gewählte Stufe der gewählten Kachel. */
+  function rlStufeGewaehlt() {
+    const k = rlBereich.querySelector('[data-rl-deck="' + rlDeck + '"]');
+    return k ? rlKachelStufe(k) : 1;
+  }
+
+  /** Die Ebene beim Öffnen aus dem Stand aufbauen: Deckkacheln mit Stufenpunkten, Startort, Bestwerte. */
   function roguelikeAnzeigen() {
     if (!rlAn) return;
     const st = rlStand();
@@ -12863,17 +12904,25 @@ function baueStartschirm(rueckrufe) {
         if (d.staerke) { const s = document.createElement('span'); s.className = 'rl-kachel-staerke'; s.textContent = d.staerke; k.appendChild(s); }
         if (d.schwaeche) { const s = document.createElement('span'); s.className = 'rl-kachel-schwaeche'; s.textContent = d.schwaeche; k.appendChild(s); }
         if (!d.frei) { const s = document.createElement('span'); s.className = 'rl-kachel-sperre'; s.textContent = 'noch nicht freigeschaltet'; k.appendChild(s); }
+        // Schwierigkeit je Deck (26.9.2026, wie Balatros Stakes): Punkte unter der Kachel — gefüllt bis zur erreichten Stufe, darüber
+        // gestrichelt; ein Klick auf einen freien Punkt wählt die Stufe für DIESES Deck (Vorgabe: die höchste freie).
+        if (d.frei && Array.isArray(d.stufen) && d.stufen.length) {
+          const reihe = document.createElement('span'); reihe.className = 'rl-deck-stufen';
+          for (const s of d.stufen) {
+            const p = document.createElement('span');
+            p.className = 'rl-deck-punkt' + (s.frei ? ' frei' : ' zu');
+            p.dataset.rlStufe = s.nr;
+            p.title = s.frei ? (s.text || '') : (s.hinweis || '');
+            reihe.appendChild(p);
+          }
+          k.appendChild(reihe);
+          const t = document.createElement('span'); t.className = 'rl-deck-stufe-text'; k.appendChild(t);
+        }
         kacheln.appendChild(k);
       }
+      rlDeckMarkieren();
     }
 
-    const frei = Array.isArray(st.stufen) && st.stufen.length ? st.stufen : [1];
-    if (!frei.includes(rlStufe)) rlStufe = frei[frei.length - 1];
-    for (const b of rlBereich.querySelectorAll('[data-rl-stufe]')) {
-      const n = Number(b.dataset.rlStufe);
-      b.disabled = !frei.includes(n);
-      b.classList.toggle('gewaehlt', n === rlStufe);
-    }
     const ort = document.getElementById('rl-startort');
     if (ort) ort.textContent = st.startortName || '–';
     const best = document.getElementById('rl-bestwerte');
@@ -12883,21 +12932,31 @@ function baueStartschirm(rueckrufe) {
   if (rlAn) {
     if (rlKnopf) rlKnopf.addEventListener('click', () => zeigeEbene('roguelike'));
     rlBereich.addEventListener('click', (ev) => {
-      const b = ev.target.closest('button[data-rl-deck], button[data-rl-stufe]');
+      const b = ev.target.closest('button[data-rl-deck]');
       if (!b || b.disabled) return;
-      if (b.dataset.rlDeck) {
-        rlDeck = b.dataset.rlDeck;
-        for (const k of rlBereich.querySelectorAll('[data-rl-deck]')) k.classList.toggle('gewaehlt', k.dataset.rlDeck === rlDeck);
-      } else {
-        rlStufe = Number(b.dataset.rlStufe);
-        for (const k of rlBereich.querySelectorAll('[data-rl-stufe]')) k.classList.toggle('gewaehlt', Number(k.dataset.rlStufe) === rlStufe);
-      }
+      rlDeck = b.dataset.rlDeck;
+      const punkt = ev.target.closest('[data-rl-stufe]');   // Stufenpunkt in der Kachel: nur freie lassen sich wählen
+      if (punkt && punkt.classList.contains('frei')) rlStufeWahl[rlDeck] = Number(punkt.dataset.rlStufe);
+      rlDeckMarkieren();
+    });
+    // Tastatur (PC): Pfeil links/rechts auf einer Kachel wandert durch die freien Stufen des Decks.
+    rlBereich.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+      const k = ev.target && ev.target.closest ? ev.target.closest('button[data-rl-deck]') : null;
+      if (!k || k.disabled) return;
+      const frei = [...k.querySelectorAll('.rl-deck-punkt.frei')].map((p) => Number(p.dataset.rlStufe));
+      if (!frei.length) return;
+      rlDeck = k.dataset.rlDeck;
+      const i = frei.indexOf(rlKachelStufe(k)) + (ev.key === 'ArrowRight' ? 1 : -1);
+      rlStufeWahl[rlDeck] = frei[Math.max(0, Math.min(frei.length - 1, i))];
+      rlDeckMarkieren();
+      ev.preventDefault();
     });
     const rl = rueckrufe.roguelike;
     const an = (id, fn) => { const b = document.getElementById(id); if (b) b.addEventListener('click', fn); };
     if (rlKnopf) rlKnopf.hidden = false;
     an('btn-rl-fortsetzen', () => { if (rl.fortsetzen) rl.fortsetzen(); });
-    an('btn-rl-neu', () => { if (rl.neu) rl.neu({ deck: rlDeck, stufe: rlStufe }); });
+    an('btn-rl-neu', () => { if (rl.neu) rl.neu({ deck: rlDeck, stufe: rlStufeGewaehlt() }); });
     an('btn-rl-tutorial', () => { if (rl.tutorial) rl.tutorial(); });
     // „So funktioniert der Raubzug" — optionaler Rückruf; ohne ihn bleibt der Knopf versteckt.
     const rlRegelnKnopf = document.getElementById('btn-rl-regeln');
@@ -14699,6 +14758,12 @@ const RL_KONFIG = {
   schwierigkeit: {
     // Duo (zweiter Lakai am Tisch): seit Spieltest-Runde 9 AUS (99 = nie). Vorher: ab Platz 3 immer, auf Platz 2 bei der Elite.
     duo: { abPlatz: 99, eliteAbPlatz: 99 },
+    // Schwierigkeit JE DECK (26.9.2026, Antons Wunsch — wie die Stakes in Balatro): jedes Deck trägt seine eigene freigeschaltete
+    // Stufe (`profil.deckStufen[deck]`, 1 … `max`). Ein Sieg mit einem Deck auf Stufe s schaltet für DIESES Deck s+1 frei, andere Decks
+    // bleiben, wo sie sind; ein frisch gewonnenes Boss-Deck beginnt auf `neuesDeckAb`. Die Tabellen `boss.lebenBasis`, `stufenFaktor`
+    // und `aussetzer` bleiben nach Stufe 1 … 3 gestaffelt — `max` darf ihre Zahl nicht übersteigen.
+    max: 3,
+    neuesDeckAb: 1,
     zweitesPrivilegAb: 2,                            // ab dieser Stufe steht im Gegnerplan ein zweites Privileg
     zweitesPrivilegAbPlatz: { 1: 99, 2: 2, 3: 1 },   // … Lakaien tragen es aber erst ab diesem Platz im Lauf (Stufe → Platz)
     // Aussetzer (Spieltest-Runde 1): Wahrscheinlichkeit je Zug, dass ein Lakai nur eine Karte abwirft statt zu spielen —
@@ -18396,6 +18461,11 @@ function rlEndeZeigen(wurzel, lauf, profil, rueckrufe = {}) {
     frei.appendChild(rlSchirmEl('span', 'rl-ende-frei-titel', RL_TXT_SCHIRM.freischaltung));
     for (const dk of [...new Set(decks)]) frei.appendChild(rlSchirmEl('span', 'rl-chip gold', RL_TXT_SCHIRM.deckFrei(rlText(RL_TXT_DECK, dk))));
   }
+  // Schwierigkeit je Deck (26.9.2026): ging für das gespielte Deck eine Stufe auf (`neueDeckStufe`, rlProfilNachSieg), steht sie hier.
+  if (d.neueDeckStufe) {
+    if (!decks.length) frei.appendChild(rlSchirmEl('span', 'rl-ende-frei-titel', RL_TXT_SCHIRM.freischaltung));
+    frei.appendChild(rlSchirmEl('span', 'rl-chip gold', RL_TXT_SCHIRM.stufeFrei(rlText(RL_TXT_DECK, d.deckWahl), d.neueDeckStufe, RL_TXT_UI.stufe[d.neueDeckStufe] || '')));
+  }
   if (profil && profil.startort) frei.appendChild(rlSchirmEl('span', 'rl-chip', RL_TXT_SCHIRM.naechsterStart(rlText(RL_TXT_PLANET, profil.startort))));
   ende.appendChild(frei);
 
@@ -20055,7 +20125,7 @@ function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
  *   reiseBereit, skizze, gratisRerolls, ersteGroesseAngeboten, sternwarten, sternwarte, bosseBekannt
  *   gegnerPlan[planet].partner: GegnerSpec[3] — die Duo-Partner je Kampfplatz.
  *
- * Exporte: RlLauf, rlProfilNeu, rlProfilNachSieg, rlProfilNachNiederlage, rlProfilNachLehrlauf, rlGegnerPlanErzeugen,
+ * Exporte: RlLauf, rlProfilNeu, rlProfilDeckStufe, rlProfilDeckStufenNormieren, rlProfilNachSieg, rlProfilNachNiederlage, rlProfilNachLehrlauf, rlGegnerPlanErzeugen,
  *   RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG, rlRegelnVereinen, rlRouteErzeugen.
  *
  * Spieltest-Runde 6: der LEHRLAUF (`daten.lehrlauf`, Lernstand `daten.lehre`, Lehrplan in rl-lehrlauf.js) — `istLehrlauf()`,
@@ -20069,7 +20139,7 @@ function rlDeckAnsicht(wurzel, deckSpec, rueckrufe = {}, opt = {}) {
  * Top-Level-Namen dieser Datei: RL_LAUF_VERSION, RL_LAUF_PHASEN, RL_PLANET_FREISCHALTUNG,
  *   RL_STUFEN_TYPEN, RL_REGEL_MINIMUM, rlLakaiName, rlLakaiFuerPlatz, rlLakaiSpec, rlEliteSpec, rlBossSpec,
  *   rlGegnerPlanErzeugen, rlRouteErzeugen, rlRegelnVereinen, rlStufeAus, rlStufeGesamt, rlDeckKopie, RlLauf, rlProfilNeu,
- *   rlProfilNachBossen, rlProfilNachSieg, rlProfilNachLehrlauf, rlProfilNachNiederlage.
+ *   rlProfilDeckStufe, rlProfilDeckStufenNormieren, rlProfilNachBossen, rlProfilNachSieg, rlProfilNachLehrlauf, rlProfilNachNiederlage.
  */
 
 /** Version des Speicherformats (§2.3). */
@@ -20976,7 +21046,7 @@ function rlProfilNeu() {
     version: 1,
     planeten: ['frost', 'doppel', 'schrott', 'nebel'],
     decks: ['standard'],
-    schwierigkeit: 1,
+    deckStufen: { standard: 1 },          // Schwierigkeit je Deck (26.9.2026): höchste freigeschaltete Stufe JE Deck (vorher eine für alle)
     startort: 'frost',
     tutorialGesehen: false,
     bestwerte: { laeufe: 0, siege: 0, besterPlatz: 0, meisteGeld: 0, bosse: [] },
@@ -20984,7 +21054,38 @@ function rlProfilNeu() {
   };
 }
 
-/** Gemeinsamer Teil: besiegte Bosse eintragen, deren Decks freischalten, Bestwerte. */
+/**
+ * Höchste freigeschaltete Schwierigkeit eines Decks (`profil.deckStufen`, 26.9.2026: je Deck statt für alle) — 1 … `schwierigkeit.max`;
+ * ohne Eintrag gilt `neuesDeckAb`.
+ */
+function rlProfilDeckStufe(profil, deckKey) {
+  const K = RL_KONFIG.schwierigkeit;
+  const st = profil && profil.deckStufen ? profil.deckStufen[deckKey] : undefined;
+  const n = Number.isInteger(st) ? st : (K.neuesDeckAb ?? 1);
+  return Math.max(1, Math.min(K.max ?? 3, n));
+}
+
+/**
+ * `deckStufen` eines Profils in Ordnung bringen: jedes freigeschaltete Deck trägt eine Stufe 1 … max, Einträge fremder Decks fallen weg.
+ * Ältere Profile (vor dem 26.9.2026) kannten nur EINE `schwierigkeit` für alle Decks — sie geht auf jedes damals freie Deck über,
+ * damit niemand Fortschritt verliert; das alte Feld verschwindet.
+ */
+function rlProfilDeckStufenNormieren(profil) {
+  const K = RL_KONFIG.schwierigkeit;
+  const max = K.max ?? 3;
+  const alt = profil.deckStufen && typeof profil.deckStufen === 'object' ? profil.deckStufen : null;
+  const global = alt ? null : (Number.isInteger(profil.schwierigkeit) ? profil.schwierigkeit : null);
+  const neu = {};
+  for (const deck of Array.isArray(profil.decks) ? profil.decks : []) {
+    const n = alt ? alt[deck] : global;
+    neu[deck] = Math.max(1, Math.min(max, Number.isInteger(n) ? n : (K.neuesDeckAb ?? 1)));
+  }
+  profil.deckStufen = neu;
+  delete profil.schwierigkeit;
+  return profil;
+}
+
+/** Gemeinsamer Teil: besiegte Bosse eintragen, deren Decks freischalten (auf Stufe `neuesDeckAb`), Bestwerte. */
 function rlProfilNachBossen(profil, lauf) {
   const d = lauf.daten;
   const b = profil.bestwerte;
@@ -20995,6 +21096,8 @@ function rlProfilNachBossen(profil, lauf) {
     if (!b.bosse.includes(bossKey)) b.bosse.push(bossKey);
     const deckKey = RL_PLANETEN[RL_BOSSE[bossKey].planet].freischaltDeck;
     if (!profil.decks.includes(deckKey)) profil.decks.push(deckKey);
+    if (!profil.deckStufen) profil.deckStufen = {};
+    if (!Number.isInteger(profil.deckStufen[deckKey])) profil.deckStufen[deckKey] = RL_KONFIG.schwierigkeit.neuesDeckAb ?? 1;
   }
   // Eroberte Planeten: alle, deren Boss in diesem Lauf fiel (Reihenfolge = planetenReihe).
   d.statistik.bosseBesiegt.forEach((bossKey) => {
@@ -21006,7 +21109,7 @@ function rlProfilNachBossen(profil, lauf) {
 
 /**
  * Nach einem gewonnenen Lauf: Bestwerte, nächster Planet in fester Reihenfolge (kron → nest),
- * nächste Schwierigkeit (wenn die höchste gespielt wurde), Startort = eroberter letzter Planet.
+ * nächste Schwierigkeit für das GESPIELTE Deck (26.9.2026: Stufen je Deck), Startort = eroberter letzter Planet.
  */
 function rlProfilNachSieg(profil, lauf) {
   const d = lauf.daten;
@@ -21014,7 +21117,14 @@ function rlProfilNachSieg(profil, lauf) {
   profil.bestwerte.siege++;
   const naechster = RL_PLANET_FREISCHALTUNG.find((k) => !profil.planeten.includes(k));
   if (naechster) profil.planeten.push(naechster);
-  if (d.schwierigkeit >= profil.schwierigkeit && profil.schwierigkeit < 3) profil.schwierigkeit++;
+  // Schwierigkeit je Deck (26.9.2026): ein Sieg auf Stufe s schaltet für das gespielte Deck s+1 frei (höchstens `schwierigkeit.max`) —
+  // andere Decks bleiben, wo sie sind. Was neu aufging, merkt sich der Lauf für den Abschluss-Schirm (`neueDeckStufe`).
+  const max = RL_KONFIG.schwierigkeit.max ?? 3;
+  if (!profil.deckStufen) profil.deckStufen = {};
+  const bisher = rlProfilDeckStufe(profil, d.deckWahl);
+  const stufeNeu = Math.min(max, Math.max(bisher, d.schwierigkeit + 1));
+  profil.deckStufen[d.deckWahl] = stufeNeu;
+  d.neueDeckStufe = stufeNeu > bisher ? stufeNeu : null;
   profil.startort = lauf.planetAktuell();
   return profil;
 }
@@ -21112,7 +21222,10 @@ function rlProfilLaden() {
     if (!Array.isArray(profil[feld])) profil[feld] = [...neu[feld]];
   }
   if (!Array.isArray(profil.bestwerte.bosse)) profil.bestwerte.bosse = [];
-  if (![1, 2, 3].includes(profil.schwierigkeit)) profil.schwierigkeit = 1;
+  // Schwierigkeit je Deck (26.9.2026): ältere Profile tragen `schwierigkeit` (EINE Stufe für alle Decks) — sie geht auf jedes damals
+  // freie Deck über. Fehlt `deckStufen` im gespeicherten Stand, darf die Vorgabe aus rlProfilNeu die Übertragung nicht verdecken.
+  if (!(p.deckStufen && typeof p.deckStufen === 'object')) delete profil.deckStufen;
+  rlProfilDeckStufenNormieren(profil);
   if (!profil.planeten.includes(profil.startort)) profil.startort = profil.planeten[0] || neu.startort;
   return profil;
 }
@@ -23891,7 +24004,7 @@ function rlStartRegelnHtml(mitTrenner = false) {
     ueberriese: K.karten.ueberriese,
     leucht: K.karten.leucht,
     drachenatem: K.karten.drachenatem,
-    stufenMax: Object.keys(K.boss.stufenFaktor).length,
+    stufenMax: K.schwierigkeit.max ?? Object.keys(K.boss.stufenFaktor).length,
     bosse: Object.keys(RL_BOSSE).map((key) => ({ name: rlStartEsc(rlText(RL_TXT_BOSS, key)), heil: rlStartEsc(RL_BOSSE[key].heilText || '') })),
     kosmische: KOSMISCH_ROGUELIKE.map((art) => ({ name: rlStartEsc(ART_TEXT[art] || art), kurz: rlStartEsc(ART_KURZ[art] || '') })),
   };
@@ -23927,7 +24040,8 @@ function rlStartNeuerLauf(o = {}) {
   if (tutorial) o = { ...o, deck: 'standard', stufe: 1, startort: 'frost', seed: o.seed ?? (lehrlauf ? undefined : RL_START_TUTORIAL_SEED) };
   const seed = o.seed ?? ((Math.random() * 2 ** 32) >>> 0);
   const deckWahl = o.deck && profil.decks.includes(o.deck) ? o.deck : 'standard';
-  const schwierigkeit = Math.max(1, Math.min(profil.schwierigkeit, Number(o.stufe) || 1));
+  // Schwierigkeit je Deck (26.9.2026): die Stufe gilt für das gewählte Deck — höher als dort freigeschaltet geht nicht.
+  const schwierigkeit = Math.max(1, Math.min(rlProfilDeckStufe(profil, deckWahl), Number(o.stufe) || 1));
   const startort = o.startort && profil.planeten.includes(o.startort) ? o.startort : profil.startort;
   rlS.lauf = RlLauf.neu({ seed, schwierigkeit, deckWahl, startort: tutorial ? 'frost' : startort, profil, tutorial, lehrlauf });
   if (rlS.lauf.istLehrlauf()) rlS.lauf.daten.lehre.start = Date.now();
@@ -24032,15 +24146,26 @@ function rlStartLehrlaufAn() {
 /** Was der Startschirm über Profil und Lauf wissen will (rueckrufe.roguelikeStand). */
 function rlStartStand() {
   const profil = rlS.profil;
-  const decks = Object.keys(RL_DECKS).map((key) => ({
-    key,
-    name: rlText(RL_TXT_DECK, key),
-    text: rlText(RL_TXT_DECK, key, 'text'),
-    staerke: rlText(RL_TXT_DECK, key, 'staerke'),
-    schwaeche: rlText(RL_TXT_DECK, key, 'schwaeche'),
-    frei: profil.decks.includes(key),
-  }));
-  const stufen = [1, 2, 3].filter((n) => n <= profil.schwierigkeit);
+  // Schwierigkeit je Deck (26.9.2026, wie Balatros Stakes): jede Kachel trägt ihre Stufenpunkte 1 … max — frei bis zur erreichten
+  // Stufe des Decks, darüber zu (mit dem Hinweis, wie sie aufgeht). Eine Wahl für alle Decks gibt es nicht mehr.
+  const stufenMax = RL_KONFIG.schwierigkeit.max ?? 3;
+  const decks = Object.keys(RL_DECKS).map((key) => {
+    const stufe = rlProfilDeckStufe(profil, key);
+    return {
+      key,
+      name: rlText(RL_TXT_DECK, key),
+      text: rlText(RL_TXT_DECK, key, 'text'),
+      staerke: rlText(RL_TXT_DECK, key, 'staerke'),
+      schwaeche: rlText(RL_TXT_DECK, key, 'schwaeche'),
+      frei: profil.decks.includes(key),
+      stufe,
+      stufen: Array.from({ length: stufenMax }, (_, i) => {
+        const nr = i + 1;
+        const name = RL_TXT_UI.stufe[nr] || String(nr);
+        return { nr, name, frei: nr <= stufe, text: RL_TXT_UI.deckStufe(nr, name), hinweis: nr <= stufe ? '' : RL_TXT_UI.deckStufeZu(nr - 1) };
+      }),
+    };
+  });
   // Solange das Pflicht-Tutorial aussteht, begrüßt der V2-A2 beim ersten Besuch der Ebene (je Profil einmal) —
   // über einen Haken ohne Lauf, damit der Punkt nicht am Merker eines früheren Laufs hängt.
   const pflicht = !profil.tutorialGeschafft;
@@ -24079,7 +24204,6 @@ function rlStartStand() {
     tutorialKnopf: rlStartLehrlaufAn() ? RL_TXT_FUEHRUNG.ebene.lehrlaufSpielen : RL_TXT_FUEHRUNG.ebene.wiederholen,
     laufVorhanden: rlLaufGespeichert(),
     decks,
-    stufen,
     startortName: rlText(RL_TXT_PLANET, profil.startort),
     bestwerteHtml: rlBestwerteHtml(profil),
   };
@@ -24197,7 +24321,7 @@ let botLaufNr = 0;
  * beim Testen sieht, ob wirklich die neue Fassung geladen ist.
  * Der Einpacker ersetzt die Marke; ohne ihn bleibt „Entwicklung" stehen.
  */
-const BAU_STAND = '26.09.2026 10:12';
+const BAU_STAND = '26.09.2026 10:49';
 
 /**
  * Die Spielgeschwindigkeit übernehmen (Spieltest-Runde 7): Grundzeiten je Spielart (EIN_BOTZUG) geteilt durch ×1 … ×4.
